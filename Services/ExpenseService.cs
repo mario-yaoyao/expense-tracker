@@ -1,92 +1,127 @@
-﻿using expense_tracker.Dtos;
+﻿using expense_tracker.Data;
+using expense_tracker.Dtos.Requests;
+using expense_tracker.Dtos.Responses;
+using expense_tracker.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace expense_tracker.Services
 {
-    public class ExpenseService : IExpenseService
+    public class ExpenseService(AppDbContext context) : IExpenseService
     {
-        private readonly List<ExpenseDto> _expenses = [
-                new ExpenseDto
+        public async Task<List<ExpenseResDto>> GetExpensesAsync()
+        {
+            var expenses = await context.Users
+                .SelectMany(u => u.Expenses)
+                .Where(e => !e.IsDeleted)
+                .Select(e => new ExpenseResDto
                 {
-                    Id = 1,
-                    Description = "Expense #1",
-                    Amount = "$100.00",
-                    Category = "Category #1",
-                    CreatedAt = "2023-01-01",
-                    UpdatedAt = "2023-01-01"
-                },
-                new ExpenseDto
+                    Id = e.Id,
+                    UserId = e.UserId,
+                    Description = e.Description,
+                    Amount = e.Amount,
+                    Category = e.Category,
+                    CreatedAt = e.CreatedAt,
+                    UpdatedAt = e.UpdatedAt
+                })
+                .ToListAsync();
+
+            return expenses;
+        }
+
+        public async Task<ExpenseResDto?> GetExpenseByIdAsync(Guid id)
+        {
+            var existingExpense = await context.Users
+                .SelectMany(u => u.Expenses)
+                .Select(e => new ExpenseResDto
                 {
-                    Id = 2,
-                    Description = "Expense #2",
-                    Amount = "$200.00",
-                    Category = "Category #2",
-                    CreatedAt = "2023-01-02",
-                    UpdatedAt = "2023-01-02"
-                }
-            ];
-
-        public Task<List<ExpenseDto>> GetExpensesAsync()
-        {
-        return Task.FromResult(_expenses);
-        }
-
-        public async Task<ExpenseDto?> GetExpenseByIdAsync(int id)
-        {
-            var expenses = await GetExpensesAsync();
-            return expenses.FirstOrDefault(e => e.Id == id);
-        }
-
-        public async Task<ExpenseDto?> CreateExpenseAsync(ExpenseDto expense)
-        {
-            var expenses = await GetExpensesAsync();
-            var newExpense = new ExpenseDto
-            {
-                Id = expenses.Max(e => e.Id) + 1,
-                Description = expense.Description,
-                Amount = expense.Amount,
-                Category = expense.Category,
-                CreatedAt = DateTime.UtcNow.ToString("yyyy-MM-dd"),
-                UpdatedAt = DateTime.UtcNow.ToString("yyyy-MM-dd")
-            };
-            expenses.Add(newExpense);
-            //Console.WriteLine(
-            //    $"expenses: {string.Join(", ", expenses.Select(e => $"Id={e.Id}, Desc={e.Description}, Amount={e.Amount}"))}"
-            //);
-            return newExpense;
-        }
-
-        public async Task<ExpenseDto?> UpdateExpenseAsync(int id, ExpenseDto task)
-        {
-            var expenses = await GetExpensesAsync();
-            var existingExpense = expenses.FirstOrDefault(e => e.Id == id);
-            if (existingExpense == null) return null;
-
-            existingExpense.Description = string.IsNullOrWhiteSpace(task.Description)
-                ? existingExpense.Description
-                : task.Description;
-
-            existingExpense.Amount = string.IsNullOrWhiteSpace(task.Amount)
-                ? existingExpense.Amount
-                : task.Amount;
-
-            existingExpense.Category = string.IsNullOrWhiteSpace(task.Category)
-                ? existingExpense.Category
-                : task.Category;
-
-            existingExpense.UpdatedAt = DateTime.UtcNow.ToString("yyyy-MM-dd");
+                    Id = e.Id,
+                    UserId = e.UserId,
+                    Description = e.Description,
+                    Amount = e.Amount,
+                    Category = e.Category,
+                    CreatedAt = e.CreatedAt,
+                    UpdatedAt = e.UpdatedAt
+                })
+                .Where(e => e.Id == id)
+                .FirstOrDefaultAsync();
 
             return existingExpense;
         }
 
-        public async Task<List<ExpenseDto?>> DeleteExpenseAsync(int id)
+        public async Task<ExpenseResDto?> CreateExpenseAsync(ExpenseReqDto expense)
         {
-            var expenses = await GetExpensesAsync();
-            var expenseToDelete = expenses.FirstOrDefault(e => e.Id == id);
-            if (expenseToDelete == null) return null;
-            expenses.Remove(expenseToDelete);
+            var newExpense = new Expense
+            {
+                UserId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+                Description = expense.Description,
+                Amount = expense.Amount,
+                Category = expense.Category,
+            };
 
-            var newExpenses = await GetExpensesAsync();
-            return newExpenses;
+            context.Expenses.Add(newExpense);
+            await context.SaveChangesAsync();
+
+            return await GetExpenseByIdAsync(newExpense.Id);
         }
+
+        public async Task<ExpenseResDto?> UpdateExpenseAsync(Guid id, ExpenseReqDto expense)
+        {
+            var existingExpense = await context.Users
+                .SelectMany(u => u.Expenses)
+                .Where(e => e.Id == id)
+                .FirstOrDefaultAsync();
+
+            if (existingExpense == null) return null;
+
+            existingExpense.Description = string.IsNullOrWhiteSpace(expense.Description)
+                ? existingExpense.Description
+                : expense.Description;
+
+            existingExpense.Amount = string.IsNullOrWhiteSpace(expense.Amount.ToString())
+                ? existingExpense.Amount
+                : expense.Amount;
+
+            existingExpense.Category = string.IsNullOrWhiteSpace(expense.Category)
+                ? existingExpense.Category
+                : expense.Category;
+
+            await context.SaveChangesAsync();
+
+            return await GetExpenseByIdAsync(id);
+        }
+
+        //NOTE: permanent delete the expense from the database
+        public async Task<bool> DeleteExpenseAsync(Guid id)
+        {
+            var existingExpense = await context.Users
+                .SelectMany(u => u.Expenses)
+                .Where(e => e.Id == id)
+                .FirstOrDefaultAsync();
+
+            if (existingExpense == null) return false;
+
+            context.Expenses.Remove(existingExpense);
+            await context.SaveChangesAsync();
+
+            return true;
+        }
+
+        //NOTE: soft delete the expense by setting IsDeleted to true
+        //public async Task<bool> DeleteExpenseAsync(Guid id)
+        //{
+        //    // soft delete the expense by setting IsDeleted to true
+        //    var existingExpense = await context.Users
+        //        .SelectMany(u => u.Expenses)
+        //        .Where(e => e.Id == id)
+        //        .FirstOrDefaultAsync();
+
+        //    if (existingExpense == null) return false;
+
+        //    existingExpense.IsDeleted = true;
+
+        //    await context.SaveChangesAsync();
+
+        //    return true;
+        //}
     }
 }
