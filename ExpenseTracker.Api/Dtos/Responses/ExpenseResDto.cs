@@ -1,4 +1,4 @@
-﻿namespace expense_tracker.Dtos.Responses
+﻿namespace ExpenseTracker.Dtos.Responses
 {
     public class ExpenseResDto
     {

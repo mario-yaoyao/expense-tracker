@@ -1,7 +1,7 @@
-﻿using expense_tracker.Dtos.Requests;
-using expense_tracker.Dtos.Responses;
+﻿using ExpenseTracker.Dtos.Requests;
+using ExpenseTracker.Dtos.Responses;
 
-namespace expense_tracker.Services
+namespace ExpenseTracker.Services
 {
     public interface IExpenseService
     {

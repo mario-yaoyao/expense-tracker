@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
-
-namespace expense_tracker.Models
+﻿namespace ExpenseTracker.Models
 {
     public class Expense : Base
     {

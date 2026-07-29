@@ -1,11 +1,11 @@
-﻿using expense_tracker.Controllers;
-using expense_tracker.Dtos.Requests;
-using expense_tracker.Dtos.Responses;
-using expense_tracker.Services;
+﻿using ExpenseTracker.Controllers;
+using ExpenseTracker.Dtos.Requests;
+using ExpenseTracker.Dtos.Responses;
+using ExpenseTracker.Services;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
-namespace expense_tracker.Tests.Controllers
+namespace ExpenseTracker.Tests.Controllers
 {
     public class ExpensesControllerTests
     {
@@ -25,7 +25,7 @@ namespace expense_tracker.Tests.Controllers
                     }
                 });
 
-            var controller = new ExpensesController(mockService.Object);
+            var controller = new ExpenseController(mockService.Object);
 
             // Act
             var result = await controller.GetExpenses();
@@ -33,7 +33,7 @@ namespace expense_tracker.Tests.Controllers
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
 
-            Assert.IsType<List<ExpenseResDto>>(okResult.Value);
+            Assert.IsType<ApiResDto<List<ExpenseResDto>>>(okResult.Value);
         }
 
         [Fact]
@@ -45,7 +45,7 @@ namespace expense_tracker.Tests.Controllers
             mockService.Setup(x => x.GetExpensesAsync())
                 .ReturnsAsync(new List<ExpenseResDto>());
 
-            var controller = new ExpensesController(mockService.Object);
+            var controller = new ExpenseController(mockService.Object);
 
             // Act
             var result = await controller.GetExpenses();
@@ -63,7 +63,7 @@ namespace expense_tracker.Tests.Controllers
             mockService.Setup(x => x.GetExpensesAsync())
                 .ThrowsAsync(new Exception("Database error"));
 
-            var controller = new ExpensesController(mockService.Object);
+            var controller = new ExpenseController(mockService.Object);
 
             // Act
             var result = await controller.GetExpenses();
@@ -88,7 +88,7 @@ namespace expense_tracker.Tests.Controllers
                     Description = "Food"
                 });
 
-            var controller = new ExpensesController(mockService.Object);
+            var controller = new ExpenseController(mockService.Object);
 
             // Act
             var result = await controller.GetExpenseById(id);
@@ -96,7 +96,7 @@ namespace expense_tracker.Tests.Controllers
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
 
-            Assert.IsType<ExpenseResDto>(okResult.Value);
+            Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
         }
 
         [Fact]
@@ -109,7 +109,7 @@ namespace expense_tracker.Tests.Controllers
             mockService.Setup(x => x.GetExpenseByIdAsync(id))
                 .ReturnsAsync((ExpenseResDto?)null);
 
-            var controller = new ExpensesController(mockService.Object);
+            var controller = new ExpenseController(mockService.Object);
 
             // Act
             var result = await controller.GetExpenseById(id);
@@ -128,7 +128,7 @@ namespace expense_tracker.Tests.Controllers
             mockService.Setup(x => x.GetExpenseByIdAsync(id))
                 .ThrowsAsync(new Exception("Database error"));
 
-            var controller = new ExpensesController(mockService.Object);
+            var controller = new ExpenseController(mockService.Object);
 
             // Act
             var result = await controller.GetExpenseById(id);
@@ -156,7 +156,7 @@ namespace expense_tracker.Tests.Controllers
                     Description = "Food"
                 });
 
-            var controller = new ExpensesController(mockService.Object);
+            var controller = new ExpenseController(mockService.Object);
 
             // Act
             var result = await controller.CreateExpense(expense);
@@ -164,7 +164,7 @@ namespace expense_tracker.Tests.Controllers
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
          
-            Assert.IsType<ExpenseResDto>(okResult.Value);
+            Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
         }
 
         [Fact]
@@ -176,7 +176,7 @@ namespace expense_tracker.Tests.Controllers
             mockService.Setup(x => x.CreateExpenseAsync(It.IsAny<ExpenseReqDto>()))
                 .ThrowsAsync(new Exception("Database error"));
 
-            var controller = new ExpensesController(mockService.Object);
+            var controller = new ExpenseController(mockService.Object);
 
             // Act
             var result = await controller.CreateExpense(new ExpenseReqDto());
@@ -206,7 +206,7 @@ namespace expense_tracker.Tests.Controllers
                     Description = "Food"
                 });
 
-            var controller = new ExpensesController(mockService.Object);
+            var controller = new ExpenseController(mockService.Object);
 
             // Act
             var result = await controller.UpdateExpense(id, expense);
@@ -214,7 +214,7 @@ namespace expense_tracker.Tests.Controllers
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
 
-            Assert.IsType<ExpenseResDto>(okResult.Value);
+            Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
         }
 
         [Fact]
@@ -232,7 +232,7 @@ namespace expense_tracker.Tests.Controllers
             mockService.Setup(x => x.UpdateExpenseAsync(id, expense))
                 .ReturnsAsync((ExpenseResDto?)null);
 
-            var controller = new ExpensesController(mockService.Object);
+            var controller = new ExpenseController(mockService.Object);
 
             // Act
             var result = await controller.UpdateExpense(id, expense);
@@ -256,7 +256,7 @@ namespace expense_tracker.Tests.Controllers
             mockService.Setup(x => x.UpdateExpenseAsync(id, expense))
                 .ThrowsAsync(new Exception("Database error"));
 
-            var controller = new ExpensesController(mockService.Object);
+            var controller = new ExpenseController(mockService.Object);
 
             // Act
             var result = await controller.UpdateExpense(id, expense);
@@ -277,7 +277,7 @@ namespace expense_tracker.Tests.Controllers
             mockService.Setup(x => x.DeleteExpenseAsync(id))
                 .ReturnsAsync(true);
 
-            var controller = new ExpensesController(mockService.Object);
+            var controller = new ExpenseController(mockService.Object);
 
             // Act
             var result = await controller.DeleteExpense(id);
@@ -285,7 +285,7 @@ namespace expense_tracker.Tests.Controllers
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
 
-            Assert.Equal("Expense deleted successfully.", okResult.Value);
+            Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
         }
 
         [Fact]
@@ -298,7 +298,7 @@ namespace expense_tracker.Tests.Controllers
             mockService.Setup(x => x.DeleteExpenseAsync(id))
                 .ReturnsAsync(false);
 
-            var controller = new ExpensesController(mockService.Object);
+            var controller = new ExpenseController(mockService.Object);
 
             // Act
             var result = await controller.DeleteExpense(id);
@@ -317,7 +317,7 @@ namespace expense_tracker.Tests.Controllers
             mockService.Setup(x => x.DeleteExpenseAsync(id))
                 .ThrowsAsync(new Exception("Database error"));
 
-            var controller = new ExpensesController(mockService.Object);
+            var controller = new ExpenseController(mockService.Object);
 
             // Act
             var result = await controller.DeleteExpense(id);

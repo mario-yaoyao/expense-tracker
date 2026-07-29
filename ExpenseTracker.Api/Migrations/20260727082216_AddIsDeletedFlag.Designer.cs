@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using expense_tracker.Data;
+using ExpenseTracker.Data;
 
 #nullable disable
 
-namespace expense_tracker.Migrations
+namespace ExpenseTracker.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     [Migration("20260727082216_AddIsDeletedFlag")]

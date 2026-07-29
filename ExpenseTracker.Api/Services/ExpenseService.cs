@@ -1,10 +1,10 @@
-﻿using expense_tracker.Data;
-using expense_tracker.Dtos.Requests;
-using expense_tracker.Dtos.Responses;
-using expense_tracker.Models;
+﻿using ExpenseTracker.Data;
+using ExpenseTracker.Dtos.Requests;
+using ExpenseTracker.Dtos.Responses;
+using ExpenseTracker.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace expense_tracker.Services
+namespace ExpenseTracker.Services
 {
     public class ExpenseService(AppDbContext context) : IExpenseService
     {

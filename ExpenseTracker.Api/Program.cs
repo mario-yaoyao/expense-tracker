@@ -1,5 +1,5 @@
-using expense_tracker.Data;
-using expense_tracker.Services;
+using ExpenseTracker.Data;
+using ExpenseTracker.Services;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -15,6 +15,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ExpenseTrackerDatabase")));
 
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 

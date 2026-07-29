@@ -1,10 +1,10 @@
-﻿using expense_tracker.Data;
-using expense_tracker.Dtos.Requests;
-using expense_tracker.Models;
-using expense_tracker.Services;
+﻿using ExpenseTracker.Data;
+using ExpenseTracker.Dtos.Requests;
+using ExpenseTracker.Models;
+using ExpenseTracker.Services;
 using Microsoft.EntityFrameworkCore;
 
-namespace expense_tracker.Tests.Services;
+namespace ExpenseTracker.Tests.Services;
 
 public class ExpensesServiceTests
 {

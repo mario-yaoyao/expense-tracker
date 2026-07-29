@@ -1,4 +1,4 @@
-﻿namespace expense_tracker.Dtos.Requests
+﻿namespace ExpenseTracker.Dtos.Requests
 {
     public class ExpenseReqDto
     {
