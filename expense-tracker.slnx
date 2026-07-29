@@ -1,4 +1,0 @@
-<Solution>
-  <Project Path="../expense-tracker.Tests/ExpenseTracker.Tests.csproj" Id="88e1a0af-1d26-4d6b-9364-8b5d8843a911" />
-  <Project Path="ExpenseTracker.Api.csproj" />
-</Solution>

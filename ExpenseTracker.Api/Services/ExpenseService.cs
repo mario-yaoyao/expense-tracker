@@ -77,9 +77,7 @@ namespace expense_tracker.Services
                 ? existingExpense.Description
                 : expense.Description;
 
-            existingExpense.Amount = string.IsNullOrWhiteSpace(expense.Amount.ToString())
-                ? existingExpense.Amount
-                : expense.Amount;
+            existingExpense.Amount = expense.Amount;
 
             existingExpense.Category = string.IsNullOrWhiteSpace(expense.Category)
                 ? existingExpense.Category

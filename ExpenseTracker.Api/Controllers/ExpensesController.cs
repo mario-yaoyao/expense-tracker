@@ -1,6 +1,5 @@
 ﻿using expense_tracker.Dtos.Requests;
 using expense_tracker.Dtos.Responses;
-using expense_tracker.Models;
 using expense_tracker.Services;
 using Microsoft.AspNetCore.Mvc;
 
