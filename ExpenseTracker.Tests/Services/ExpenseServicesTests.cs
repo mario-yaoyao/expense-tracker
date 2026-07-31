@@ -1,10 +1,10 @@
-﻿using expense_tracker.Data;
-using expense_tracker.Dtos.Requests;
-using expense_tracker.Models;
-using expense_tracker.Services;
+﻿using ExpenseTracker.Data;
+using ExpenseTracker.Dtos.Requests;
+using ExpenseTracker.Models;
+using ExpenseTracker.Services;
 using Microsoft.EntityFrameworkCore;
 
-namespace expense_tracker.Tests.Services;
+namespace ExpenseTracker.Tests.Services;
 
 public class ExpensesServiceTests
 {
@@ -18,9 +18,12 @@ public class ExpensesServiceTests
 
         using var context = new AppDbContext(options);
 
+        var userId = Guid.NewGuid();
+        var userRole = "User";
+
         var user = new User
         {
-            Id = Guid.NewGuid(),
+            Id = userId,
             Expenses = new List<Expense>
             {
                 new()
@@ -28,14 +31,16 @@ public class ExpensesServiceTests
                     Description = "Breakfast",
                     Amount = 80.99m,
                     Category = "Food",
-                    IsDeleted = false
+                    IsDeleted = false,
+                    CreatedAt = new DateTime(2026, 1, 1),
                 },
                 new()
                 {
                     Description = "Lunch",
                     Amount = 120.50m,
                     Category = "Food",
-                    IsDeleted = false
+                    IsDeleted = false,
+                    CreatedAt = new DateTime(2026, 1, 2),
                 }
             }
         };
@@ -46,12 +51,14 @@ public class ExpensesServiceTests
         var service = new ExpenseService(context);
 
         // Act
-        var result = await service.GetExpensesAsync();
+        var result = await service.GetExpensesAsync(userId, userRole);
 
         // Assert
         Assert.Equal(2, result.Count);
-        Assert.Equal("Breakfast", result[0].Description);
-        Assert.Equal(120.50m, result[1].Amount);
+        Assert.Equal("Lunch", result[0].Description);
+        Assert.Equal(120.50m, result[0].Amount);
+        Assert.Equal("Breakfast", result[1].Description);
+        Assert.Equal(80.99m, result[1].Amount);
     }
 
     [Fact]
@@ -64,10 +71,13 @@ public class ExpensesServiceTests
 
         using var context = new AppDbContext(options);
 
+        var userId = Guid.NewGuid();
+        var userRole = "User";
+
         var service = new ExpenseService(context);
 
         // Act
-        var result = await service.GetExpensesAsync();
+        var result = await service.GetExpensesAsync(userId, userRole);
 
         // Assert
         Assert.Empty(result);
@@ -83,18 +93,20 @@ public class ExpensesServiceTests
 
         using var context = new AppDbContext(options);
 
+        var userId = Guid.NewGuid();
+
         var user = new User
         {
-            Id = Guid.NewGuid(),
+            Id = userId,
             Expenses =
             [
                 new Expense
-            {
-                Description = "Breakfast",
-                Amount = 80.99m,
-                Category = "Food",
-                IsDeleted = false
-            }
+                {
+                    Description = "Breakfast",
+                    Amount = 80.99m,
+                    Category = "Food",
+                    IsDeleted = false
+                }
             ]
         };
 
@@ -103,10 +115,11 @@ public class ExpensesServiceTests
 
         var service = new ExpenseService(context);
 
+        var userRole = "User";
         var expenseId = user.Expenses.First().Id;
 
         // Act
-        var result = await service.GetExpenseByIdAsync(expenseId);
+        var result = await service.GetExpenseByIdAsync(userId, userRole, expenseId);
 
         // Assert
         Assert.NotNull(result);
@@ -123,10 +136,14 @@ public class ExpensesServiceTests
 
         using var context = new AppDbContext(options);
 
+        var userId = Guid.NewGuid();
+        var userRole = "User";
+        var existingExpenseId = Guid.NewGuid();
+
         var service = new ExpenseService(context);
 
         // Act
-        var result = await service.GetExpenseByIdAsync(Guid.NewGuid());
+        var result = await service.GetExpenseByIdAsync(userId, userRole, existingExpenseId);
 
         // Assert
         Assert.Null(result);
@@ -142,6 +159,9 @@ public class ExpensesServiceTests
 
         using var context = new AppDbContext(options);
 
+        var userId = Guid.NewGuid();
+        var userRole = "User";
+
         var service = new ExpenseService(context);
 
         var expense = new ExpenseReqDto
@@ -153,14 +173,20 @@ public class ExpensesServiceTests
 
         var user = new User
         {
-            Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
+            Id = userId,
+            FullName = "Test User",
+            Username = "test",
+            ContactNumber = "09876543210",
+            HashedPassword = "password",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
         };
 
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
         // Act
-        var result = await service.CreateExpenseAsync(expense);
+        var result = await service.CreateExpenseAsync(user.Id, userRole, expense);
 
         // Assert - returned DTO
         Assert.NotNull(result);
@@ -188,11 +214,14 @@ public class ExpensesServiceTests
 
         using var context = new AppDbContext(options);
 
+        var userId = Guid.NewGuid();
+        var userRole = "User";
+
         var service = new ExpenseService(context);
 
         var user = new User
         {
-            Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+            Id = userId,
             Expenses =
             [
                 new Expense
@@ -215,7 +244,7 @@ public class ExpensesServiceTests
         };
 
         var expenseId = user.Expenses.First().Id;
-        var result = await service.UpdateExpenseAsync(expenseId, updatedExpense);
+        var result = await service.UpdateExpenseAsync(userId, userRole, expenseId, updatedExpense);
 
         // Assert
         Assert.NotNull(result);
@@ -242,6 +271,10 @@ public class ExpensesServiceTests
 
         using var context = new AppDbContext(options);
 
+        var userId = Guid.NewGuid();
+        var userRole = "User";
+        var existingExpenseID = Guid.NewGuid();
+
         var service = new ExpenseService(context);
 
         // Act
@@ -251,7 +284,7 @@ public class ExpensesServiceTests
             Amount = 49.99m,
         };
 
-        var result = await service.UpdateExpenseAsync(Guid.NewGuid(), updatedExpense);
+        var result = await service.UpdateExpenseAsync(userId, userRole, existingExpenseID, updatedExpense);
 
         // Assert
         Assert.Null(result);
@@ -267,11 +300,13 @@ public class ExpensesServiceTests
 
         using var context = new AppDbContext(options);
 
+        var userId = Guid.NewGuid();
+
         var service = new ExpenseService(context);
 
         var user = new User
         {
-            Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+            Id = userId,
             Expenses =
             [
                 new Expense
@@ -288,7 +323,7 @@ public class ExpensesServiceTests
 
         // Act
         var expenseId = user.Expenses.First().Id;
-        var result = await service.DeleteExpenseAsync(expenseId);
+        var result = await service.DeleteExpenseAsync(userId, expenseId);
 
         // Assert
         Assert.True(result);
@@ -309,10 +344,13 @@ public class ExpensesServiceTests
 
         using var context = new AppDbContext(options);
 
+        var userId = Guid.NewGuid();
+        var existingExpenseId = Guid.NewGuid();
+
         var service = new ExpenseService(context);
 
         // Act
-        var result = await service.DeleteExpenseAsync(Guid.NewGuid());
+        var result = await service.DeleteExpenseAsync(userId, existingExpenseId);
 
         // Assert
         Assert.False(result);

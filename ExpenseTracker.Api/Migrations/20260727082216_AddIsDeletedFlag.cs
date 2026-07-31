@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace expense_tracker.Migrations
+namespace ExpenseTracker.Migrations
 {
     /// <inheritdoc />
     public partial class AddIsDeletedFlag : Migration

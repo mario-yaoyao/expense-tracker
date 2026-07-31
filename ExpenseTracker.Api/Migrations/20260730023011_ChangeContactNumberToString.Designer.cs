@@ -4,16 +4,19 @@ using ExpenseTracker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace expense_tracker.Migrations
+namespace ExpenseTracker.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260730023011_ChangeContactNumberToString")]
+    partial class ChangeContactNumberToString
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -89,9 +92,6 @@ namespace expense_tracker.Migrations
                     b.Property<DateTime?>("RefreshTokenExpiryTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("int");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -107,13 +107,12 @@ namespace expense_tracker.Migrations
                         new
                         {
                             Id = new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
-                            ContactNumber = "09876543210",
+                            ContactNumber = "",
                             CreatedAt = new DateTime(2026, 7, 27, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FullName = "Super Admin",
-                            HashedPassword = "AQAAAAIAAYagAAAAEMnD4tgZER76L6K/MjnkwaRF6fDDLAx5KW3zFPWKP+94uO/lQ3FrpfpQMAOd6RtrbA==",
-                            IsActive = true,
-                            Role = 0,
-                            Username = "superadmin"
+                            FullName = "Mario Yaoyao II",
+                            HashedPassword = "",
+                            IsActive = false,
+                            Username = "mario.yaoyao"
                         });
                 });
 
