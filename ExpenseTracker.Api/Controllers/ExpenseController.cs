@@ -1,14 +1,19 @@
 ﻿using ExpenseTracker.Dtos.Requests;
 using ExpenseTracker.Dtos.Responses;
 using ExpenseTracker.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ExpenseTracker.Controllers
 {
+    [Authorize]
     [Route("api/expenses")]
     [ApiController]
     public class ExpenseController(IExpenseService expenseService) : ControllerBase
     {
+        private Guid GetUserId() => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
         [HttpGet]
         public async Task<ActionResult<List<ExpenseResDto>>> GetExpenses()
         {
@@ -74,7 +79,9 @@ namespace ExpenseTracker.Controllers
         {
             try
             {
-                var data = await expenseService.CreateExpenseAsync(expense);
+                var userId = GetUserId();
+
+                var data = await expenseService.CreateExpenseAsync(userId, expense);
                 return Ok(new ApiResDto<ExpenseResDto>
                 {
                     success = true,
@@ -138,7 +145,7 @@ namespace ExpenseTracker.Controllers
                 return Ok(new ApiResDto<ExpenseResDto>
                 {
                     success = true,
-                    message = "Expense deleted successfully."
+                    message = "Expense record deleted successfully."
                 });
             }
             catch (Exception ex)

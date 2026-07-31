@@ -2,12 +2,14 @@
 using ExpenseTracker.Dtos.Requests;
 using ExpenseTracker.Dtos.Responses;
 using ExpenseTracker.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using System.Security.Claims;
 
 namespace ExpenseTracker.Tests.Controllers
 {
-    public class ExpensesControllerTests
+    public class ExpenseControllerTests
     {
         [Fact]
         public async Task GetExpenses_ReturnsOk_WhenExpensesExist()
@@ -32,8 +34,10 @@ namespace ExpenseTracker.Tests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            var response = Assert.IsType<ApiResDto<List<ExpenseResDto>>>(okResult.Value);
 
-            Assert.IsType<ApiResDto<List<ExpenseResDto>>>(okResult.Value);
+            Assert.True(response.success);
+            Assert.Equal("Expenses retrieved successfully", response.message);
         }
 
         [Fact]
@@ -51,7 +55,11 @@ namespace ExpenseTracker.Tests.Controllers
             var result = await controller.GetExpenses();
 
             // Assert
-            Assert.IsType<NotFoundObjectResult>(result.Result);
+            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
+            var response = Assert.IsType<ApiResDto<object>>(notFoundResult.Value);
+
+            Assert.False(response.success);
+            Assert.Equal("No expenses found.", response.message);
         }
 
         [Fact]
@@ -70,8 +78,11 @@ namespace ExpenseTracker.Tests.Controllers
 
             // Assert
             var statusCodeResult = Assert.IsType<ObjectResult>(result.Result);
-
             Assert.Equal(500, statusCodeResult.StatusCode);
+
+            var response = Assert.IsType<ApiResDto<object>>(statusCodeResult.Value);
+            Assert.False(response.success);
+            Assert.Contains("An error occurred while retrieving expenses.", response.message);
         }
 
         [Fact]
@@ -95,8 +106,10 @@ namespace ExpenseTracker.Tests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            var response = Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
 
-            Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
+            Assert.True(response.success);
+            Assert.Equal("Expense retrieved successfully", response.message);
         }
 
         [Fact]
@@ -115,7 +128,11 @@ namespace ExpenseTracker.Tests.Controllers
             var result = await controller.GetExpenseById(id);
 
             // Assert
-            Assert.IsType<NotFoundObjectResult>(result.Result);
+            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
+            var response = Assert.IsType<ApiResDto<object>>(notFoundResult.Value);
+
+            Assert.False(response.success);
+            Assert.Equal("Expense not found.", response.message);
         }
 
         [Fact]
@@ -135,56 +152,100 @@ namespace ExpenseTracker.Tests.Controllers
 
             // Assert
             var statusCodeResult = Assert.IsType<ObjectResult>(result.Result);
-
             Assert.Equal(500, statusCodeResult.StatusCode);
+
+            var response = Assert.IsType<ApiResDto<object>>(statusCodeResult.Value);
+            Assert.False(response.success);
+            Assert.Contains("An error occurred while retrieving the expense.", response.message);
         }
 
         [Fact]
         public async Task CreateExpense_ReturnsOk_WhenExpenseCreated()
         {
             // Arrange
+            var userId = Guid.NewGuid();
             var mockService = new Mock<IExpenseService>();
+
             var expense = new ExpenseReqDto
             {
                 Description = "Food"
             };
 
-            mockService.Setup(x => x.CreateExpenseAsync(expense))
-                .ReturnsAsync(new ExpenseResDto
-                {
-                    Id = Guid.NewGuid(),
-                    Description = "Food"
-                });
+            var expectedResponse = new ExpenseResDto
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Description = "Food"
+            };
+
+            mockService.Setup(x => x.CreateExpenseAsync(userId, expense))
+                .ReturnsAsync(expectedResponse);
 
             var controller = new ExpenseController(mockService.Object);
+
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, userId.ToString())
+            };
+
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    User = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuth"))
+                }
+            };
 
             // Act
             var result = await controller.CreateExpense(expense);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-         
-            Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
+            var response = Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
+
+            Assert.True(response.success);
+            Assert.Equal("Expense record created successfully.", response.message);
         }
 
         [Fact]
         public async Task CreateExpense_Returns500_WhenExceptionOccurs()
         {
             // Arrange
+            var userId = Guid.NewGuid();
             var mockService = new Mock<IExpenseService>();
 
-            mockService.Setup(x => x.CreateExpenseAsync(It.IsAny<ExpenseReqDto>()))
+            mockService
+                .Setup(x => x.CreateExpenseAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<ExpenseReqDto>()))
                 .ThrowsAsync(new Exception("Database error"));
 
             var controller = new ExpenseController(mockService.Object);
+
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, userId.ToString())
+            };
+
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    User = new ClaimsPrincipal(
+                    new ClaimsIdentity(claims, "TestAuth"))
+                }
+            };
 
             // Act
             var result = await controller.CreateExpense(new ExpenseReqDto());
 
             // Assert
-            var objectResult = Assert.IsType<ObjectResult>(result.Result);
+            var statusCodeResult = Assert.IsType<ObjectResult>(result.Result);
+            Assert.Equal(500, statusCodeResult.StatusCode);
 
-            Assert.Equal(500, objectResult.StatusCode);
+            var response = Assert.IsType<ApiResDto<object>>(statusCodeResult.Value);
+            Assert.False(response.success);
+            Assert.Contains("An error occurred while creating the expense.", response.message);
         }
 
         [Fact]
@@ -213,8 +274,10 @@ namespace ExpenseTracker.Tests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            var response = Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
 
-            Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
+            Assert.True(response.success);
+            Assert.Equal("Expense record updated successfully.", response.message);
         }
 
         [Fact]
@@ -238,7 +301,11 @@ namespace ExpenseTracker.Tests.Controllers
             var result = await controller.UpdateExpense(id, expense);
 
             // Assert
-            Assert.IsType<NotFoundObjectResult>(result.Result);
+            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
+            var response = Assert.IsType<ApiResDto<object>>(notFoundResult.Value);
+
+            Assert.False(response.success);
+            Assert.Equal("Expense not found.", response.message);
         }
 
         [Fact]
@@ -263,8 +330,11 @@ namespace ExpenseTracker.Tests.Controllers
 
             // Assert
             var statusCodeResult = Assert.IsType<ObjectResult>(result.Result);
-
             Assert.Equal(500, statusCodeResult.StatusCode);
+
+            var response = Assert.IsType<ApiResDto<object>>(statusCodeResult.Value);
+            Assert.False(response.success);
+            Assert.Contains("An error occurred while updating the expense.", response.message);
         }
 
         [Fact]
@@ -284,8 +354,10 @@ namespace ExpenseTracker.Tests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            var response = Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
 
-            Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
+            Assert.True(response.success);
+            Assert.Equal("Expense record deleted successfully.", response.message);
         }
 
         [Fact]
@@ -304,7 +376,11 @@ namespace ExpenseTracker.Tests.Controllers
             var result = await controller.DeleteExpense(id);
 
             // Assert
-            Assert.IsType<NotFoundObjectResult>(result.Result);
+            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
+            var response = Assert.IsType<ApiResDto<object>>(notFoundResult.Value);
+
+            Assert.False(response.success);
+            Assert.Equal("Expense not found.", response.message);
         }
 
         [Fact]
@@ -324,8 +400,11 @@ namespace ExpenseTracker.Tests.Controllers
 
             // Assert
             var statusCodeResult = Assert.IsType<ObjectResult>(result.Result);
-
             Assert.Equal(500, statusCodeResult.StatusCode);
+
+            var response = Assert.IsType<ApiResDto<object>>(statusCodeResult.Value);
+            Assert.False(response.success);
+            Assert.Contains("An error occurred while deleting the expense.", response.message);
         }
     }
 }

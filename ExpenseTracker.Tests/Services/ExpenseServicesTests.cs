@@ -153,14 +153,20 @@ public class ExpensesServiceTests
 
         var user = new User
         {
-            Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
+            Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+            FullName = "Test User",
+            Username = "test",
+            ContactNumber = "09876543210",
+            HashedPassword = "password",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
         };
 
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
         // Act
-        var result = await service.CreateExpenseAsync(expense);
+        var result = await service.CreateExpenseAsync(user.Id, expense);
 
         // Assert - returned DTO
         Assert.NotNull(result);

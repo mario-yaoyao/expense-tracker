@@ -7,7 +7,7 @@ namespace ExpenseTracker.Services
     {
         Task<List<ExpenseResDto>> GetExpensesAsync();
         Task<ExpenseResDto?> GetExpenseByIdAsync(Guid id);
-        Task<ExpenseResDto?> CreateExpenseAsync(ExpenseReqDto expense);
+        Task<ExpenseResDto?> CreateExpenseAsync(Guid userId, ExpenseReqDto expense);
         Task<ExpenseResDto?> UpdateExpenseAsync(Guid id, ExpenseReqDto expense);
         Task<bool> DeleteExpenseAsync(Guid id);
     }

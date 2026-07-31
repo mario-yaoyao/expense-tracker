@@ -48,11 +48,11 @@ namespace ExpenseTracker.Services
             return existingExpense;
         }
 
-        public async Task<ExpenseResDto?> CreateExpenseAsync(ExpenseReqDto expense)
+        public async Task<ExpenseResDto?> CreateExpenseAsync(Guid userId, ExpenseReqDto expense)
         {
             var newExpense = new Expense
             {
-                UserId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+                UserId = userId,
                 Description = expense.Description,
                 Amount = expense.Amount,
                 Category = expense.Category,
