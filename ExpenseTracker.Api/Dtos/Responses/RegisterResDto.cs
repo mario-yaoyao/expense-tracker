@@ -1,4 +1,6 @@
-﻿namespace ExpenseTracker.Dtos.Responses
+﻿using ExpenseTracker.Models;
+
+namespace ExpenseTracker.Dtos.Responses
 {
     public class RegisterResDto
     {
@@ -6,6 +8,7 @@
         public string FullName { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
         public string ContactNumber { get; set; } = string.Empty;
+        public UserRole Role { get; set; }
         public bool IsActive { get; set; } = false;
         public DateTime CreatedAt { get; set; }
     }

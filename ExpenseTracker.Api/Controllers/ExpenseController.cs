@@ -13,13 +13,16 @@ namespace ExpenseTracker.Controllers
     public class ExpenseController(IExpenseService expenseService) : ControllerBase
     {
         private Guid GetUserId() => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        private string GetRole() => User.FindFirstValue(ClaimTypes.Role)!;
 
         [HttpGet]
         public async Task<ActionResult<List<ExpenseResDto>>> GetExpenses()
         {
             try
             {
-                var data = await expenseService.GetExpensesAsync();
+                var userId = GetUserId();
+                var role = GetRole();
+                var data = await expenseService.GetExpensesAsync(userId, role);
 
                 if (data.Count == 0) return NotFound(new ApiResDto<object>
                 {
@@ -45,11 +48,13 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpGet("id")]
-        public async Task<ActionResult<ApiResDto<ExpenseResDto>>> GetExpenseById(Guid id)
+        public async Task<ActionResult<ApiResDto<ExpenseResDto>>> GetExpenseById(Guid expenseId)
         {
             try
             {
-                var data = await expenseService.GetExpenseByIdAsync(id);
+                var userId = GetUserId();
+                var role = GetRole();
+                var data = await expenseService.GetExpenseByIdAsync(userId, role, expenseId);
 
                 if (data == null) return NotFound(new ApiResDto<object>
                 {
@@ -80,8 +85,9 @@ namespace ExpenseTracker.Controllers
             try
             {
                 var userId = GetUserId();
+                var role = GetRole();
+                var data = await expenseService.CreateExpenseAsync(userId, role, expense);
 
-                var data = await expenseService.CreateExpenseAsync(userId, expense);
                 return Ok(new ApiResDto<ExpenseResDto>
                 {
                     success = true,
@@ -100,11 +106,13 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPut("id")]
-        public async Task<ActionResult<ExpenseResDto>> UpdateExpense(Guid id, [FromBody] ExpenseReqDto expense)
+        public async Task<ActionResult<ExpenseResDto>> UpdateExpense(Guid expenseId, [FromBody] ExpenseReqDto expense)
         {
             try
             {
-                var data = await expenseService.UpdateExpenseAsync(id, expense);
+                var userId = GetUserId();
+                var role = GetRole();
+                var data = await expenseService.UpdateExpenseAsync(userId, role, expenseId, expense);
 
                 if (data == null) return NotFound(new ApiResDto<object>
                 {
@@ -130,11 +138,12 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpDelete("id")]
-        public async Task<ActionResult<List<ExpenseResDto?>>> DeleteExpense(Guid id)
+        public async Task<ActionResult<List<ExpenseResDto?>>> DeleteExpense(Guid expenseId)
         {
             try
             {
-                var data = await expenseService.DeleteExpenseAsync(id);
+                var userId = GetUserId();
+                var data = await expenseService.DeleteExpenseAsync(userId, expenseId);
 
                 if (!data) return NotFound(new ApiResDto<object>
                 {

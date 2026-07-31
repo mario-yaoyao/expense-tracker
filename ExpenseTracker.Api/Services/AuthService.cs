@@ -35,6 +35,7 @@ namespace ExpenseTracker.Services
             user.Username = request.Username;
             user.ContactNumber = request.ContactNumber;
             user.HashedPassword = new PasswordHasher<User>().HashPassword(user, request.Password);
+            user.Role = UserRole.User;
             user.IsActive = true;
             user.CreatedAt = DateTime.UtcNow;
 
@@ -101,6 +102,7 @@ namespace ExpenseTracker.Services
             {
                 new(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new(ClaimTypes.Name, user.Username),
+                new(ClaimTypes.Role, user.Role.ToString()),
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration.GetValue<string>("AppSettings:Token")!));

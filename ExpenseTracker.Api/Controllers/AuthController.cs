@@ -39,6 +39,7 @@ namespace ExpenseTracker.Controllers
                         FullName = data.FullName,
                         Username = data.Username,
                         ContactNumber = data.ContactNumber,
+                        Role = data.Role,
                         IsActive = data.IsActive,   
                         CreatedAt = data.CreatedAt
                     }
