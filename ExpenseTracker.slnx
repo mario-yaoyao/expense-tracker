@@ -1,4 +1,7 @@
 <Solution>
-  <Project Path="ExpenseTracker.Api/ExpenseTracker.Api.csproj" />
+  <Project Path="ExpenseTracker.Api/ExpenseTracker.Api.csproj" DisplayName="ExpenseTracker.API" />
+  <Project Path="ExpenseTracker.BLL/ExpenseTracker.BLL.csproj" Id="ed013208-f2ee-4b96-8876-4601bcccb1fe" />
+  <Project Path="ExpenseTracker.DAL/ExpenseTracker.DAL.csproj" Id="979e9814-c5ae-4e28-a77c-cb53d60abe02" />
+  <Project Path="ExpenseTracker.Models/ExpenseTracker.Models.csproj" Id="96935430-96f2-4029-a4e0-be17e487fbde" />
   <Project Path="ExpenseTracker.Tests/ExpenseTracker.Tests.csproj" />
 </Solution>

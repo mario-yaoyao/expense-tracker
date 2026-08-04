@@ -1,9 +1,9 @@
-﻿using ExpenseTracker.Dtos.Requests;
-using ExpenseTracker.Dtos.Responses;
-using ExpenseTracker.Services;
+﻿using ExpenseTracker.BLL.Interfaces;
+using ExpenseTracker.Models.Dtos.Requests;
+using ExpenseTracker.Models.Dtos.Responses;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ExpenseTracker.Controllers
+namespace ExpenseTracker.API.Controllers
 {
     [Route("api/auth")]
     [ApiController]
@@ -14,35 +14,22 @@ namespace ExpenseTracker.Controllers
         {
             try
             {
-                var (data, error) = await authService.RegisterAsync(request);
-                if (error != null)
+                var result = await authService.RegisterAsync(request);
+
+                if (!result.success)
                 {
                     return BadRequest(new ApiResDto<RegisterResDto>
                     {
                         success = false,
-                        message = error switch
-                        {
-                            "password_mismatch" => "Passwords do not match.",
-                            "duplicate_name" => "Username is already taken.",
-                            _ => "Registration failed."
-                        }
+                        message = result.message
                     });
                 }
 
                 return Ok(new ApiResDto<RegisterResDto>
                 {
                     success = true,
-                    message = "Registration completed successfully. You can now log in to your account.",
-                    data = new RegisterResDto
-                    {
-                        UserId = data!.Id,
-                        FullName = data.FullName,
-                        Username = data.Username,
-                        ContactNumber = data.ContactNumber,
-                        Role = data.Role,
-                        IsActive = data.IsActive,   
-                        CreatedAt = data.CreatedAt
-                    }
+                    message = result.message,
+                    data = result.data
                 });
             }
             catch (Exception ex)
@@ -60,25 +47,22 @@ namespace ExpenseTracker.Controllers
         {
             try
             {
-                var (token, error) = await authService.LoginAsync(request);
-                if (error != null)
+                var result = await authService.LoginAsync(request);
+
+                if (!result.success)
+                {
                     return BadRequest(new ApiResDto<TokenResDto>
                     {
                         success = false,
-                        message = error switch
-                        {
-                            "user_not_found" => "No account found with that username.",
-                            "invalid_password" => "Incorrect password.",
-                            "account_inactive" => "Your account has been deactivated. Please contact support for assistance.",
-                            _ => "Login failed."
-                        }
+                        message = result.message
                     });
+                }
 
                 return Ok(new ApiResDto<TokenResDto>
                 {
                     success = true,
-                    message = "Login successful.",
-                    data = token
+                    message = result.message,
+                    data = result.data
                 });
             }
             catch (Exception ex)
