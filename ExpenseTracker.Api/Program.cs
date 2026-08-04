@@ -1,5 +1,8 @@
-using ExpenseTracker.Data;
-using ExpenseTracker.Services;
+using ExpenseTracker.BLL.Interfaces;
+using ExpenseTracker.BLL.Services;
+using ExpenseTracker.DAL.Data;
+using ExpenseTracker.DAL.Interfaces;
+using ExpenseTracker.DAL.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -33,6 +36,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IExpenseRepository, ExpenseRepository>();
 
 var app = builder.Build();
 

@@ -1,11 +1,11 @@
-﻿using ExpenseTracker.Dtos.Requests;
-using ExpenseTracker.Dtos.Responses;
-using ExpenseTracker.Services;
+﻿using ExpenseTracker.BLL.Interfaces;
+using ExpenseTracker.Models.Dtos.Requests;
+using ExpenseTracker.Models.Dtos.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
-namespace ExpenseTracker.Controllers
+namespace ExpenseTracker.API.Controllers
 {
     [Authorize]
     [Route("api/expenses")]
@@ -47,7 +47,7 @@ namespace ExpenseTracker.Controllers
             }
         }
 
-        [HttpGet("id")]
+        [HttpGet("{expenseId}")]
         public async Task<ActionResult<ApiResDto<ExpenseResDto>>> GetExpenseById(Guid expenseId)
         {
             try
@@ -86,7 +86,7 @@ namespace ExpenseTracker.Controllers
             {
                 var userId = GetUserId();
                 var role = GetRole();
-                var data = await expenseService.CreateExpenseAsync(userId, role, expense);
+                var data = await expenseService.CreateExpenseAsync(userId, expense);
 
                 return Ok(new ApiResDto<ExpenseResDto>
                 {
@@ -105,7 +105,7 @@ namespace ExpenseTracker.Controllers
             }
         }
 
-        [HttpPut("id")]
+        [HttpPut("{expenseId}")]
         public async Task<ActionResult<ExpenseResDto>> UpdateExpense(Guid expenseId, [FromBody] ExpenseReqDto expense)
         {
             try
@@ -137,13 +137,14 @@ namespace ExpenseTracker.Controllers
             }
         }
 
-        [HttpDelete("id")]
+        [HttpDelete("{expenseId}")]
         public async Task<ActionResult<List<ExpenseResDto?>>> DeleteExpense(Guid expenseId)
         {
             try
             {
                 var userId = GetUserId();
-                var data = await expenseService.DeleteExpenseAsync(userId, expenseId);
+                var role = GetRole();
+                var data = await expenseService.DeleteExpenseAsync(userId, role, expenseId);
 
                 if (!data) return NotFound(new ApiResDto<object>
                 {

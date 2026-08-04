@@ -18,7 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ExpenseTracker.Api\ExpenseTracker.Api.csproj" />
+    <ProjectReference Include="..\ExpenseTracker.Api\ExpenseTracker.API.csproj" />
+    <ProjectReference Include="..\ExpenseTracker.BLL\ExpenseTracker.BLL.csproj" />
   </ItemGroup>
 
   <ItemGroup>
