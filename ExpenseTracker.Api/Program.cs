@@ -4,17 +4,41 @@ using ExpenseTracker.BLL.Services;
 using ExpenseTracker.DAL.Data;
 using ExpenseTracker.DAL.Interfaces;
 using ExpenseTracker.DAL.Repositories;
+using ExpenseTracker.Models.Dtos.Responses;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var errors = context.ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .Select(x => new
+                {
+                    field = x.Key,
+                    messages = x.Value!.Errors.Select(e => e.ErrorMessage)
+                });
+
+            return new BadRequestObjectResult(new ApiResDto<object>
+            {
+                Success = false,
+                ErrorMessage = "One or more validation errors occurred.",
+                Errors = errors
+            });
+        };
+    });
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -43,7 +67,19 @@ builder.Services.AddAutoMapper(cfg => { }, typeof(ExpenseProfile).Assembly);
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IExpenseRepository, ExpenseRepository>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowClient", policy =>
+    {
+        policy.WithOrigins(builder.Configuration["ClientSettings:BaseUrl"]!)
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
+
+app.UseCors("AllowClient");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
