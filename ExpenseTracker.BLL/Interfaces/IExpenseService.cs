@@ -7,8 +7,8 @@ namespace ExpenseTracker.BLL.Interfaces
     {
         Task<List<ExpenseResDto>> GetExpensesAsync(Guid userId, string role);
         Task<ExpenseResDto?> GetExpenseByIdAsync(Guid userId, string role, Guid id);
-        Task<ExpenseResDto?> CreateExpenseAsync(Guid userId, ExpenseReqDto expense);
-        Task<ExpenseResDto?> UpdateExpenseAsync(Guid userId, string role, Guid id, ExpenseReqDto expense);
+        Task<ExpenseResDto?> CreateExpenseAsync(Guid userId, CreateExpenseReqDto expense);
+        Task<ExpenseResDto?> UpdateExpenseAsync(Guid userId, string role, Guid id, UpdateExpenseReqDto expense);
         Task<bool> DeleteExpenseAsync(Guid userId, string role, Guid id);
     }
 }

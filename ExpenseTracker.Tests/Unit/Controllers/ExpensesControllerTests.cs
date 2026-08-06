@@ -190,7 +190,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var mockService = new Mock<IExpenseService>();
             var userId = Guid.NewGuid();
 
-            var request = new ExpenseReqDto
+            var request = new CreateExpenseReqDto
             {
                 Description = "Breakfast",
                 Amount = 50.00m,
@@ -228,7 +228,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var mockService = new Mock<IExpenseService>();
             var userId = Guid.NewGuid();
 
-            var request = new ExpenseReqDto
+            var request = new CreateExpenseReqDto
             {
                 Description = "Breakfast",
                 Amount = 50.00m,
@@ -242,7 +242,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var controller = new ExpenseController(mockService.Object);
 
             // Act
-            var result = await controller.CreateExpense(new ExpenseReqDto());
+            var result = await controller.CreateExpense(new CreateExpenseReqDto());
             SetUserClaims(controller, userId, "User");
 
             // Assert
@@ -262,7 +262,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var userId = Guid.NewGuid();
             var expenseId = Guid.NewGuid();
 
-            var request = new ExpenseReqDto
+            var request = new UpdateExpenseReqDto
             {
                 Description = "Breakfast",
                 Amount = 50.00m,
@@ -307,7 +307,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var userId = Guid.NewGuid();
             var expenseId = Guid.NewGuid();
 
-            var request = new ExpenseReqDto
+            var request = new UpdateExpenseReqDto
             {
                 Description = "Breakfast",
                 Amount = 50.00m,
@@ -339,7 +339,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var userId = Guid.NewGuid();
             var expenseId = Guid.NewGuid();
 
-            var request = new ExpenseReqDto
+            var request = new UpdateExpenseReqDto
             {
                 Description = "Breakfast",
                 Amount = 50.00m,
