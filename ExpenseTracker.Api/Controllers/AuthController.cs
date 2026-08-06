@@ -16,28 +16,27 @@ namespace ExpenseTracker.API.Controllers
             {
                 var result = await authService.RegisterAsync(request);
 
-                if (!result.success)
+                if (!result.Success)
                 {
                     return BadRequest(new ApiResDto<RegisterResDto>
                     {
-                        success = false,
-                        message = result.message
+                        Success = false,
+                        ErrorMessage = result.ErrorMessage
                     });
                 }
 
                 return Ok(new ApiResDto<RegisterResDto>
                 {
-                    success = true,
-                    message = result.message,
-                    data = result.data
+                    Success = true,
+                    Data = result.Data
                 });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new ApiResDto<object>
                 {
-                    success = false,
-                    message = $"An error occurred while registering account: {ex.Message}"
+                    Success = false,
+                    ErrorMessage = $"An error occurred while registering account: {ex.Message}"
                 });
             }
         }
@@ -49,28 +48,27 @@ namespace ExpenseTracker.API.Controllers
             {
                 var result = await authService.LoginAsync(request);
 
-                if (!result.success)
+                if (!result.Success)
                 {
                     return BadRequest(new ApiResDto<TokenResDto>
                     {
-                        success = false,
-                        message = result.message
+                        Success = false,
+                        ErrorMessage = result.ErrorMessage
                     });
                 }
 
                 return Ok(new ApiResDto<TokenResDto>
                 {
-                    success = true,
-                    message = result.message,
-                    data = result.data
+                    Success = true,
+                    Data = result.Data
                 });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new ApiResDto<object>
                 {
-                    success = false,
-                    message = $"An error occurred while logging in: {ex.Message}"
+                    Success = false,
+                    ErrorMessage = $"An error occurred while logging in: {ex.Message}"
                 });
             }
         }
@@ -85,24 +83,23 @@ namespace ExpenseTracker.API.Controllers
                 {
                     return Unauthorized(new ApiResDto<TokenResDto>
                     {
-                        success = false,
-                        message = "Invalid refresh token."
+                        Success = false,
+                        ErrorMessage = "Invalid refresh token."
                     });
                 }
 
                 return Ok(new ApiResDto<TokenResDto>
                 {
-                    success = true,
-                    message = "Token refreshed successfully.",
-                    data = data
+                    Success = true,
+                    Data = data
                 });
             }
             catch (Exception)
             {
                 return StatusCode(500, new ApiResDto<object>
                 {
-                    success = false,
-                    message = "An error occurred while refreshing token."
+                    Success = false,
+                    ErrorMessage = "An error occurred while refreshing token."
                 });
             }
         }

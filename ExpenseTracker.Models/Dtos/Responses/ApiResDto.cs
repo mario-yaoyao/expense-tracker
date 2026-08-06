@@ -2,8 +2,8 @@
 {
     public class ApiResDto<T>
     {
-        public bool success { get; set; }
-        public string message { get; set; } = string.Empty;
-        public T? data { get; set; }
+        public bool Success { get; set; }
+        public string? ErrorMessage { get; set; }
+        public T? Data { get; set; }
     }
 }

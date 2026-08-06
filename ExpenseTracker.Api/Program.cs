@@ -1,4 +1,5 @@
 using ExpenseTracker.BLL.Interfaces;
+using ExpenseTracker.BLL.Mappings;
 using ExpenseTracker.BLL.Services;
 using ExpenseTracker.DAL.Data;
 using ExpenseTracker.DAL.Interfaces;
@@ -36,22 +37,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddAutoMapper(cfg => { }, typeof(ExpenseProfile).Assembly);
+
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IExpenseRepository, ExpenseRepository>();
 
 var app = builder.Build();
-
-app.Logger.LogTrace("Trace log: Detailed diagnostic information.");
-
-app.Logger.LogDebug("Debug log: Variable values and debugging information.");
-
-app.Logger.LogInformation("Application started at {Time}", DateTime.UtcNow);
-
-app.Logger.LogWarning("Storage space is running low. Remaining: {Space} MB", 500);
-
-app.Logger.LogError("Failed to connect to the database.");
-
-app.Logger.LogCritical("Application is shutting down due to a critical failure.");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

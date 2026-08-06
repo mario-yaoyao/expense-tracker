@@ -24,8 +24,8 @@ namespace ExpenseTracker.BLL.Services
             {
                 return new ServiceResult<TokenResDto>
                 {
-                    success = false,
-                    message = "No account found with that username."
+                    Success = false,
+                    ErrorMessage = "No account found with that username."
                 };
             }
 
@@ -33,8 +33,8 @@ namespace ExpenseTracker.BLL.Services
             {
                 return new ServiceResult<TokenResDto>
                 {
-                    success = false,
-                    message = "Your account has been deactivated."
+                    Success = false,
+                    ErrorMessage = "Your account has been deactivated."
                 };
             }
 
@@ -42,16 +42,15 @@ namespace ExpenseTracker.BLL.Services
             {
                 return new ServiceResult<TokenResDto>
                 {
-                    success = false,
-                    message = "Incorrect password."
+                    Success = false,
+                    ErrorMessage = "Incorrect password."
                 };
             }
 
             return new ServiceResult<TokenResDto>
             {
-                success = true,
-                message = "Login successful.",
-                data = await CreateTokenResponse(user)
+                Success = true,
+                Data = await CreateTokenResponse(user)
             };
         }
 
@@ -61,8 +60,8 @@ namespace ExpenseTracker.BLL.Services
             {
                 return new ServiceResult<RegisterResDto>
                 {
-                    success = false,
-                    message = "Passwords do not match."
+                    Success = false,
+                    ErrorMessage = "Passwords do not match."
                 };
             }
 
@@ -70,8 +69,8 @@ namespace ExpenseTracker.BLL.Services
             {
                 return new ServiceResult<RegisterResDto>
                 {
-                    success = false,
-                    message = "Username is already taken."
+                    Success = false,
+                    ErrorMessage = "Username is already taken."
                 };
             }
 
@@ -91,9 +90,8 @@ namespace ExpenseTracker.BLL.Services
 
             return new ServiceResult<RegisterResDto>
             {
-                success = true,
-                message = "Registration completed successfully. You can now log in to your account.",
-                data = new RegisterResDto
+                Success = true,
+                Data = new RegisterResDto
                 {
                     UserId = user.Id,
                     FullName = user.FullName,

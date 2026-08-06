@@ -1,6 +1,8 @@
-﻿using ExpenseTracker.BLL.Services;
+﻿using AutoMapper;
+using ExpenseTracker.BLL.Services;
 using ExpenseTracker.DAL.Interfaces;
 using ExpenseTracker.Models.Dtos.Requests;
+using ExpenseTracker.Models.Dtos.Responses;
 using ExpenseTracker.Models.Models;
 using Moq;
 
@@ -8,6 +10,13 @@ namespace ExpenseTracker.Tests.Unit.Services
 {
     public class ExpenseServiceTests
     {
+        private readonly Mock<IMapper> mockMapper;
+
+        public ExpenseServiceTests()
+        {
+            mockMapper = new Mock<IMapper>();
+        }
+
         [Fact]
         public async Task GetExpensesAsync_ReturnsUserExpenses_WhenRoleIsUser()
         {
@@ -15,9 +24,9 @@ namespace ExpenseTracker.Tests.Unit.Services
             var mockRepo = new Mock<IExpenseRepository>();
             var userId = Guid.NewGuid();
 
-            var expectedResponse = new List<Expense>
+            var request = new List<Expense>
             {
-                new Expense
+                new()
                 {
                     Id = Guid.NewGuid(),
                     UserId = userId,
@@ -28,7 +37,7 @@ namespace ExpenseTracker.Tests.Unit.Services
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = null
                 },
-                new Expense
+                new()
                 {
                     Id = Guid.NewGuid(),
                     UserId = userId,
@@ -41,18 +50,43 @@ namespace ExpenseTracker.Tests.Unit.Services
                 }
             };
 
-            mockRepo.Setup(x => x.GetExpensesByUserAsync(userId))
-                .ReturnsAsync(expectedResponse);
+            var expectedResponse = new List<ExpenseResDto>
+            {
+                new()
+                {
+                    Id = request[0].Id,
+                    UserId = request[0].UserId,
+                    Description = request[0].Description,
+                    Amount = request[0].Amount,
+                    Category = request[0].Category
+                },
+                new()
+                {
+                    Id = request[1].Id,
+                    UserId = request[1].UserId,
+                    Description = request[1].Description,
+                    Amount = request[1].Amount,
+                    Category = request[1].Category
+                }
+            };
 
-            var service = new ExpenseService(mockRepo.Object);
+            mockRepo
+                .Setup(x => x.GetExpensesByUserAsync(userId))
+                .ReturnsAsync(request);
+
+            mockMapper
+                .Setup(x => x.Map<List<ExpenseResDto>>(It.IsAny<List<Expense>>()))
+                .Returns(expectedResponse);
+
+            var service = new ExpenseService(mockRepo.Object, mockMapper.Object);
 
             // Act
             var result = await service.GetExpensesAsync(userId, "User");
 
             // Assert
             Assert.Equal(2, result.Count);
-            Assert.Equal(expectedResponse[0].Description, result[0].Description);
-            Assert.Equal(expectedResponse[1].Description, result[1].Description);
+            Assert.Equal("Expense 1", result[0].Description);
+            Assert.Equal("Expense 2", result[1].Description);
 
             mockRepo.Verify(
                 x => x.GetExpensesByUserAsync(userId),
@@ -66,9 +100,9 @@ namespace ExpenseTracker.Tests.Unit.Services
             var mockRepo = new Mock<IExpenseRepository>();
             var userId = Guid.NewGuid();
 
-            var expectedResponse = new List<Expense>
+            var request = new List<Expense>
             {
-                new Expense
+                new()
                 {
                     Id = Guid.NewGuid(),
                     UserId = userId,
@@ -79,7 +113,7 @@ namespace ExpenseTracker.Tests.Unit.Services
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = null
                 },
-                new Expense
+                new()
                 {
                     Id = Guid.NewGuid(),
                     UserId = userId,
@@ -103,10 +137,43 @@ namespace ExpenseTracker.Tests.Unit.Services
                 }
             };
 
-            mockRepo.Setup(x => x.GetAllExpensesAsync())
-                .ReturnsAsync(expectedResponse);
+            var expectedResponse = new List<ExpenseResDto>
+            {
+                new()
+                {
+                    Id = request[0].Id,
+                    UserId = request[0].UserId,
+                    Description = request[0].Description,
+                    Amount = request[0].Amount,
+                    Category = request[0].Category
+                },
+                new()
+                {
+                    Id = request[1].Id,
+                    UserId = request[1].UserId,
+                    Description = request[1].Description,
+                    Amount = request[1].Amount,
+                    Category = request[1].Category
+                },
+                new()
+                {
+                    Id = request[2].Id,
+                    UserId = request[2].UserId,
+                    Description = request[2].Description,
+                    Amount = request[2].Amount,
+                    Category = request[2].Category
+                }
+            };
 
-            var service = new ExpenseService(mockRepo.Object);
+            mockRepo
+                .Setup(x => x.GetExpensesByUserAsync(userId))
+                .ReturnsAsync(request);
+
+            mockMapper
+                .Setup(x => x.Map<List<ExpenseResDto>>(It.IsAny<List<Expense>>()))
+                .Returns(expectedResponse);
+
+            var service = new ExpenseService(mockRepo.Object, mockMapper.Object);
 
             // Act
             var result = await service.GetExpensesAsync(userId, "SuperAdmin");
@@ -130,7 +197,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             var expenseId = Guid.NewGuid();
             var userId = Guid.NewGuid();
 
-            var expectedExpense = new Expense
+            var expectedResponse = new Expense
             {
                 Id = expenseId,
                 UserId = userId,
@@ -142,10 +209,25 @@ namespace ExpenseTracker.Tests.Unit.Services
                 UpdatedAt = null
             };
 
-            mockRepo.Setup(x => x.GetExpenseByUserAsync(userId, expenseId))
-                .ReturnsAsync(expectedExpense);
+            var expectedResDto = new ExpenseResDto
+            {
+                Id = expectedResponse.Id,
+                UserId = expectedResponse.UserId,
+                Description = expectedResponse.Description,
+                Amount = expectedResponse.Amount,
+                Category = expectedResponse.Category,
+                CreatedAt = expectedResponse.CreatedAt,
+                UpdatedAt = expectedResponse.UpdatedAt
+            };
 
-            var service = new ExpenseService(mockRepo.Object);
+            mockMapper
+                .Setup(x => x.Map<ExpenseResDto>(It.IsAny<Expense>()))
+                .Returns(expectedResDto);
+
+            mockRepo.Setup(x => x.GetExpenseByUserAsync(userId, expenseId))
+                .ReturnsAsync(expectedResponse);
+
+            var service = new ExpenseService(mockRepo.Object, mockMapper.Object);
 
             // Act
             var result = await service.GetExpenseByIdAsync(userId, "User", expenseId);
@@ -153,8 +235,8 @@ namespace ExpenseTracker.Tests.Unit.Services
             // Assert
             Assert.NotNull(result);
             Assert.Equal(expenseId, result.Id);
-            Assert.Equal(expectedExpense.Description, result.Description);
-            Assert.Equal(expectedExpense.Amount, result.Amount);
+            Assert.Equal(expectedResponse.Description, result.Description);
+            Assert.Equal(expectedResponse.Amount, result.Amount);
 
             mockRepo.Verify(
                 x => x.GetExpenseByUserAsync(userId, expenseId),
@@ -172,7 +254,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             mockRepo.Setup(x => x.GetExpenseByUserAsync(userId, expenseId))
                 .ReturnsAsync((Expense?)null);
 
-            var service = new ExpenseService(mockRepo.Object);
+            var service = new ExpenseService(mockRepo.Object, mockMapper.Object);
 
             // Act
             var result = await service.GetExpenseByIdAsync(userId, "User", expenseId);
@@ -192,14 +274,29 @@ namespace ExpenseTracker.Tests.Unit.Services
             var mockRepo = new Mock<IExpenseRepository>();
             var userId = Guid.NewGuid();
 
-            var request = new ExpenseReqDto
+            var request = new CreateExpenseReqDto
             {
                 Description = "Expense 4",
                 Amount = 400,
                 Category = "Category 4"
             };
 
-            var service = new ExpenseService(mockRepo.Object);
+            var expectedResDto = new ExpenseResDto
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Description = request.Description,
+                Amount = request.Amount,
+                Category = request.Category,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = null
+            };
+
+            mockMapper
+                .Setup(x => x.Map<ExpenseResDto>(It.IsAny<Expense>()))
+                .Returns(expectedResDto);
+
+            var service = new ExpenseService(mockRepo.Object, mockMapper.Object);
 
             // Act
             var result = await service.CreateExpenseAsync(userId, request);
@@ -235,17 +332,32 @@ namespace ExpenseTracker.Tests.Unit.Services
                 UpdatedAt = null
             };
 
-            var request = new ExpenseReqDto
+            var request = new UpdateExpenseReqDto
             {
                 Description = "Updated Expense 4",
                 Amount = 450,
                 Category = "Updated Category 4"
             };
 
+            var expectedResDto = new ExpenseResDto
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Description = request.Description,
+                Amount = request.Amount,
+                Category = request.Category,
+                CreatedAt = existingExpense.CreatedAt,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            mockMapper
+                .Setup(x => x.Map<ExpenseResDto>(It.IsAny<Expense>()))
+                .Returns(expectedResDto);
+
             mockRepo.Setup(x => x.GetExpenseByUserAsync(userId, existingExpense.Id))
                 .ReturnsAsync(existingExpense);
 
-            var service = new ExpenseService(mockRepo.Object);
+            var service = new ExpenseService(mockRepo.Object, mockMapper.Object);
 
             // Act
             var result = await service.UpdateExpenseAsync(userId, "User", existingExpense.Id, request);
@@ -276,7 +388,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             var userId = Guid.NewGuid();
             var expenseId = Guid.NewGuid();
 
-            var request = new ExpenseReqDto
+            var request = new UpdateExpenseReqDto
             {
                 Description = "Updated Expense 4",
                 Amount = 450,
@@ -286,7 +398,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             mockRepo.Setup(x => x.GetExpenseByUserAsync(userId, expenseId))
                 .ReturnsAsync((Expense?)null);
 
-            var service = new ExpenseService(mockRepo.Object);
+            var service = new ExpenseService(mockRepo.Object, mockMapper.Object);
 
             // Act
             var result = await service.UpdateExpenseAsync(userId, "User", expenseId, request);
@@ -316,7 +428,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             mockRepo.Setup(x => x.GetExpenseByUserAsync(userId, expenseId))
                 .ReturnsAsync(existingExpense);
 
-            var service = new ExpenseService(mockRepo.Object);
+            var service = new ExpenseService(mockRepo.Object, mockMapper.Object);
 
             // Act
             var result = await service.DeleteExpenseAsync(userId, "User", expenseId);
@@ -336,7 +448,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             mockRepo.Setup(x => x.GetExpenseByUserAsync(userId, expenseId))
                 .ReturnsAsync((Expense?)null);
 
-            var service = new ExpenseService(mockRepo.Object);
+            var service = new ExpenseService(mockRepo.Object, mockMapper.Object);
 
             // Act
             var result = await service.DeleteExpenseAsync(userId, "User", expenseId);

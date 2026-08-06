@@ -1,13 +1,13 @@
-﻿using ExpenseTracker.BLL.Interfaces;
+﻿using AutoMapper;
+using ExpenseTracker.BLL.Interfaces;
 using ExpenseTracker.DAL.Interfaces;
 using ExpenseTracker.Models.Dtos.Requests;
 using ExpenseTracker.Models.Dtos.Responses;
 using ExpenseTracker.Models.Models;
-using System.Data;
 
 namespace ExpenseTracker.BLL.Services
 {
-    public class ExpenseService(IExpenseRepository expenseRepository) : IExpenseService
+    public class ExpenseService(IExpenseRepository expenseRepository, IMapper mapper) : IExpenseService
     {
         public async Task<List<ExpenseResDto>> GetExpensesAsync(Guid userId, string role)
         {
@@ -22,7 +22,7 @@ namespace ExpenseTracker.BLL.Services
                 expenses = await expenseRepository.GetAllExpensesAsync();
             }
 
-            return expenses.Select(MapToDto).ToList();
+            return mapper.Map<List<ExpenseResDto>>(expenses);
         }
 
         public async Task<ExpenseResDto?> GetExpenseByIdAsync(Guid userId, string role, Guid expenseId)
@@ -40,10 +40,10 @@ namespace ExpenseTracker.BLL.Services
 
             if (expense == null) return null;
 
-            return MapToDto(expense);
+            return mapper.Map<ExpenseResDto>(expense);
         }
 
-        public async Task<ExpenseResDto?> CreateExpenseAsync(Guid userId, ExpenseReqDto expense)
+        public async Task<ExpenseResDto?> CreateExpenseAsync(Guid userId, CreateExpenseReqDto expense)
         {
             var newExpense = new Expense
             {
@@ -55,10 +55,10 @@ namespace ExpenseTracker.BLL.Services
 
             await expenseRepository.AddExpenseAsync(newExpense);
 
-            return MapToDto(newExpense);
+            return mapper.Map<ExpenseResDto>(newExpense);
         }
 
-        public async Task<ExpenseResDto?> UpdateExpenseAsync(Guid userId, string role, Guid expenseId, ExpenseReqDto expense)
+        public async Task<ExpenseResDto?> UpdateExpenseAsync(Guid userId, string role, Guid expenseId, UpdateExpenseReqDto expense)
         {
             var existingExpense = await expenseRepository.GetExpenseByUserAsync(userId, expenseId);
 
@@ -78,7 +78,7 @@ namespace ExpenseTracker.BLL.Services
 
             await expenseRepository.SaveChangesAsync();
 
-            return MapToDto(existingExpense);
+            return mapper.Map<ExpenseResDto>(existingExpense);
         }
 
         ////NOTE: permanent delete the expense from the database
@@ -106,20 +106,6 @@ namespace ExpenseTracker.BLL.Services
             await expenseRepository.SaveChangesAsync();
 
             return true;
-        }
-
-        private static ExpenseResDto MapToDto(Expense expense)
-        {
-            return new ExpenseResDto
-            {
-                Id = expense.Id,
-                UserId = expense.UserId,
-                Description = expense.Description,
-                Amount = expense.Amount,
-                Category = expense.Category,
-                CreatedAt = expense.CreatedAt,
-                UpdatedAt = expense.UpdatedAt
-            };
         }
     }
 }

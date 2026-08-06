@@ -26,23 +26,22 @@ namespace ExpenseTracker.API.Controllers
 
                 if (data.Count == 0) return NotFound(new ApiResDto<object>
                 {
-                    success = false,
-                    message = "No expenses found."
+                    Success = false,
+                    ErrorMessage = "No expenses found."
                 });
 
                 return Ok(new ApiResDto<List<ExpenseResDto>>
                 {
-                    success = true,
-                    data = data,
-                    message = "Expenses retrieved successfully"
+                    Success = true,
+                    Data = data,
                 });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new ApiResDto<object>
                 {
-                    success = false,
-                    message = $"An error occurred while retrieving expenses. {ex.Message}"
+                    Success = false,
+                    ErrorMessage = $"An error occurred while retrieving expenses. {ex.Message}"
                 });
             }
         }
@@ -58,29 +57,28 @@ namespace ExpenseTracker.API.Controllers
 
                 if (data == null) return NotFound(new ApiResDto<object>
                 {
-                    success = false,
-                    message = "Expense not found."
+                    Success = false,
+                    ErrorMessage = "Expense not found."
                 });
 
                 return Ok(new ApiResDto<ExpenseResDto>
                 {
-                    success = true,
-                    data = data,
-                    message = "Expense retrieved successfully"
+                    Success = true,
+                    Data = data,
                 });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new ApiResDto<object>
                 {
-                    success = false,
-                    message = $"An error occurred while retrieving the expense. {ex.Message}"
+                    Success = false,
+                    ErrorMessage = $"An error occurred while retrieving the expense. {ex.Message}"
                 });
             }
         }
 
         [HttpPost]
-        public async Task<ActionResult<ApiResDto<ExpenseResDto>>> CreateExpense([FromBody] ExpenseReqDto expense)
+        public async Task<ActionResult<ApiResDto<ExpenseResDto>>> CreateExpense([FromBody] CreateExpenseReqDto expense)
         {
             try
             {
@@ -90,23 +88,22 @@ namespace ExpenseTracker.API.Controllers
 
                 return Ok(new ApiResDto<ExpenseResDto>
                 {
-                    success = true,
-                    data = data,
-                    message = "Expense record created successfully."
+                    Success = true,
+                    Data = data,
                 });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new ApiResDto<object>
                 {
-                    success = false,
-                    message = $"An error occurred while creating the expense. {ex.Message}"
+                    Success = false,
+                    ErrorMessage = $"An error occurred while creating the expense. {ex.Message}"
                 });
             }
         }
 
         [HttpPut("{expenseId}")]
-        public async Task<ActionResult<ExpenseResDto>> UpdateExpense(Guid expenseId, [FromBody] ExpenseReqDto expense)
+        public async Task<ActionResult<ExpenseResDto>> UpdateExpense(Guid expenseId, [FromBody] UpdateExpenseReqDto expense)
         {
             try
             {
@@ -116,23 +113,22 @@ namespace ExpenseTracker.API.Controllers
 
                 if (data == null) return NotFound(new ApiResDto<object>
                 {
-                    success = false,
-                    message = "Expense not found."
+                    Success = false,
+                    ErrorMessage = "Expense not found."
                 });
 
                 return Ok(new ApiResDto<ExpenseResDto>
                 {
-                    success = true,
-                    data = data,
-                    message = "Expense record updated successfully."
+                    Success = true,
+                    Data = data,
                 });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new ApiResDto<object>
                 {
-                    success = false,
-                    message = $"An error occurred while updating the expense. {ex.Message}"
+                    Success = false,
+                    ErrorMessage = $"An error occurred while updating the expense. {ex.Message}"
                 });
             }
         }
@@ -148,22 +144,21 @@ namespace ExpenseTracker.API.Controllers
 
                 if (!data) return NotFound(new ApiResDto<object>
                 {
-                    success = false,
-                    message = "Expense not found."
+                    Success = false,
+                    ErrorMessage = "Expense not found."
                 });
 
                 return Ok(new ApiResDto<ExpenseResDto>
                 {
-                    success = true,
-                    message = "Expense record deleted successfully."
+                    Success = true,
                 });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new ApiResDto<object>
                 {
-                    success = false,
-                    message = $"An error occurred while deleting the expense. {ex.Message}"
+                    Success = false,
+                    ErrorMessage = $"An error occurred while deleting the expense. {ex.Message}"
                 });
             }
         }
