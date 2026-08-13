@@ -47,10 +47,9 @@ namespace ExpenseTracker.Tests.Unit.Services
             var result = await service.RegisterAsync(request);
 
             // Assert
-            Assert.True(result.success);
-            Assert.Equal("Registration completed successfully. You can now log in to your account.", result.message);
-            Assert.NotNull(result.data);
-            Assert.Equal(request.Username, result.data.Username);
+            Assert.True(result.Success);
+            Assert.NotNull(result.Data);
+            Assert.Equal(request.Username, result.Data.Username);
 
             mockRepo.Verify(
                 x => x.AddUserAsync(It.IsAny<User>()),
@@ -89,8 +88,8 @@ namespace ExpenseTracker.Tests.Unit.Services
             var result = await service.RegisterAsync(request);
 
             // Assert
-            Assert.False(result.success);
-            Assert.Equal("Passwords do not match.", result.message);
+            Assert.False(result.Success);
+            Assert.Equal("Passwords do not match.", result.ErrorMessage);
         }
 
         [Fact]
@@ -125,8 +124,8 @@ namespace ExpenseTracker.Tests.Unit.Services
             var result = await service.RegisterAsync(request);
 
             // Assert
-            Assert.False(result.success);
-            Assert.Equal("Username is already taken.", result.message);
+            Assert.False(result.Success);
+            Assert.Equal("Username is already taken.", result.ErrorMessage);
         }
 
         [Fact]
@@ -170,8 +169,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             var result = await service.LoginAsync(request);
 
             // Assert
-            Assert.True(result.success);
-            Assert.Equal("Login successful.", result.message);
+            Assert.True(result.Success);
 
             mockRepo.Verify(
                 x => x.GetByUsernameAsync("testuser"),
@@ -216,8 +214,8 @@ namespace ExpenseTracker.Tests.Unit.Services
             var result = await service.LoginAsync(request);
 
             // Assert
-            Assert.False(result.success);
-            Assert.Equal("Your account has been deactivated.", result.message);
+            Assert.False(result.Success);
+            Assert.Equal("Your account has been deactivated.", result.ErrorMessage);
         }
 
         [Fact]
@@ -261,8 +259,8 @@ namespace ExpenseTracker.Tests.Unit.Services
             var result = await service.LoginAsync(request);
 
             // Assert
-            Assert.False(result.success);
-            Assert.Equal("Incorrect password.", result.message);
+            Assert.False(result.Success);
+            Assert.Equal("Incorrect password.", result.ErrorMessage);
 
             mockRepo.Verify(
                 x => x.GetByUsernameAsync("testuser"),
@@ -299,8 +297,8 @@ namespace ExpenseTracker.Tests.Unit.Services
             var result = await service.LoginAsync(request);
 
             // Assert
-            Assert.False(result.success);
-            Assert.Equal("No account found with that username.", result.message);
+            Assert.False(result.Success);
+            Assert.Equal("No account found with that username.", result.ErrorMessage);
         }
 
         [Fact]
@@ -333,9 +331,9 @@ namespace ExpenseTracker.Tests.Unit.Services
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<TokenResDto>>(okResult.Value);
 
-            Assert.True(response.success);
-            Assert.NotNull(response.data);
-            Assert.Equal(request.RefreshToken, response.data.RefreshToken);
+            Assert.True(response.Success);
+            Assert.NotNull(response.Data);
+            Assert.Equal(request.RefreshToken, response.Data.RefreshToken);
         }
         [Fact]
         public async Task RefreshTokensAsync_ReturnsNull_WhenUserNotFound()
@@ -367,9 +365,9 @@ namespace ExpenseTracker.Tests.Unit.Services
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<TokenResDto>>(okResult.Value);
 
-            Assert.True(response.success);
-            Assert.Equal(tokenResponse.AccessToken, response.data!.AccessToken);
-            Assert.Equal(tokenResponse.RefreshToken, response.data.RefreshToken);
+            Assert.True(response.Success);
+            Assert.Equal(tokenResponse.AccessToken, response.Data!.AccessToken);
+            Assert.Equal(tokenResponse.RefreshToken, response.Data.RefreshToken);
         }
 
         [Fact]
@@ -402,8 +400,8 @@ namespace ExpenseTracker.Tests.Unit.Services
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<TokenResDto>>(unauthorizedResult.Value);
 
-            Assert.False(response.success);
-            Assert.Null(response.data);
+            Assert.False(response.Success);
+            Assert.Null(response.Data);
         }
 
         [Fact]

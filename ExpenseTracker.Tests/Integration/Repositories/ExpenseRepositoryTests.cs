@@ -2,6 +2,8 @@
 using ExpenseTracker.DAL.Repositories;
 using ExpenseTracker.Models.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace ExpenseTracker.Tests.Integration.Repositories
 {
@@ -19,7 +21,21 @@ namespace ExpenseTracker.Tests.Integration.Repositories
 
             using var context = new AppDbContext(options);
 
-            var repository = new ExpenseRepository(context);
+            var mockLogger = new Mock<ILogger<ExpenseRepository>>();
+
+            var repository = new ExpenseRepository(context, mockLogger.Object);
+
+            var user = new User
+            {
+                Id = userId,
+                FullName = "Test User",
+                Username = "testuser",
+                ContactNumber = "09123456789",
+                HashedPassword = "password",
+                Role = UserRole.User,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
 
             var existingExpenses = new List<Expense>
             {
@@ -43,14 +59,16 @@ namespace ExpenseTracker.Tests.Integration.Repositories
                 }
             };
 
+            context.Users.Add(user);
             context.Expenses.AddRange(existingExpenses);
+
             await context.SaveChangesAsync();
 
-            // Act
+            //Act
             var result = await repository.GetAllExpensesAsync();
 
             // Assert
-            Assert.Single(result);
+            Assert.Equal(2, result.Count);
             Assert.Equal(existingExpenses[1].Description, result[0].Description);
         }
 
@@ -67,7 +85,9 @@ namespace ExpenseTracker.Tests.Integration.Repositories
 
             using var context = new AppDbContext(options);
 
-            var repository = new ExpenseRepository(context);
+            var mockLogger = new Mock<ILogger<ExpenseRepository>>();
+
+            var repository = new ExpenseRepository(context, mockLogger.Object);
 
             var existingExpenses = new List<Expense>
             {
@@ -123,7 +143,9 @@ namespace ExpenseTracker.Tests.Integration.Repositories
 
             using var context = new AppDbContext(options);
 
-            var repository = new ExpenseRepository(context);
+            var mockLogger = new Mock<ILogger<ExpenseRepository>>();
+
+            var repository = new ExpenseRepository(context, mockLogger.Object);
 
             var existingExpense = new Expense
             {
@@ -160,7 +182,9 @@ namespace ExpenseTracker.Tests.Integration.Repositories
 
             using var context = new AppDbContext(options);
 
-            var repository = new ExpenseRepository(context);
+            var mockLogger = new Mock<ILogger<ExpenseRepository>>();
+
+            var repository = new ExpenseRepository(context, mockLogger.Object);
 
             // Act
             var result = await repository.GetExpenseByUserAsync(userId, expenseId);
@@ -181,7 +205,21 @@ namespace ExpenseTracker.Tests.Integration.Repositories
 
             using var context = new AppDbContext(options);
 
-            var repository = new ExpenseRepository(context);
+            var mockLogger = new Mock<ILogger<ExpenseRepository>>();
+
+            var repository = new ExpenseRepository(context, mockLogger.Object);
+
+            var user = new User
+            {
+                Id = userId,
+                FullName = "Test User",
+                Username = "testuser",
+                ContactNumber = "09123456789",
+                HashedPassword = "password",
+                Role = UserRole.User,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
 
             var existingExpense = new Expense
             {
@@ -192,6 +230,7 @@ namespace ExpenseTracker.Tests.Integration.Repositories
                 CreatedAt = DateTime.UtcNow
             };
 
+            context.Users.Add(user);
             context.Expenses.Add(existingExpense);
             await context.SaveChangesAsync();
 
@@ -217,7 +256,9 @@ namespace ExpenseTracker.Tests.Integration.Repositories
 
             using var context = new AppDbContext(options);
 
-            var repository = new ExpenseRepository(context);
+            var mockLogger = new Mock<ILogger<ExpenseRepository>>();
+
+            var repository = new ExpenseRepository(context, mockLogger.Object);
 
             // Act
             var result = await repository.GetExpenseByIdAsync(expenseId);
@@ -238,7 +279,9 @@ namespace ExpenseTracker.Tests.Integration.Repositories
 
             using var context = new AppDbContext(options);
 
-            var repository = new ExpenseRepository(context);
+            var mockLogger = new Mock<ILogger<ExpenseRepository>>();
+
+            var repository = new ExpenseRepository(context, mockLogger.Object);
 
             var expense = new Expense
             {

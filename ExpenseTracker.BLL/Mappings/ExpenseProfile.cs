@@ -9,7 +9,13 @@ namespace ExpenseTracker.BLL.Mappings
     {
         public ExpenseProfile()
         {
-            CreateMap<Expense, ExpenseResDto>();
+            CreateMap<Expense, ExpenseResDto>()
+                .ForMember(
+                    dest => dest.Username,
+                    opt => opt.MapFrom(src => src.User.Username))
+                .ForMember(
+                    dest => dest.FullName,
+                    opt => opt.MapFrom(src => src.User.FullName));
         }
     }
 }

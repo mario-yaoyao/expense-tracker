@@ -2,6 +2,8 @@
 using ExpenseTracker.DAL.Repositories;
 using ExpenseTracker.Models.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace ExpenseTracker.Tests.Integration.Repositories
 {
@@ -26,7 +28,9 @@ namespace ExpenseTracker.Tests.Integration.Repositories
             context.Users.Add(user);
             await context.SaveChangesAsync();
 
-            var repository = new AuthRepository(context);
+            var mockLogger = new Mock<ILogger<AuthRepository>>();
+
+            var repository = new AuthRepository(context, mockLogger.Object);
 
             // Act
             var result = await repository.GetByUsernameAsync("testuser");
@@ -46,7 +50,9 @@ namespace ExpenseTracker.Tests.Integration.Repositories
 
             using var context = new AppDbContext(options);
 
-            var repository = new AuthRepository(context);
+            var mockLogger = new Mock<ILogger<AuthRepository>>();
+
+            var repository = new AuthRepository(context, mockLogger.Object);
 
             // Act
             var result = await repository.GetByUsernameAsync("testuser");
@@ -67,7 +73,9 @@ namespace ExpenseTracker.Tests.Integration.Repositories
 
             using var context = new AppDbContext(options);
 
-            var repository = new AuthRepository(context);
+            var mockLogger = new Mock<ILogger<AuthRepository>>();
+
+            var repository = new AuthRepository(context, mockLogger.Object);
 
             var existingUser = new User
             {
@@ -98,7 +106,9 @@ namespace ExpenseTracker.Tests.Integration.Repositories
 
             using var context = new AppDbContext(options);
 
-            var repository = new AuthRepository(context);
+            var mockLogger = new Mock<ILogger<AuthRepository>>();
+
+            var repository = new AuthRepository(context, mockLogger.Object);
 
             // Act
             var result = await repository.GetByUsernameAsync("testuser");
@@ -119,7 +129,9 @@ namespace ExpenseTracker.Tests.Integration.Repositories
 
             using var context = new AppDbContext(options);
 
-            var repository = new AuthRepository(context);
+            var mockLogger = new Mock<ILogger<AuthRepository>>();
+
+            var repository = new AuthRepository(context, mockLogger.Object);
 
             var existingUser = new User
             {
@@ -150,7 +162,9 @@ namespace ExpenseTracker.Tests.Integration.Repositories
 
             using var context = new AppDbContext(options);
 
-            var repository = new AuthRepository(context);
+            var mockLogger = new Mock<ILogger<AuthRepository>>();
+
+            var repository = new AuthRepository(context, mockLogger.Object);
 
             var user = new User
             {

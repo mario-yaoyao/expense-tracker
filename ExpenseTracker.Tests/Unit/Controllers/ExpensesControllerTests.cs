@@ -59,11 +59,10 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<List<ExpenseResDto>>>(okResult.Value);
 
-            Assert.True(response.success);
-            Assert.Equal(2, response.data!.Count);
-            Assert.Equal("Expenses retrieved successfully", response.message);
-            Assert.Equal(expectedResponse[0].Description, response.data[0].Description);
-            Assert.Equal(expectedResponse[1].Amount, response.data[1].Amount);
+            Assert.True(response.Success);
+            Assert.Equal(2, response.Data!.Count);
+            Assert.Equal(expectedResponse[0].Description, response.Data[0].Description);
+            Assert.Equal(expectedResponse[1].Amount, response.Data[1].Amount);
 
             mockService.Verify(
                 x => x.GetExpensesAsync(userId, "User"),
@@ -92,8 +91,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<object>>(notFoundResult.Value);
 
-            Assert.False(response.success);
-            Assert.Equal("No expenses found.", response.message);
+            Assert.False(response.Success);
+            Assert.Equal("No expenses found.", response.ErrorMessage);
         }
 
         [Fact]
@@ -117,8 +116,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             Assert.Equal(500, statusCodeResult.StatusCode);
 
             var response = Assert.IsType<ApiResDto<object>>(statusCodeResult.Value);
-            Assert.False(response.success);
-            Assert.Contains("An error occurred while retrieving expenses.", response.message);
+            Assert.False(response.Success);
+            Assert.Contains("An error occurred while retrieving expenses.", response.ErrorMessage);
         }
 
         [Fact]
@@ -154,8 +153,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
 
-            Assert.True(response.success);
-            Assert.Equal("Expense retrieved successfully", response.message);
+            Assert.True(response.Success);
         }
 
         [Fact]
@@ -179,8 +177,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<object>>(notFoundResult.Value);
 
-            Assert.False(response.success);
-            Assert.Equal("Expense not found.", response.message);
+            Assert.False(response.Success);
+            Assert.Equal("Expense not found.", response.ErrorMessage);
         }
 
         [Fact]
@@ -217,8 +215,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
 
-            Assert.True(response.success);
-            Assert.Equal("Expense record created successfully.", response.message);
+            Assert.True(response.Success);
         }
 
         [Fact]
@@ -250,8 +247,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             Assert.Equal(500, statusCodeResult.StatusCode);
 
             var response = Assert.IsType<ApiResDto<object>>(statusCodeResult.Value);
-            Assert.False(response.success);
-            Assert.Contains("An error occurred while creating the expense.", response.message);
+            Assert.False(response.Success);
+            Assert.Contains("An error occurred while creating the expense.", response.ErrorMessage);
         }
 
         [Fact]
@@ -294,9 +291,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
 
-            Assert.True(response.success);
-            Assert.Equal("Expense record updated successfully.", response.message);
-            Assert.Equal(expectedResponse.Description, response.data!.Description);
+            Assert.True(response.Success);
+            Assert.Equal(expectedResponse.Description, response.Data!.Description);
         }
 
         [Fact]
@@ -327,8 +323,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<object>>(notFoundResult.Value);
 
-            Assert.False(response.success);
-            Assert.Equal("Expense not found.", response.message);
+            Assert.False(response.Success);
+            Assert.Equal("Expense not found.", response.ErrorMessage);
         }
 
         [Fact]
@@ -360,8 +356,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             Assert.Equal(500, statusCodeResult.StatusCode);
 
             var response = Assert.IsType<ApiResDto<object>>(statusCodeResult.Value);
-            Assert.False(response.success);
-            Assert.Contains("An error occurred while updating the expense.", response.message);
+            Assert.False(response.Success);
+            Assert.Contains("An error occurred while updating the expense.", response.ErrorMessage);
         }
 
         [Fact]
@@ -385,8 +381,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
 
-            Assert.True(response.success);
-            Assert.Equal("Expense record deleted successfully.", response.message);
+            Assert.True(response.Success);
         }
 
         [Fact]
@@ -410,8 +405,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<object>>(notFoundResult.Value);
 
-            Assert.False(response.success);
-            Assert.Equal("Expense not found.", response.message);
+            Assert.False(response.Success);
+            Assert.Equal("Expense not found.", response.ErrorMessage);
         }
 
         [Fact]
@@ -436,8 +431,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             Assert.Equal(500, statusCodeResult.StatusCode);
 
             var response = Assert.IsType<ApiResDto<object>>(statusCodeResult.Value);
-            Assert.False(response.success);
-            Assert.Contains("An error occurred while deleting the expense.", response.message);
+            Assert.False(response.Success);
+            Assert.Contains("An error occurred while deleting the expense.", response.ErrorMessage);
         }
 
         private static void SetUserClaims(ControllerBase controller, Guid userId, string role)
