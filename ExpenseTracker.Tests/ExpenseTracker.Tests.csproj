@@ -2,13 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <RootNamespace>expense_tracker.Tests</RootNamespace>
+    <RootNamespace>ExpenseTracker.Tests</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="16.2.0" />
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.10" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
@@ -18,7 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ExpenseTracker.Api\ExpenseTracker.Api.csproj" />
+    <ProjectReference Include="..\ExpenseTracker.Api\ExpenseTracker.API.csproj" />
+    <ProjectReference Include="..\ExpenseTracker.BLL\ExpenseTracker.BLL.csproj" />
   </ItemGroup>
 
   <ItemGroup>
