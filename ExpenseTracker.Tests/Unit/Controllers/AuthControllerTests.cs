@@ -28,9 +28,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var expectedResponse = new ServiceResult<RegisterResDto>
             {
-                success = true,
-                message = "Registration completed successfully. You can now log in to your account.",
-                data = new RegisterResDto
+                Success = true,
+                Data = new RegisterResDto
                 {
                     UserId = Guid.NewGuid(),
                     FullName = "Test User",
@@ -54,9 +53,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<RegisterResDto>>(okResult.Value);
 
-            Assert.True(response.success);
-            Assert.Equal(expectedResponse.message, response.message);
-            Assert.Equal(expectedResponse.data.Username, request.Username);
+            Assert.True(response.Success);
+            Assert.Equal(expectedResponse.Data.Username, request.Username);
         }
 
         [Fact]
@@ -76,8 +74,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var expectedResponse = new ServiceResult<RegisterResDto>
             {
-                success = false,
-                message = "Passwords do not match.",
+                Success = false,
+                ErrorMessage = "Passwords do not match.",
             };
 
             mockService
@@ -93,8 +91,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<RegisterResDto>>(badRequestResult.Value);
 
-            Assert.False(response.success);
-            Assert.Equal(expectedResponse.message, response.message);
+            Assert.False(response.Success);
+            Assert.Equal(expectedResponse.ErrorMessage, response.ErrorMessage);
         }
 
         [Fact]
@@ -114,8 +112,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var expectedResponse = new ServiceResult<RegisterResDto>
             {
-                success = false,
-                message = "Username is already taken.",
+                Success = false,
+                ErrorMessage = "Username is already taken.",
             };
 
             mockService
@@ -131,8 +129,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<RegisterResDto>>(badRequestResult.Value);
 
-            Assert.False(response.success);
-            Assert.Equal(expectedResponse.message, response.message);
+            Assert.False(response.Success);
+            Assert.Equal(expectedResponse.ErrorMessage, response.ErrorMessage);
         }
 
         [Fact]
@@ -152,8 +150,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var expectedResponse = new ServiceResult<TokenResDto>
             {
-                success = false,
-                message = "An error occurred while registering account:"
+                Success = false,
+                ErrorMessage = "An error occurred while registering account:"
             };
 
             mockService
@@ -170,8 +168,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             Assert.Equal(500, statusCodeResult.StatusCode);
 
             var response = Assert.IsType<ApiResDto<object>>(statusCodeResult.Value);
-            Assert.False(response.success);
-            Assert.Contains(expectedResponse.message, response.message);
+            Assert.False(response.Success);
+            Assert.Contains(expectedResponse.ErrorMessage, response.ErrorMessage);
         }
 
         [Fact]
@@ -194,17 +192,17 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var expectedResponse = new ServiceResult<TokenResDto>
             {
-                success = true,
-                message = "Login successful.",
-                data = tokenResponse
+                Success = true,
+                ErrorMessage = "Login successful.",
+                Data = tokenResponse
             };
 
             mockService.Setup(x => x.LoginAsync(request))
                 .ReturnsAsync(new ServiceResult<TokenResDto>
                 {
-                    success = true,
-                    message = "Login successful.",
-                    data = tokenResponse
+                    Success = true,
+                    ErrorMessage = "Login successful.",
+                    Data = tokenResponse
                 });
 
             var controller = new AuthController(mockService.Object);
@@ -216,9 +214,9 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<TokenResDto>>(okResult.Value);
 
-            Assert.True(response.success);
-            Assert.Equal(tokenResponse.AccessToken, response.data!.AccessToken);
-            Assert.Equal(tokenResponse.RefreshToken, response.data.RefreshToken);
+            Assert.True(response.Success);
+            Assert.Equal(tokenResponse.AccessToken, response.Data!.AccessToken);
+            Assert.Equal(tokenResponse.RefreshToken, response.Data.RefreshToken);
         }
 
         [Fact]
@@ -235,8 +233,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var expectedResponse = new ServiceResult<TokenResDto>
             {
-                success = false,
-                message = "No account found with that username.",
+                Success = false,
+                ErrorMessage = "No account found with that username.",
             };
 
             mockService
@@ -252,8 +250,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<TokenResDto>>(badRequestResult.Value);
 
-            Assert.False(response.success);
-            Assert.Equal(expectedResponse.message, response.message);
+            Assert.False(response.Success);
+            Assert.Equal(expectedResponse.ErrorMessage, response.ErrorMessage);
         }
 
         [Fact]
@@ -270,8 +268,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var expectedResponse = new ServiceResult<TokenResDto>
             {
-                success = false,
-                message = "Incorrect password.",
+                Success = false,
+                ErrorMessage = "Incorrect password.",
             };
 
             mockService
@@ -287,8 +285,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<TokenResDto>>(badRequestResult.Value);
 
-            Assert.False(response.success);
-            Assert.Equal(expectedResponse.message, response.message);
+            Assert.False(response.Success);
+            Assert.Equal(expectedResponse.ErrorMessage, response.ErrorMessage);
         }
 
         [Fact]
@@ -305,8 +303,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var expectedResponse = new ServiceResult<TokenResDto>
             {
-                success = false,
-                message = "Your account has been deactivated. Please contact support for assistance.",
+                Success = false,
+                ErrorMessage = "Your account has been deactivated. Please contact support for assistance.",
             };
 
             mockService
@@ -322,8 +320,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<TokenResDto>>(badRequestResult.Value);
 
-            Assert.False(response.success);
-            Assert.Equal(expectedResponse.message, response.message);
+            Assert.False(response.Success);
+            Assert.Equal(expectedResponse.ErrorMessage, response.ErrorMessage);
         }
 
         [Fact]
@@ -340,8 +338,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var expectedResponse = new ServiceResult<TokenResDto>
             {
-                success = false,
-                message = "An error occurred while logging in:"
+                Success = false,
+                ErrorMessage = "An error occurred while logging in:"
             };
 
             mockService
@@ -358,8 +356,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             Assert.Equal(500, statusCodeResult.StatusCode);
 
             var response = Assert.IsType<ApiResDto<object>>(statusCodeResult.Value);
-            Assert.False(response.success);
-            Assert.Contains(expectedResponse.message, response.message);
+            Assert.False(response.Success);
+            Assert.Contains(expectedResponse.ErrorMessage, response.ErrorMessage);
         }
 
         [Fact]
@@ -392,9 +390,9 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<TokenResDto>>(okResult.Value);
 
-            Assert.True(response.success);
-            Assert.Equal(tokenResponse.AccessToken, response.data!.AccessToken);
-            Assert.Equal(tokenResponse.RefreshToken, response.data.RefreshToken);
+            Assert.True(response.Success);
+            Assert.Equal(tokenResponse.AccessToken, response.Data!.AccessToken);
+            Assert.Equal(tokenResponse.RefreshToken, response.Data.RefreshToken);
         }
 
         [Fact]
@@ -421,8 +419,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<TokenResDto>>(unauthorizedResult.Value);
 
-            Assert.False(response.success);
-            Assert.Equal("Invalid refresh token.", response.message);
+            Assert.False(response.Success);
+            Assert.Equal("Invalid refresh token.", response.ErrorMessage);
         }
 
         [Fact]
@@ -450,8 +448,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             Assert.Equal(500, statusCodeResult.StatusCode);
 
             var response = Assert.IsType<ApiResDto<object>>(statusCodeResult.Value);
-            Assert.False(response.success);
-            Assert.Contains("An error occurred while refreshing token.", response.message);
+            Assert.False(response.Success);
+            Assert.Contains("An error occurred while refreshing token.", response.ErrorMessage);
         }
     }
 }

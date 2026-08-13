@@ -33,7 +33,6 @@ builder.Services.AddControllers()
             return new BadRequestObjectResult(new ApiResDto<object>
             {
                 Success = false,
-                ErrorMessage = "One or more validation errors occurred.",
                 Errors = errors
             });
         };
