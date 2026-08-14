@@ -13,9 +13,9 @@ namespace ExpenseTracker.DAL.Repositories
             try
             {
                 return await context.Expenses
-                .Include(e => e.User)
-                .OrderByDescending(e => e.UpdatedAt ?? e.CreatedAt)
-                .ToListAsync();
+                    .Include(e => e.User)
+                    .OrderByDescending(e => e.UpdatedAt ?? e.CreatedAt)
+                    .ToListAsync();
             }
             catch (Exception ex)
             {
@@ -45,8 +45,8 @@ namespace ExpenseTracker.DAL.Repositories
             try
             {
                 return await context.Expenses
-                .Where(e => !e.IsDeleted)
-                .FirstOrDefaultAsync(e => e.UserId == userId && e.Id == expenseId);
+                    .Where(e => !e.IsDeleted)
+                    .FirstOrDefaultAsync(e => e.UserId == userId && e.Id == expenseId);
             }
             catch (Exception ex)
             {
