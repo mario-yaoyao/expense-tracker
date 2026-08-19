@@ -12,7 +12,7 @@ namespace ExpenseTracker.API.Controllers
     [ApiController]
     public class ExpenseController(IExpenseService expenseService) : ControllerBase
     {
-        private Guid GetUserId() => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        private int GetUserId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         private string GetRole() => User.FindFirstValue(ClaimTypes.Role)!;
 
         [HttpGet]
@@ -47,7 +47,7 @@ namespace ExpenseTracker.API.Controllers
         }
 
         [HttpGet("{expenseId}")]
-        public async Task<ActionResult<ApiResDto<ExpenseResDto>>> GetExpenseById(Guid expenseId)
+        public async Task<ActionResult<ApiResDto<ExpenseResDto>>> GetExpenseById(int expenseId)
         {
             try
             {
@@ -78,13 +78,13 @@ namespace ExpenseTracker.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ApiResDto<ExpenseResDto>>> CreateExpense([FromBody] CreateExpenseReqDto expense)
+        public async Task<ActionResult<ApiResDto<ExpenseResDto>>> CreateExpense([FromBody] CreateExpenseReqDto request)
         {
             try
             {
                 var userId = GetUserId();
                 var role = GetRole();
-                var data = await expenseService.CreateExpenseAsync(userId, expense);
+                var data = await expenseService.CreateExpenseAsync(userId, request);
 
                 return Ok(new ApiResDto<ExpenseResDto>
                 {
@@ -103,13 +103,13 @@ namespace ExpenseTracker.API.Controllers
         }
 
         [HttpPut("{expenseId}")]
-        public async Task<ActionResult<ExpenseResDto>> UpdateExpense(Guid expenseId, [FromBody] UpdateExpenseReqDto expense)
+        public async Task<ActionResult<ExpenseResDto>> UpdateExpense(int expenseId, [FromBody] UpdateExpenseReqDto request)
         {
             try
             {
                 var userId = GetUserId();
                 var role = GetRole();
-                var data = await expenseService.UpdateExpenseAsync(userId, role, expenseId, expense);
+                var data = await expenseService.UpdateExpenseAsync(userId, role, expenseId, request);
 
                 if (data == null) return NotFound(new ApiResDto<object>
                 {
@@ -134,7 +134,7 @@ namespace ExpenseTracker.API.Controllers
         }
 
         [HttpDelete("{expenseId}")]
-        public async Task<ActionResult<List<ExpenseResDto?>>> DeleteExpense(Guid expenseId)
+        public async Task<ActionResult<List<ExpenseResDto?>>> DeleteExpense(int expenseId)
         {
             try
             {

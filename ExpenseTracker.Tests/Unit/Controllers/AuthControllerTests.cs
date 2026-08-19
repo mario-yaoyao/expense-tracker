@@ -16,22 +16,16 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         {
             // Arrange
             var mockService = new Mock<IAuthService>();
+            var controller = CreateController(mockService);
 
-            var request = new RegisterReqDto
-            {
-                FullName = "Test User",
-                Username = "testuser",
-                ContactNumber = "09876543210",
-                Password = "Password123!",
-                ConfirmPassword = "Password123!"
-            };
+            var request = CreateRegisterRequest();
 
             var expectedResponse = new ServiceResult<RegisterResDto>
             {
                 Success = true,
                 Data = new RegisterResDto
                 {
-                    UserId = Guid.NewGuid(),
+                    UserId = 1,
                     FullName = "Test User",
                     Username = "testuser",
                     ContactNumber = "09876543210",
@@ -44,8 +38,6 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             mockService.Setup(x => x.RegisterAsync(request))
                 .ReturnsAsync(expectedResponse);
 
-            var controller = new AuthController(mockService.Object);
-
             // Act
             var result = await controller.Register(request);
 
@@ -54,7 +46,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var response = Assert.IsType<ApiResDto<RegisterResDto>>(okResult.Value);
 
             Assert.True(response.Success);
-            Assert.Equal(expectedResponse.Data.Username, request.Username);
+            Assert.Equal(expectedResponse.Data.Username, response.Data!.Username);
         }
 
         [Fact]
@@ -62,15 +54,9 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         {
             // Arrange
             var mockService = new Mock<IAuthService>();
+            var controller = CreateController(mockService);
 
-            var request = new RegisterReqDto
-            {
-                FullName = "Test User",
-                Username = "testuser",
-                ContactNumber = "09876543210",
-                Password = "Password123!",
-                ConfirmPassword = "Password456."
-            };
+            var request = CreateRegisterRequest();
 
             var expectedResponse = new ServiceResult<RegisterResDto>
             {
@@ -81,8 +67,6 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             mockService
                 .Setup(x => x.RegisterAsync(request))
                 .ReturnsAsync(expectedResponse);
-
-            var controller = new AuthController(mockService.Object);
 
             // Act
             var result = await controller.Register(request);
@@ -100,15 +84,9 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         {
             // Arrange
             var mockService = new Mock<IAuthService>();
+            var controller = CreateController(mockService);
 
-            var request = new RegisterReqDto
-            {
-                FullName = "Test User",
-                Username = "testuser",
-                ContactNumber = "09876543210",
-                Password = "Password123!",
-                ConfirmPassword = "Password123!"
-            };
+            var request = CreateRegisterRequest();
 
             var expectedResponse = new ServiceResult<RegisterResDto>
             {
@@ -119,8 +97,6 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             mockService
                 .Setup(x => x.RegisterAsync(request))
                 .ReturnsAsync(expectedResponse);
-
-            var controller = new AuthController(mockService.Object);
 
             // Act
             var result = await controller.Register(request);
@@ -138,15 +114,9 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         {
             // Arrange
             var mockService = new Mock<IAuthService>();
+            var controller = CreateController(mockService);
 
-            var request = new RegisterReqDto
-            {
-                FullName = "Test User",
-                Username = "testuser",
-                ContactNumber = "09876543210",
-                Password = "Password123!",
-                ConfirmPassword = "Password123!"
-            };
+            var request = CreateRegisterRequest();
 
             var expectedResponse = new ServiceResult<TokenResDto>
             {
@@ -157,8 +127,6 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             mockService
                 .Setup(x => x.RegisterAsync(request))
                 .ThrowsAsync(new Exception("Database error"));
-
-            var controller = new AuthController(mockService.Object);
 
             // Act
             var result = await controller.Register(request);
@@ -177,18 +145,10 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         {
             // Arrange
             var mockService = new Mock<IAuthService>();
+            var controller = CreateController(mockService);
 
-            var request = new LoginUserReqDto
-            {
-                Username = "testuser",
-                Password = "Password123!"
-            };
-
-            var tokenResponse = new TokenResDto
-            {
-                AccessToken = "test-access-token",
-                RefreshToken = "test-refresh-token"
-            };
+            var request = CreateLoginRequest();
+            var tokenResponse = CreateTokenResponse();
 
             var expectedResponse = new ServiceResult<TokenResDto>
             {
@@ -205,8 +165,6 @@ namespace ExpenseTracker.Tests.Unit.Controllers
                     Data = tokenResponse
                 });
 
-            var controller = new AuthController(mockService.Object);
-
             // Act
             var result = await controller.Login(request);
 
@@ -219,122 +177,152 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             Assert.Equal(tokenResponse.RefreshToken, response.Data.RefreshToken);
         }
 
-        [Fact]
-        public async Task Login_ReturnsBadRequest_WhenUserNotFound()
+        [Theory]
+        [InlineData("No account found with that username.")]
+        [InlineData("Incorrect password.")]
+        [InlineData("Your account has been deactivated. Please contact support for assistance.")]
+        public async Task Login_ReturnsBadRequest_WhenServiceReturnsFailure(
+            string errorMessage)
         {
             // Arrange
             var mockService = new Mock<IAuthService>();
+            var controller = CreateController(mockService);
 
-            var request = new LoginUserReqDto
-            {
-                Username = "testuser",
-                Password = "Password123!"
-            };
-
-            var expectedResponse = new ServiceResult<TokenResDto>
-            {
-                Success = false,
-                ErrorMessage = "No account found with that username.",
-            };
+            var request = CreateLoginRequest();
+            var tokenResponse = CreateTokenResponse();
 
             mockService
                 .Setup(x => x.LoginAsync(request))
-                .ReturnsAsync(expectedResponse);
-
-            var controller = new AuthController(mockService.Object);
+                .ReturnsAsync(new ServiceResult<TokenResDto>
+                {
+                    Success = false,
+                    ErrorMessage = errorMessage
+                });
 
             // Act
             var result = await controller.Login(request);
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<TokenResDto>>(badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result.Result);
+            var response = Assert.IsType<ApiResDto<TokenResDto>>(badRequest.Value);
 
             Assert.False(response.Success);
-            Assert.Equal(expectedResponse.ErrorMessage, response.ErrorMessage);
+            Assert.Equal(errorMessage, response.ErrorMessage);
         }
 
-        [Fact]
-        public async Task Login_ReturnsBadRequest_WhenPasswordIsIncorrect()
-        {
-            // Arrange
-            var mockService = new Mock<IAuthService>();
+        //[Fact]
+        //public async Task Login_ReturnsBadRequest_WhenUserNotFound()
+        //{
+        //    // Arrange
+        //    var mockService = new Mock<IAuthService>();
 
-            var request = new LoginUserReqDto
-            {
-                Username = "testuser",
-                Password = "Password456!"
-            };
+        //    var request = new LoginUserReqDto
+        //    {
+        //        Username = "testuser",
+        //        Password = "Password123!"
+        //    };
 
-            var expectedResponse = new ServiceResult<TokenResDto>
-            {
-                Success = false,
-                ErrorMessage = "Incorrect password.",
-            };
+        //    var expectedResponse = new ServiceResult<TokenResDto>
+        //    {
+        //        Success = false,
+        //        ErrorMessage = "No account found with that username.",
+        //    };
 
-            mockService
-                .Setup(x => x.LoginAsync(request))
-                .ReturnsAsync(expectedResponse);
+        //    mockService
+        //        .Setup(x => x.LoginAsync(request))
+        //        .ReturnsAsync(expectedResponse);
 
-            var controller = new AuthController(mockService.Object);
+        //    var controller = new AuthController(mockService.Object);
 
-            // Act
-            var result = await controller.Login(request);
+        //    // Act
+        //    var result = await controller.Login(request);
 
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<TokenResDto>>(badRequestResult.Value);
+        //    // Assert
+        //    var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+        //    var response = Assert.IsType<ApiResDto<TokenResDto>>(badRequestResult.Value);
 
-            Assert.False(response.Success);
-            Assert.Equal(expectedResponse.ErrorMessage, response.ErrorMessage);
-        }
+        //    Assert.False(response.Success);
+        //    Assert.Equal(expectedResponse.ErrorMessage, response.ErrorMessage);
+        //}
 
-        [Fact]
-        public async Task Login_ReturnsBadRequest_WhenAccountIsInactive()
-        {
-            // Arrange
-            var mockService = new Mock<IAuthService>();
+        //[Fact]
+        //public async Task Login_ReturnsBadRequest_WhenPasswordIsIncorrect()
+        //{
+        //    // Arrange
+        //    var mockService = new Mock<IAuthService>();
 
-            var request = new LoginUserReqDto
-            {
-                Username = "testuser",
-                Password = "Password123!"
-            };
+        //    var request = new LoginUserReqDto
+        //    {
+        //        Username = "testuser",
+        //        Password = "Password456!"
+        //    };
 
-            var expectedResponse = new ServiceResult<TokenResDto>
-            {
-                Success = false,
-                ErrorMessage = "Your account has been deactivated. Please contact support for assistance.",
-            };
+        //    var expectedResponse = new ServiceResult<TokenResDto>
+        //    {
+        //        Success = false,
+        //        ErrorMessage = "Incorrect password.",
+        //    };
 
-            mockService
-                .Setup(x => x.LoginAsync(request))
-                .ReturnsAsync(expectedResponse);
+        //    mockService
+        //        .Setup(x => x.LoginAsync(request))
+        //        .ReturnsAsync(expectedResponse);
 
-            var controller = new AuthController(mockService.Object);
+        //    var controller = new AuthController(mockService.Object);
 
-            // Act
-            var result = await controller.Login(request);
+        //    // Act
+        //    var result = await controller.Login(request);
 
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<TokenResDto>>(badRequestResult.Value);
+        //    // Assert
+        //    var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+        //    var response = Assert.IsType<ApiResDto<TokenResDto>>(badRequestResult.Value);
 
-            Assert.False(response.Success);
-            Assert.Equal(expectedResponse.ErrorMessage, response.ErrorMessage);
-        }
+        //    Assert.False(response.Success);
+        //    Assert.Equal(expectedResponse.ErrorMessage, response.ErrorMessage);
+        //}
+
+        //[Fact]
+        //public async Task Login_ReturnsBadRequest_WhenAccountIsInactive()
+        //{
+        //    // Arrange
+        //    var mockService = new Mock<IAuthService>();
+
+        //    var request = new LoginUserReqDto
+        //    {
+        //        Username = "testuser",
+        //        Password = "Password123!"
+        //    };
+
+        //    var expectedResponse = new ServiceResult<TokenResDto>
+        //    {
+        //        Success = false,
+        //        ErrorMessage = "Your account has been deactivated. Please contact support for assistance.",
+        //    };
+
+        //    mockService
+        //        .Setup(x => x.LoginAsync(request))
+        //        .ReturnsAsync(expectedResponse);
+
+        //    var controller = new AuthController(mockService.Object);
+
+        //    // Act
+        //    var result = await controller.Login(request);
+
+        //    // Assert
+        //    var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+        //    var response = Assert.IsType<ApiResDto<TokenResDto>>(badRequestResult.Value);
+
+        //    Assert.False(response.Success);
+        //    Assert.Equal(expectedResponse.ErrorMessage, response.ErrorMessage);
+        //}
 
         [Fact]
         public async Task Login_Returns500_WhenExceptionOccurs()
         {
             // Arrange
             var mockService = new Mock<IAuthService>();
+            var controller = CreateController(mockService);
 
-            var request = new LoginUserReqDto
-            {
-                Username = "testuser",
-                Password = "Password123!"
-            };
+            var request = CreateLoginRequest();
 
             var expectedResponse = new ServiceResult<TokenResDto>
             {
@@ -345,8 +333,6 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             mockService
                 .Setup(x => x.LoginAsync(request))
                 .ThrowsAsync(new Exception("Database error"));
-
-            var controller = new AuthController(mockService.Object);
 
             // Act
             var result = await controller.Login(request);
@@ -365,23 +351,13 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         {
             // Arrange
             var mockService = new Mock<IAuthService>();
+            var controller = CreateController(mockService);
 
-            var request = new RefreshTokenReqDto
-            {
-                UserId = Guid.NewGuid(),
-                RefreshToken = "test-refresh-token"
-            };
-
-            var tokenResponse = new TokenResDto
-            {
-                AccessToken = "test-access-token",
-                RefreshToken = "test-refresh-token"
-            };
+            var request = CreateRefreshTokenRequest();
+            var tokenResponse = CreateTokenResponse();
 
             mockService.Setup(x => x.RefreshTokensAsync(request))
                 .ReturnsAsync((tokenResponse));
-
-            var controller = new AuthController(mockService.Object);
 
             // Act
             var result = await controller.RefreshToken(request);
@@ -400,17 +376,13 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         {
             // Arrange
             var mockService = new Mock<IAuthService>();
+            var controller = CreateController(mockService);
 
-            var request = new RefreshTokenReqDto
-            {
-                UserId = Guid.NewGuid(),
-                RefreshToken = "test-refresh-token"
-            };
+            var request = CreateRefreshTokenRequest();
+            var tokenResponse = CreateTokenResponse();
 
             mockService.Setup(x => x.RefreshTokensAsync(request))
                 .ReturnsAsync((TokenResDto?)null);
-
-            var controller = new AuthController(mockService.Object);
 
             // Act
             var result = await controller.RefreshToken(request);
@@ -428,17 +400,12 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         {
             // Arrange
             var mockService = new Mock<IAuthService>();
+            var controller = CreateController(mockService);
 
-            var request = new RefreshTokenReqDto
-            {
-                UserId = Guid.NewGuid(),
-                RefreshToken = "test-refresh-token"
-            };
+            var request = CreateRefreshTokenRequest();
 
             mockService.Setup(x => x.RefreshTokensAsync(request))
                 .ThrowsAsync(new Exception("Database error"));
-
-            var controller = new AuthController(mockService.Object);
 
             // Act
             var result = await controller.RefreshToken(request);
@@ -450,6 +417,53 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var response = Assert.IsType<ApiResDto<object>>(statusCodeResult.Value);
             Assert.False(response.Success);
             Assert.Contains("An error occurred while refreshing token.", response.ErrorMessage);
+        }
+
+        // Helper Functions
+        private static AuthController CreateController(Mock<IAuthService> mockService)
+        {
+            return new AuthController(mockService.Object);
+        }
+
+        private static RegisterReqDto CreateRegisterRequest()
+        {
+            return new RegisterReqDto
+            {
+                FullName = "Test User",
+                Username = "testuser",
+                ContactNumber = "09876543210",
+                Password = "Password123!",
+                ConfirmPassword = "Password123!"
+            };
+        }
+
+        private static LoginUserReqDto CreateLoginRequest(
+            string username = "testuser",
+            string password = "Password123!")
+        {
+            return new LoginUserReqDto
+            {
+                Username = username,
+                Password = password
+            };
+        }
+
+        private static RefreshTokenReqDto CreateRefreshTokenRequest()
+        {
+            return new RefreshTokenReqDto
+            {
+                UserId = 1,
+                RefreshToken = "test-refresh-token"
+            };
+        }
+
+        private static TokenResDto CreateTokenResponse()
+        {
+            return new TokenResDto
+            {
+                AccessToken = "test-access-token",
+                RefreshToken = "test-refresh-token"
+            };
         }
     }
 }

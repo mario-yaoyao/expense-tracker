@@ -5,7 +5,7 @@ namespace ExpenseTracker.Models.Dtos.Requests
     public class RefreshTokenReqDto
     {
         [Required]
-        public Guid UserId { get; set; }
+        public int UserId { get; set; }
 
         [Required]
         [MinLength(20)]

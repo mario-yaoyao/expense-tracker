@@ -15,42 +15,43 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         public async Task GetExpenses_ReturnsOk_WhenExpensesExist()
         {
             // Arrange
+            var userId = 1;
+
             var mockService = new Mock<IExpenseService>();
-            var userId = Guid.NewGuid();
+            var controller = CreateController(mockService);
+            SetUserClaims(controller, userId, "User");
 
             var expectedResponse = new List<ExpenseResDto>
             {
                 new()
                 {
-                    Id = Guid.NewGuid(),
+                    Id = 1,
                     UserId = userId,
                     Description = "Breakfast",
                     Amount = 24.99m,
-                    Category = "Food",
+                    CategoryName = "Food",
+                    CategoryType = 0,
                     IsDeleted = false,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = null
                 },
                 new()
                 {
-                    Id = Guid.NewGuid(),
+                    Id = 2,
                     UserId = userId,
                     Description = "Lunch",
                     Amount = 29.50m,
-                    Category = "Food",
+                    CategoryName = "Food",
+                    CategoryType = 0,
                     IsDeleted = false,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = null
                 }
             };
 
-
             mockService
                 .Setup(x => x.GetExpensesAsync(userId, "User"))
                 .ReturnsAsync(expectedResponse);
-
-            var controller = new ExpenseController(mockService.Object);
-            SetUserClaims(controller, userId, "User");
 
             // Act
             var result = await controller.GetExpenses();
@@ -73,16 +74,16 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         public async Task GetExpenses_ReturnsNotFound_WhenNoExpensesExist()
         {
             // Arrange
+            var userId = 1;
+
             var mockService = new Mock<IExpenseService>();
-            var userId = Guid.NewGuid();
+            var controller = CreateController(mockService);
+            SetUserClaims(controller, userId, "User");
 
             var expectedResponse = new List<ExpenseResDto>();
 
             mockService.Setup(x => x.GetExpensesAsync(userId, "User"))
                 .ReturnsAsync(expectedResponse);
-
-            var controller = new ExpenseController(mockService.Object);
-            SetUserClaims(controller, userId, "User");
 
             // Act
             var result = await controller.GetExpenses();
@@ -99,14 +100,14 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         public async Task GetExpenses_Returns500_WhenExceptionOccurs()
         {
             // Arrange
-            var userId = Guid.NewGuid();
+            var userId = 1;
+
             var mockService = new Mock<IExpenseService>();
+            var controller = CreateController(mockService);
+            SetUserClaims(controller, userId, "User");
 
             mockService.Setup(x => x.GetExpensesAsync(userId, "User"))
                 .ThrowsAsync(new Exception("Database error"));
-
-            var controller = new ExpenseController(mockService.Object);
-            SetUserClaims(controller, userId, "User");
 
             // Act
             var result = await controller.GetExpenses();
@@ -124,9 +125,12 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         public async Task GetExpenseById_ReturnsOk_WhenExpenseExist()
         {
             // Arrange
+            var userId = 1;
+            var expenseId = 1;
+
             var mockService = new Mock<IExpenseService>();
-            var userId = Guid.NewGuid();
-            var expenseId = Guid.NewGuid();
+            var controller = CreateController(mockService);
+            SetUserClaims(controller, userId, "User");
 
             var expectedResponse = new ExpenseResDto
             {
@@ -134,7 +138,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
                 UserId = userId,
                 Description = "Food",
                 Amount = 50.00m,
-                Category = "Food",
+                CategoryName = "Food",
+                CategoryType = 0,
                 IsDeleted = false,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null
@@ -142,9 +147,6 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             mockService.Setup(x => x.GetExpenseByIdAsync(userId, "User", expenseId))
                 .ReturnsAsync(expectedResponse);
-
-            var controller = new ExpenseController(mockService.Object);
-            SetUserClaims(controller, userId, "User");
 
             // Act
             var result = await controller.GetExpenseById(expenseId);
@@ -160,15 +162,15 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         public async Task GetExpenseById_ReturnsNotFound_WhenNoExpenseExist()
         {
             // Arrange
+            var userId = 1;
+            var expenseId = 1;
+
             var mockService = new Mock<IExpenseService>();
-            var userId = Guid.NewGuid();
-            var expenseId = Guid.NewGuid();
+            var controller = CreateController(mockService);
+            SetUserClaims(controller, userId, "User");
 
             mockService.Setup(x => x.GetExpenseByIdAsync(userId, "User", expenseId))
                 .ReturnsAsync((ExpenseResDto?)null);
-
-            var controller = new ExpenseController(mockService.Object);
-            SetUserClaims(controller, userId, "User");
 
             // Act
             var result = await controller.GetExpenseById(expenseId);
@@ -185,28 +187,29 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         public async Task CreateExpense_ReturnsOk_WhenExpenseCreated()
         {
             // Arrange
+            var userId = 1;
+            var categoryId = 1;
+
             var mockService = new Mock<IExpenseService>();
-            var userId = Guid.NewGuid();
+            var controller = CreateController(mockService);
+            SetUserClaims(controller, userId, "User");
 
             var request = new CreateExpenseReqDto
             {
                 Description = "Breakfast",
                 Amount = 50.00m,
-                Category = "Food"
+                CategoryId = categoryId
             };
 
             var expectedResponse = new ExpenseResDto
             {
-                Id = Guid.NewGuid(),
+                Id = 1,
                 UserId = userId,
                 Description = "Food"
             };
 
             mockService.Setup(x => x.CreateExpenseAsync(userId, request))
                 .ReturnsAsync(expectedResponse);
-
-            var controller = new ExpenseController(mockService.Object);
-            SetUserClaims(controller, userId, "User");
 
             // Act
             var result = await controller.CreateExpense(request);
@@ -222,25 +225,25 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         public async Task CreateExpense_Returns500_WhenExceptionOccurs()
         {
             // Arrange
+            var userId = 1;
+
             var mockService = new Mock<IExpenseService>();
-            var userId = Guid.NewGuid();
+            var controller = CreateController(mockService);
+            SetUserClaims(controller, userId, "User");
 
             var request = new CreateExpenseReqDto
             {
                 Description = "Breakfast",
                 Amount = 50.00m,
-                Category = "Food"
+                CategoryId = 1
             };
 
             mockService
                 .Setup(x => x.CreateExpenseAsync(userId, request))
                 .ThrowsAsync(new Exception("Database error"));
 
-            var controller = new ExpenseController(mockService.Object);
-
             // Act
-            var result = await controller.CreateExpense(new CreateExpenseReqDto());
-            SetUserClaims(controller, userId, "User");
+            var result = await controller.CreateExpense(request);
 
             // Assert
             var statusCodeResult = Assert.IsType<ObjectResult>(result.Result);
@@ -255,15 +258,18 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         public async Task UpdateExpense_ReturnsOk_WhenExpenseExist()
         {
             // Arrange
+            var userId = 1;
+            var expenseId = 1;
+
             var mockService = new Mock<IExpenseService>();
-            var userId = Guid.NewGuid();
-            var expenseId = Guid.NewGuid();
+            var controller = CreateController(mockService);
+            SetUserClaims(controller, userId, "User");
 
             var request = new UpdateExpenseReqDto
             {
                 Description = "Breakfast",
                 Amount = 50.00m,
-                Category = "Food"
+                CategoryId = 1
             };
 
             var expectedResponse = new ExpenseResDto
@@ -272,7 +278,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
                 UserId = userId,
                 Description = "Lunch",
                 Amount = 50.00m,
-                Category = "Food",
+                CategoryName = "Food",
+                CategoryType = 0,
                 IsDeleted = false,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -280,9 +287,6 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             mockService.Setup(x => x.UpdateExpenseAsync(userId, "User", expenseId, request))
                 .ReturnsAsync(expectedResponse);
-
-            var controller = new ExpenseController(mockService.Object);
-            SetUserClaims(controller, userId, "User");
 
             // Act
             var result = await controller.UpdateExpense(expenseId, request);
@@ -299,22 +303,22 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         public async Task UpdateExpense_ReturnsNotFound_WhenNoExpenseExist()
         {
             // Arrange
+            var userId = 1;
+            var expenseId = 1;
+
             var mockService = new Mock<IExpenseService>();
-            var userId = Guid.NewGuid();
-            var expenseId = Guid.NewGuid();
+            var controller = CreateController(mockService);
+            SetUserClaims(controller, userId, "User");
 
             var request = new UpdateExpenseReqDto
             {
                 Description = "Breakfast",
                 Amount = 50.00m,
-                Category = "Food"
+                CategoryId = 1
             };
 
             mockService.Setup(x => x.UpdateExpenseAsync(userId, "User", expenseId, request))
                 .ReturnsAsync((ExpenseResDto?)null);
-
-            var controller = new ExpenseController(mockService.Object);
-            SetUserClaims(controller, userId, "User");
 
             // Act
             var result = await controller.UpdateExpense(expenseId, request);
@@ -331,22 +335,22 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         public async Task UpdateExpense_Returns500_WhenExceptionOccurs()
         {
             // Arrange
+            var userId = 1;
+            var expenseId = 1;
+
             var mockService = new Mock<IExpenseService>();
-            var userId = Guid.NewGuid();
-            var expenseId = Guid.NewGuid();
+            var controller = CreateController(mockService);
+            SetUserClaims(controller, userId, "User");
 
             var request = new UpdateExpenseReqDto
             {
                 Description = "Breakfast",
                 Amount = 50.00m,
-                Category = "Food"
+                CategoryId = 1
             };
 
             mockService.Setup(x => x.UpdateExpenseAsync(userId, "User", expenseId, request))
                 .ThrowsAsync(new Exception("Database error"));
-
-            var controller = new ExpenseController(mockService.Object);
-            SetUserClaims(controller, userId, "User");
 
             // Act
             var result = await controller.UpdateExpense(expenseId, request);
@@ -365,8 +369,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         {
             // Arrange
             var mockService = new Mock<IExpenseService>();
-            var userId = Guid.NewGuid();
-            var expenseId = Guid.NewGuid();
+            var userId = 1;
+            var expenseId = 1;
 
             mockService.Setup(x => x.DeleteExpenseAsync(userId, "User", expenseId))
                 .ReturnsAsync(true);
@@ -389,8 +393,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         {
             // Arrange
             var mockService = new Mock<IExpenseService>();
-            var userId = Guid.NewGuid();
-            var expenseId = Guid.NewGuid();
+            var userId = 1;
+            var expenseId = 1;
 
             mockService.Setup(x => x.DeleteExpenseAsync(userId, "User", expenseId))
                 .ReturnsAsync(false);
@@ -414,8 +418,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         {
             // Arrange
             var mockService = new Mock<IExpenseService>();
-            var userId = Guid.NewGuid();
-            var expenseId = Guid.NewGuid();
+            var userId = 1;
+            var expenseId = 1;
 
             mockService.Setup(x => x.DeleteExpenseAsync(userId, "User", expenseId))
                 .ThrowsAsync(new Exception("Database error"));
@@ -435,7 +439,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             Assert.Contains("An error occurred while deleting the expense.", response.ErrorMessage);
         }
 
-        private static void SetUserClaims(ControllerBase controller, Guid userId, string role)
+        // Helper Functions
+        private static void SetUserClaims(ControllerBase controller, int userId, string role)
         {
             var claims = new[]
             {
@@ -451,6 +456,11 @@ namespace ExpenseTracker.Tests.Unit.Controllers
                         new ClaimsIdentity(claims, "Test"))
                 }
             };
+        }
+
+        private static ExpenseController CreateController(Mock<IExpenseService> mockService)
+        {
+            return new ExpenseController(mockService.Object);
         }
     }
 }

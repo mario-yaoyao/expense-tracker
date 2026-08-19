@@ -7,6 +7,8 @@ namespace ExpenseTracker.DAL.Data
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Expense> Expenses { get; set; }
+        public DbSet<Income> Incomes { get; set; }
+        public DbSet<Category> Categories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -16,11 +18,16 @@ namespace ExpenseTracker.DAL.Data
                 .Property(e => e.Amount)
                 .HasPrecision(18, 2);
 
+            modelBuilder.Entity<Income>()
+                .Property(e => e.Amount)
+                .HasPrecision(18, 2);
+
             modelBuilder.Entity<User>().HasData(new User
             {
-                Id = new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+                Id = 1,
                 FullName = "Super Admin",
                 Username = "superadmin",
+                Email = "Mario.Yaoyao@ext.essilor.com",
                 ContactNumber = "09876543210",
                 Role = UserRole.SuperAdmin,
                 HashedPassword = "AQAAAAIAAYagAAAAEMnD4tgZER76L6K/MjnkwaRF6fDDLAx5KW3zFPWKP+94uO/lQ3FrpfpQMAOd6RtrbA==",

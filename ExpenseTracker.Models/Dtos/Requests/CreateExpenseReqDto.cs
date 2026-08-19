@@ -11,6 +11,6 @@ namespace ExpenseTracker.Models.Dtos.Requests
         public decimal Amount { get; set; }
 
         [Required]
-        public string Category { get; set; } = string.Empty;
+        public int CategoryId { get; set; }
     }
 }

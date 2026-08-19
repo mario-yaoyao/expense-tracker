@@ -13,27 +13,18 @@ namespace ExpenseTracker.Tests.Integration.Repositories
         public async Task GetByUsernameAsync_ReturnsUser_WhenUserExists()
         {
             // Arrange
-            var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
+            var userId = 1;
 
-            using var context = new AppDbContext(options);
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
 
-            var user = new User
-            {
-                Username = "testuser",
-                FullName = "Test User"
-            };
+            var user = CreateUser(userId);
 
             context.Users.Add(user);
             await context.SaveChangesAsync();
 
-            var mockLogger = new Mock<ILogger<AuthRepository>>();
-
-            var repository = new AuthRepository(context, mockLogger.Object);
-
             // Act
-            var result = await repository.GetByUsernameAsync("testuser");
+            var result = await repository.GetByUsernameAsync(user.Username);
 
             // Assert
             Assert.NotNull(result);
@@ -44,18 +35,11 @@ namespace ExpenseTracker.Tests.Integration.Repositories
         public async Task GetByUsernameAsync_ReturnsNull_WhenUserDoesNotExist()
         {
             // Arrange
-            var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
-
-            using var context = new AppDbContext(options);
-
-            var mockLogger = new Mock<ILogger<AuthRepository>>();
-
-            var repository = new AuthRepository(context, mockLogger.Object);
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
 
             // Act
-            var result = await repository.GetByUsernameAsync("testuser");
+            var result = await repository.GetByUsernameAsync("unkownuser");
 
             // Assert
             Assert.Null(result);
@@ -65,26 +49,14 @@ namespace ExpenseTracker.Tests.Integration.Repositories
         public async Task GetByIdAsync_ReturnsUser_WhenUserExists()
         {
             // Arrange
-            var userId = Guid.NewGuid();
+            var userId = 1;
 
-            var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
 
-            using var context = new AppDbContext(options);
+            var user = CreateUser(userId);
 
-            var mockLogger = new Mock<ILogger<AuthRepository>>();
-
-            var repository = new AuthRepository(context, mockLogger.Object);
-
-            var existingUser = new User
-            {
-                Id = userId,
-                Username = "testuser",
-                FullName = "Test User"
-            };
-
-            context.Users.Add(existingUser);
+            context.Users.Add(user);
             await context.SaveChangesAsync();
 
             // Act
@@ -92,59 +64,26 @@ namespace ExpenseTracker.Tests.Integration.Repositories
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(existingUser.Id, result.Id);
-            Assert.Equal(existingUser.Username, result.Username);
-        }
-
-        [Fact]
-        public async Task GetByIdAsync_ReturnsNull_WhenUserDoesNotExist()
-        {
-            // Arrange
-            var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
-
-            using var context = new AppDbContext(options);
-
-            var mockLogger = new Mock<ILogger<AuthRepository>>();
-
-            var repository = new AuthRepository(context, mockLogger.Object);
-
-            // Act
-            var result = await repository.GetByUsernameAsync("testuser");
-
-            // Assert
-            Assert.Null(result);
+            Assert.Equal(user.Id, result.Id);
+            Assert.Equal(user.Username, result.Username);
         }
 
         [Fact]
         public async Task IsUsernameTakenAsync_ReturnsTrue_WhenUsernameExists()
         {
             // Arrange
-            var userId = Guid.NewGuid();
+            var userId = 1;
 
-            var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
 
-            using var context = new AppDbContext(options);
+            var user = CreateUser(userId);
 
-            var mockLogger = new Mock<ILogger<AuthRepository>>();
-
-            var repository = new AuthRepository(context, mockLogger.Object);
-
-            var existingUser = new User
-            {
-                Id = userId,
-                Username = "testuser",
-                FullName = "Test User"
-            };
-
-            context.Users.Add(existingUser);
+            context.Users.Add(user);
             await context.SaveChangesAsync();
 
             // Act
-            var result = await repository.IsUsernameTakenAsync("testuser");
+            var result = await repository.IsUsernameTakenAsync(user.Username);
 
             // Assert
             Assert.True(result);
@@ -154,24 +93,12 @@ namespace ExpenseTracker.Tests.Integration.Repositories
         public async Task AddUserAsync_AddsUserSuccessfully()
         {
             // Arrange
-            var userId = Guid.NewGuid();
+            var userId = 1;
 
-            var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
 
-            using var context = new AppDbContext(options);
-
-            var mockLogger = new Mock<ILogger<AuthRepository>>();
-
-            var repository = new AuthRepository(context, mockLogger.Object);
-
-            var user = new User
-            {
-                Id = userId,
-                Username = "testuser",
-                FullName = "Test User"
-            };
+            var user = CreateUser(userId);
 
             // Act
             await repository.AddUserAsync(user);
@@ -182,6 +109,40 @@ namespace ExpenseTracker.Tests.Integration.Repositories
             Assert.NotNull(savedUser);
             Assert.Equal(user.Username, savedUser.Username);
             Assert.Equal(user.FullName, savedUser.FullName);
+        }
+
+        // Helper Functions
+        private static AppDbContext CreateContext()
+        {
+            var options = new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+
+            return new AppDbContext(options);
+        }
+
+        private static AuthRepository CreateRepository(AppDbContext context)
+        {
+            var mockLogger = new Mock<ILogger<AuthRepository>>();
+
+            return new AuthRepository(context, mockLogger.Object);
+        }
+
+        private static User CreateUser(
+            int id = 1,
+            string username = "testuser")
+        {
+            return new User
+            {
+                Id = id,
+                Username = username,
+                FullName = "Test User",
+                ContactNumber = "09123456789",
+                HashedPassword = "password",
+                Role = UserRole.User,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
         }
     }
 }

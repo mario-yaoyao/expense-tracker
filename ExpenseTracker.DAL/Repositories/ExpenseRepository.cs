@@ -13,6 +13,7 @@ namespace ExpenseTracker.DAL.Repositories
             try
             {
                 return await context.Expenses
+                    .Include(e => e.Category)
                     .Include(e => e.User)
                     .OrderByDescending(e => e.UpdatedAt ?? e.CreatedAt)
                     .ToListAsync();
@@ -24,11 +25,13 @@ namespace ExpenseTracker.DAL.Repositories
             }
         }
 
-        public async Task<List<Expense>> GetExpensesByUserAsync(Guid userId)
+        public async Task<List<Expense>> GetExpensesByUserAsync(int userId)
         {
             try
             {
                 return await context.Expenses
+                    .Include(e => e.Category)
+                    .Include(e => e.User)
                     .Where(e => e.UserId == userId && !e.IsDeleted)
                     .OrderByDescending(e => e.UpdatedAt ?? e.CreatedAt)
                     .ToListAsync();
@@ -40,11 +43,13 @@ namespace ExpenseTracker.DAL.Repositories
             }
         }
 
-        public async Task<Expense?> GetExpenseByUserAsync(Guid userId, Guid expenseId)
+        public async Task<Expense?> GetExpenseByUserAsync(int userId, int expenseId)
         {
             try
             {
                 return await context.Expenses
+                    .Include(e => e.Category)
+                    .Include(e => e.User)
                     .Where(e => !e.IsDeleted)
                     .FirstOrDefaultAsync(e => e.UserId == userId && e.Id == expenseId);
             }
@@ -55,11 +60,12 @@ namespace ExpenseTracker.DAL.Repositories
             }
         }
 
-        public async Task<Expense?> GetExpenseByIdAsync(Guid expenseId)
+        public async Task<Expense?> GetExpenseByIdAsync(int expenseId)
         {
             try
             {
                 return await context.Expenses
+                    .Include(e => e.Category)
                     .Include(e => e.User)
                     .FirstOrDefaultAsync(e => e.Id == expenseId);
             }

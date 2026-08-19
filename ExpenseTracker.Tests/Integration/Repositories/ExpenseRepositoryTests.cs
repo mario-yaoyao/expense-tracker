@@ -13,55 +13,26 @@ namespace ExpenseTracker.Tests.Integration.Repositories
         public async Task GetAllExpensesAsync_ReturnsAllNonDeletedExpenses()
         {
             // Arrange
-            var userId = Guid.NewGuid();
+            var firstExpenseId = 1;
+            var secondExpenseId = 2;
+            var userId = 1;
 
-            var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
 
-            using var context = new AppDbContext(options);
-
-            var mockLogger = new Mock<ILogger<ExpenseRepository>>();
-
-            var repository = new ExpenseRepository(context, mockLogger.Object);
-
-            var user = new User
-            {
-                Id = userId,
-                FullName = "Test User",
-                Username = "testuser",
-                ContactNumber = "09123456789",
-                HashedPassword = "password",
-                Role = UserRole.User,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            var existingExpenses = new List<Expense>
-            {
-                new Expense
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = userId,
-                    Amount = 50.0m,
-                    Description = "Test Expense 1",
-                    IsDeleted = true,
-                    CreatedAt = DateTime.UtcNow
-                },
-                new Expense
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = userId,
-                    Amount = 67.30m,
-                    Description = "Test Expense 2",
-                    IsDeleted = false,
-                    CreatedAt = DateTime.UtcNow
-                }
-            };
+            var user = CreateUser();
+            var category = CreateCategory();
 
             context.Users.Add(user);
-            context.Expenses.AddRange(existingExpenses);
+            context.Categories.Add(category);
 
+            var expenses = new List<Expense>
+            {
+                CreateExpense(firstExpenseId, userId, category.Id, true),
+                CreateExpense(secondExpenseId, userId, category.Id),
+            };
+
+            context.Expenses.AddRange(expenses);
             await context.SaveChangesAsync();
 
             //Act
@@ -69,122 +40,93 @@ namespace ExpenseTracker.Tests.Integration.Repositories
 
             // Assert
             Assert.Equal(2, result.Count);
-            Assert.Equal(existingExpenses[1].Description, result[0].Description);
+            Assert.Equal(expenses[1].Description, result[0].Description);
         }
 
         [Fact]
         public async Task GetExpensesByUserAsync_ReturnsOnlyExpensesForSpecifiedUser()
         {
             // Arrange
-            var userId = Guid.NewGuid();
-            var otherUserId = Guid.NewGuid();
+            var firstExpenseId = 1;
+            var secondExpenseId = 2;
+            var thirdExpenseId = 3;
+            var firstUserId = 1;
+            var secondUserId = 2;
 
-            var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
 
-            using var context = new AppDbContext(options);
+            var firstUser = CreateUser(1, "user1");
+            var secondUser = CreateUser(2, "user2");
+            var category = CreateCategory();
 
-            var mockLogger = new Mock<ILogger<ExpenseRepository>>();
+            context.Users.Add(firstUser);
+            context.Users.Add(secondUser);
+            context.Categories.Add(category);
 
-            var repository = new ExpenseRepository(context, mockLogger.Object);
-
-            var existingExpenses = new List<Expense>
+            var expenses = new List<Expense>
             {
-                new Expense
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = userId,
-                    Amount = 50.0m,
-                    Description = "Test Expense 1",
-                    IsDeleted = true,
-                    CreatedAt = DateTime.UtcNow
-                },
-                new Expense
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = userId,
-                    Amount = 50.0m,
-                    Description = "Test Expense 2",
-                    IsDeleted = false,
-                    CreatedAt = DateTime.UtcNow
-                },
-                new Expense
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = Guid.NewGuid(),
-                    Amount = 100.0m,
-                    Description = "Test Expense 3",
-                    IsDeleted = false,
-                    CreatedAt = DateTime.UtcNow
-                },
+                CreateExpense(firstExpenseId, firstUserId, category.Id, true),
+                CreateExpense(secondExpenseId, firstUserId, category.Id),
+                CreateExpense(thirdExpenseId, secondUserId, category.Id),
             };
 
-            context.Expenses.AddRange(existingExpenses);
+            context.Expenses.AddRange(expenses);
             await context.SaveChangesAsync();
 
             // Act
-            var result = await repository.GetExpensesByUserAsync(userId);
+            var result = await repository.GetExpensesByUserAsync(firstUserId);
 
             // Assert
             Assert.Single(result);
-            Assert.Equal(existingExpenses[1].UserId, result[0].UserId);
+
+            var expense = result.Single();
+
+            Assert.Equal(2, expense.Id);
+            Assert.Equal(firstUserId, expense.UserId);
+            Assert.False(expense.IsDeleted);
+            Assert.Equal("Expense 2", expense.Description);
         }
 
         [Fact]
         public async Task GetExpenseByUserAsync_ReturnsExpense_WhenExpenseExistsForUser()
         {
             // Arrange
-            var userId = Guid.NewGuid();
+            var userId = 1;
 
-            var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
 
-            using var context = new AppDbContext(options);
+            var user = CreateUser();
+            var category = CreateCategory();
 
-            var mockLogger = new Mock<ILogger<ExpenseRepository>>();
+            context.Users.Add(user);
+            context.Categories.Add(category);
 
-            var repository = new ExpenseRepository(context, mockLogger.Object);
+            var expense = CreateExpense(userId, user.Id, category.Id);
 
-            var existingExpense = new Expense
-            {
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                Amount = 50.0m,
-                Description = "Test Expense",
-                CreatedAt = DateTime.UtcNow
-            };
-
-            context.Expenses.Add(existingExpense);
+            context.Expenses.Add(expense);
             await context.SaveChangesAsync();
 
             // Act
-            var result = await repository.GetExpenseByUserAsync(userId, existingExpense.Id);
+            var result = await repository.GetExpenseByUserAsync(userId, expense.Id);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(existingExpense.Id, result.Id);
+            Assert.Equal(expense.Id, result.Id);
             Assert.Equal(userId, result.UserId);
-            Assert.Equal(existingExpense.Amount, result.Amount);
+            Assert.Equal(expense.Amount, result.Amount);
         }
 
         [Fact]
         public async Task GetExpenseByUserAsync_ReturnsNull_WhenExpenseDoesNotExist()
         {
             // Arrange
-            var userId = Guid.NewGuid();
-            var expenseId = Guid.NewGuid();
+            var userId = 1;
+            var expenseId = 1;
 
-            var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
-
-            using var context = new AppDbContext(options);
-
-            var mockLogger = new Mock<ILogger<ExpenseRepository>>();
-
-            var repository = new ExpenseRepository(context, mockLogger.Object);
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
 
             // Act
             var result = await repository.GetExpenseByUserAsync(userId, expenseId);
@@ -197,68 +139,37 @@ namespace ExpenseTracker.Tests.Integration.Repositories
         public async Task GetExpenseByIdAsync_ReturnsExpense_WhenExpenseExists()
         {
             // Arrange
-            var userId = Guid.NewGuid();
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
 
-            var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
-
-            using var context = new AppDbContext(options);
-
-            var mockLogger = new Mock<ILogger<ExpenseRepository>>();
-
-            var repository = new ExpenseRepository(context, mockLogger.Object);
-
-            var user = new User
-            {
-                Id = userId,
-                FullName = "Test User",
-                Username = "testuser",
-                ContactNumber = "09123456789",
-                HashedPassword = "password",
-                Role = UserRole.User,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            var existingExpense = new Expense
-            {
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                Amount = 50.0m,
-                Description = "Test Expense",
-                CreatedAt = DateTime.UtcNow
-            };
+            var user = CreateUser();
+            var category = CreateCategory();
 
             context.Users.Add(user);
-            context.Expenses.Add(existingExpense);
+            context.Categories.Add(category);
+
+            var expense = CreateExpense(1, user.Id, category.Id);
+
+            context.Expenses.Add(expense);
             await context.SaveChangesAsync();
 
             // Act
-            var result = await repository.GetExpenseByIdAsync(existingExpense.Id);
+            var result = await repository.GetExpenseByIdAsync(expense.Id);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(existingExpense.Id, result.Id);
-            Assert.Equal(existingExpense.UserId, result.UserId);
+            Assert.Equal(expense.Id, result.Id);
+            Assert.Equal(expense.UserId, result.UserId);
         }
 
         [Fact]
         public async Task GetExpenseByIdAsync_ReturnsNull_WhenExpenseDoesNotExist()
         {
             // Arrange
-            var userId = Guid.NewGuid();
-            var expenseId = Guid.NewGuid();
+            var expenseId = 1;
 
-            var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
-
-            using var context = new AppDbContext(options);
-
-            var mockLogger = new Mock<ILogger<ExpenseRepository>>();
-
-            var repository = new ExpenseRepository(context, mockLogger.Object);
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
 
             // Act
             var result = await repository.GetExpenseByIdAsync(expenseId);
@@ -271,26 +182,15 @@ namespace ExpenseTracker.Tests.Integration.Repositories
         public async Task AddExpenseAsync_SavesExpenseToDatabase()
         {
             // Arrange
-            var userId = Guid.NewGuid();
+            var userId = 1;
 
-            var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
 
-            using var context = new AppDbContext(options);
+            var user = CreateUser();
+            var category = CreateCategory();
 
-            var mockLogger = new Mock<ILogger<ExpenseRepository>>();
-
-            var repository = new ExpenseRepository(context, mockLogger.Object);
-
-            var expense = new Expense
-            {
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                Amount = 100.0m,
-                Description = "Test Expense",
-                CreatedAt = DateTime.UtcNow
-            };
+            var expense = CreateExpense(userId, user.Id, category.Id);
 
             // Act
             await repository.AddExpenseAsync(expense);
@@ -298,10 +198,72 @@ namespace ExpenseTracker.Tests.Integration.Repositories
             // Assert
             var savedExpense = await context.Expenses.FindAsync(expense.Id);
 
-            Assert.NotNull(savedExpense);
-            Assert.Equal(userId, savedExpense.UserId);
-            Assert.Equal(100.0m, savedExpense.Amount);
-            Assert.Equal("Test Expense", savedExpense.Description);
+            Assert.Equal(expense.UserId, savedExpense!.UserId);
+            Assert.Equal(expense.Amount, savedExpense.Amount);
+            Assert.Equal(expense.Description, savedExpense.Description);
+        }
+    
+        // Helper Functions
+        private static AppDbContext CreateContext()
+        {
+            var options = new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+
+            return new AppDbContext(options);
+        }
+
+        private static ExpenseRepository CreateRepository(AppDbContext context)
+        {
+            var mockLogger = new Mock<ILogger<ExpenseRepository>>();
+
+            return new ExpenseRepository(context, mockLogger.Object);
+        }
+
+        private static User CreateUser(
+            int id = 1,
+            string username = "testuser")
+        {
+            return new User
+            {
+                Id = id,
+                Username = username,
+                FullName = "Test User",
+                ContactNumber = "09123456789",
+                HashedPassword = "password",
+                Role = UserRole.User,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+        }
+
+        private static Category CreateCategory(
+            int id = 1,
+            string name = "Transportation")
+        {
+            return new Category
+            {
+                Id = id,
+                Name = name
+            };
+        }
+
+        private static Expense CreateExpense(
+            int id,
+            int userId,
+            int categoryId,
+            bool isDeleted = false)
+        {
+            return new Expense
+            {
+                Id = id,
+                UserId = userId,
+                CategoryId = categoryId,
+                Amount = 50m,
+                Description = $"Expense {id}",
+                IsDeleted = isDeleted,
+                CreatedAt = DateTime.UtcNow
+            };
         }
     }
 }

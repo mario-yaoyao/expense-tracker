@@ -19,6 +19,11 @@ namespace ExpenseTracker.Models.Dtos.Requests
         public string Username { get; set; } = string.Empty;
 
         [Required]
+        [EmailAddress]
+        [MaxLength(100)]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
         [MaxLength(20)]
         [MinLength(10)]
         [RegularExpression(@"^(\+63|0)9\d{9}$",

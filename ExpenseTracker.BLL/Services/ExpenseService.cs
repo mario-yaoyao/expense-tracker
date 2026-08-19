@@ -9,7 +9,7 @@ namespace ExpenseTracker.BLL.Services
 {
     public class ExpenseService(IExpenseRepository expenseRepository, IMapper mapper) : IExpenseService
     {
-        public async Task<List<ExpenseResDto>> GetExpensesAsync(Guid userId, string role)
+        public async Task<List<ExpenseResDto>> GetExpensesAsync(int userId, string role)
         {
             List<Expense> expenses;
 
@@ -25,7 +25,7 @@ namespace ExpenseTracker.BLL.Services
             return mapper.Map<List<ExpenseResDto>>(expenses);
         }
 
-        public async Task<ExpenseResDto?> GetExpenseByIdAsync(Guid userId, string role, Guid expenseId)
+        public async Task<ExpenseResDto?> GetExpenseByIdAsync(int userId, string role, int expenseId)
         {
             Expense? expense;
 
@@ -43,14 +43,14 @@ namespace ExpenseTracker.BLL.Services
             return mapper.Map<ExpenseResDto>(expense);
         }
 
-        public async Task<ExpenseResDto?> CreateExpenseAsync(Guid userId, CreateExpenseReqDto expense)
+        public async Task<ExpenseResDto?> CreateExpenseAsync(int userId, CreateExpenseReqDto expense)
         {
             var newExpense = new Expense
             {
                 UserId = userId,
                 Description = expense.Description,
                 Amount = expense.Amount,
-                Category = expense.Category,
+                CategoryId = expense.CategoryId,
             };
 
             await expenseRepository.AddExpenseAsync(newExpense);
@@ -58,7 +58,7 @@ namespace ExpenseTracker.BLL.Services
             return mapper.Map<ExpenseResDto>(newExpense);
         }
 
-        public async Task<ExpenseResDto?> UpdateExpenseAsync(Guid userId, string role, Guid expenseId, UpdateExpenseReqDto expense)
+        public async Task<ExpenseResDto?> UpdateExpenseAsync(int userId, string role, int expenseId, UpdateExpenseReqDto expense)
         {
             var existingExpense = await expenseRepository.GetExpenseByUserAsync(userId, expenseId);
 
@@ -68,12 +68,8 @@ namespace ExpenseTracker.BLL.Services
                 ? existingExpense.Description
                 : expense.Description;
 
-            existingExpense.Amount = expense.Amount;
-
-            existingExpense.Category = string.IsNullOrWhiteSpace(expense.Category)
-                ? existingExpense.Category
-                : expense.Category;
-
+            existingExpense.Amount = expense.Amount ?? existingExpense.Amount;
+            existingExpense.CategoryId = expense.CategoryId ?? existingExpense.CategoryId;
             existingExpense.UpdatedAt = DateTime.UtcNow;
 
             await expenseRepository.SaveChangesAsync();
@@ -95,7 +91,7 @@ namespace ExpenseTracker.BLL.Services
         //}
 
         //NOTE: soft delete the expense by setting IsDeleted to true
-        public async Task<bool> DeleteExpenseAsync(Guid userId, string role, Guid expenseId)
+        public async Task<bool> DeleteExpenseAsync(int userId, string role, int expenseId)
         {
             var existingExpense = await expenseRepository.GetExpenseByUserAsync(userId, expenseId);
 

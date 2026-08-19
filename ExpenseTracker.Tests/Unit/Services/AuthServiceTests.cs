@@ -136,7 +136,7 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var user = new User
             {
-                Id = Guid.NewGuid(),
+                Id = 1,
                 FullName = "Test User",
                 Username = "testuser",
                 ContactNumber = "09876543210",
@@ -184,7 +184,7 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var expectedResponse = new User
             {
-                Id = Guid.NewGuid(),
+                Id = 1,
                 Username = "testuser",
                 HashedPassword = "hashed-password",
                 IsActive = false
@@ -226,7 +226,7 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var user = new User
             {
-                Id = Guid.NewGuid(),
+                Id = 1,
                 FullName = "Test User",
                 Username = "testuser",
                 ContactNumber = "09876543210",
@@ -309,7 +309,7 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var request = new RefreshTokenReqDto
             {
-                UserId = Guid.NewGuid(),
+                UserId = 1,
                 RefreshToken = "test-refresh-token"
             };
 
@@ -343,7 +343,7 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var request = new RefreshTokenReqDto
             {
-                UserId = Guid.NewGuid(),
+                UserId = 1,
                 RefreshToken = "test-refresh-token"
             };
 
@@ -378,7 +378,7 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var request = new RefreshTokenReqDto
             {
-                UserId = Guid.NewGuid(),
+                UserId = 1,
                 RefreshToken = "test-different-refresh-token"
             };
 
@@ -413,7 +413,7 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var user = new User
             {
-                Id = Guid.NewGuid(),
+                Id = 1,
                 RefreshToken = "test-refresh-token",
                 RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(-1)
             };

@@ -5,10 +5,10 @@ namespace ExpenseTracker.BLL.Interfaces
 {
     public interface IExpenseService
     {
-        Task<List<ExpenseResDto>> GetExpensesAsync(Guid userId, string role);
-        Task<ExpenseResDto?> GetExpenseByIdAsync(Guid userId, string role, Guid id);
-        Task<ExpenseResDto?> CreateExpenseAsync(Guid userId, CreateExpenseReqDto expense);
-        Task<ExpenseResDto?> UpdateExpenseAsync(Guid userId, string role, Guid id, UpdateExpenseReqDto expense);
-        Task<bool> DeleteExpenseAsync(Guid userId, string role, Guid id);
+        Task<List<ExpenseResDto>> GetExpensesAsync(int userId, string role);
+        Task<ExpenseResDto?> GetExpenseByIdAsync(int userId, string role, int id);
+        Task<ExpenseResDto?> CreateExpenseAsync(int userId, CreateExpenseReqDto expense);
+        Task<ExpenseResDto?> UpdateExpenseAsync(int userId, string role, int id, UpdateExpenseReqDto expense);
+        Task<bool> DeleteExpenseAsync(int userId, string role, int id);
     }
 }

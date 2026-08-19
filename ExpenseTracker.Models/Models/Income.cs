@@ -1,6 +1,6 @@
 ﻿namespace ExpenseTracker.Models.Models
 {
-    public class Expense : Base
+    public class Income : Base
     {
         public string Description { get; set; } = string.Empty;
         public decimal Amount { get; set; }

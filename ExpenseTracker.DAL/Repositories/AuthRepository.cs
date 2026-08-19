@@ -22,7 +22,7 @@ namespace ExpenseTracker.DAL.Repositories
             }
         }
 
-        public async Task<User?> GetByIdAsync(Guid userId)
+        public async Task<User?> GetByIdAsync(int userId)
         {
             try
             {

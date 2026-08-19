@@ -4,10 +4,10 @@ namespace ExpenseTracker.DAL.Interfaces
 {
     public interface IExpenseRepository
     {
-        Task<List<Expense>> GetExpensesByUserAsync(Guid userId);
+        Task<List<Expense>> GetExpensesByUserAsync(int userId);
         Task<List<Expense>> GetAllExpensesAsync();
-        Task<Expense?> GetExpenseByUserAsync(Guid userId, Guid expenseId);
-        Task<Expense?> GetExpenseByIdAsync(Guid expenseId);
+        Task<Expense?> GetExpenseByUserAsync(int userId, int expenseId);
+        Task<Expense?> GetExpenseByIdAsync(int expenseId);
         Task AddExpenseAsync(Expense expense);
         Task SaveChangesAsync();
     }

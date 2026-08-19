@@ -1,14 +1,17 @@
-﻿namespace ExpenseTracker.Models.Dtos.Responses
+﻿using ExpenseTracker.Models.Models;
+
+namespace ExpenseTracker.Models.Dtos.Responses
 {
     public class ExpenseResDto
     {
-        public Guid Id { get; set; }
-        public Guid UserId { get; set; }
+        public int Id { get; set; }
+        public int UserId { get; set; }
         public string Username { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public decimal Amount { get; set; }
-        public string Category { get; set; } = string.Empty;
+        public string CategoryName { get; set; } = string.Empty;
+        public CategoryType CategoryType { get; set; }
         public bool IsDeleted { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

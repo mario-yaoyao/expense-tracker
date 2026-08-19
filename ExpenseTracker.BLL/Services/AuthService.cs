@@ -78,6 +78,7 @@ namespace ExpenseTracker.BLL.Services
             {
                 FullName = request.FullName,
                 Username = request.Username,
+                Email = request.Email,
                 ContactNumber = request.ContactNumber,
                 Role = UserRole.User,
                 IsActive = true,
@@ -96,6 +97,7 @@ namespace ExpenseTracker.BLL.Services
                     UserId = user.Id,
                     FullName = user.FullName,
                     Username = user.Username,
+                    Email = user.Email,
                     ContactNumber = user.ContactNumber,
                     Role = user.Role,
                     IsActive = user.IsActive,
@@ -128,7 +130,7 @@ namespace ExpenseTracker.BLL.Services
             return await CreateTokenResponse(user);
         }
 
-        private async Task<User?> ValidateRefreshTokenAsync(Guid userId, string refreshToken)
+        private async Task<User?> ValidateRefreshTokenAsync(int userId, string refreshToken)
         {
             var user = await authRepository.GetByIdAsync(userId);
 
