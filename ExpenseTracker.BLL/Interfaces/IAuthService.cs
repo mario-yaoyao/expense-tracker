@@ -9,5 +9,7 @@ namespace ExpenseTracker.BLL.Interfaces
         Task<ServiceResult<RegisterResDto>> RegisterAsync(RegisterReqDto request);
         Task<ServiceResult<TokenResDto>> LoginAsync(LoginUserReqDto request);
         Task<TokenResDto?> RefreshTokensAsync(RefreshTokenReqDto request);
+        Task<bool> ForgotPasswordAsync(ForgotPasswordReqDto request);
+        Task<ServiceResult<bool>> ResetPasswordAsync(ResetPasswordReqDto request);
     }
 }

@@ -17,8 +17,11 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         public async Task GetUserProfile_ReturnsOk_WhenUserExist()
         {
             // Arrange
-            var mockService = new Mock<IProfileService>();
             var userId = 1;
+
+            var mockService = new Mock<IProfileService>();
+            var controller = CreateController(mockService);
+            SetUserClaims(controller, userId, "User");
 
             var expectedResponse = new ProfileResDto
             {
@@ -35,9 +38,6 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             mockService
                 .Setup(x => x.GetUserProfileAsync(userId))
                 .ReturnsAsync(expectedResponse);
-
-            var controller = new ProfileController(mockService.Object);
-            SetUserClaims(controller, userId, "User");
 
             // Act
             var result = await controller.GetUserProfile();
@@ -56,17 +56,17 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         public async Task GetUserProfile_ReturnsNotFound_WhenNoUserExist()
         {
             // Arrange
-            var mockService = new Mock<IProfileService>();
             var userId = 1;
+
+            var mockService = new Mock<IProfileService>();
+            var controller = CreateController(mockService);
+            SetUserClaims(controller, userId, "User");
 
             var expectedResponse = new ProfileResDto();
 
             mockService
                 .Setup(x => x.GetUserProfileAsync(userId))
                 .ReturnsAsync((ProfileResDto?)null);
-
-            var controller = new ProfileController(mockService.Object);
-            SetUserClaims(controller, userId, "User");
 
             // Act
             var result = await controller.GetUserProfile();
@@ -84,13 +84,13 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         {
             // Arrange
             var userId = 1;
+
             var mockService = new Mock<IProfileService>();
+            var controller = CreateController(mockService);
+            SetUserClaims(controller, userId, "User");
 
             mockService.Setup(x => x.GetUserProfileAsync(userId))
                 .ThrowsAsync(new Exception("Database error"));
-
-            var controller = new ProfileController(mockService.Object);
-            SetUserClaims(controller, userId, "User");
 
             // Act
             var result = await controller.GetUserProfile();
@@ -108,15 +108,13 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         public async Task ChangePassword_ReturnsOk_WhenPasswordChangedSuccessfully()
         {
             // Arrange
-            var mockService = new Mock<IProfileService>();
             var userId = 1;
 
-            var request = new ChangePasswordReqDto
-            {
-                CurrentPassword = "oldpassword123",
-                NewPassword = "newpassword123",
-                ConfirmNewPassword = "newpassword123"
-            };
+            var mockService = new Mock<IProfileService>();
+            var controller = CreateController(mockService);
+            SetUserClaims(controller, userId, "User");
+
+            var request = ChangePasswordRequest();
 
             var expectedResponse = new ServiceResult<bool>
             {
@@ -127,9 +125,6 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             mockService
                 .Setup(x => x.ChangePasswordAsync(userId, request))
                 .ReturnsAsync(expectedResponse);
-
-            var controller = new ProfileController(mockService.Object);
-            SetUserClaims(controller, userId, "User");
 
             // Act
             var result = await controller.ChangePassword(request);
@@ -147,15 +142,13 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         public async Task ChangePassword_ReturnsBadRequest_WhenServiceReturnsFailure()
         {
             // Arrange
-            var mockService = new Mock<IProfileService>();
             var userId = 1;
 
-            var request = new ChangePasswordReqDto
-            {
-                CurrentPassword = "oldpassword123",
-                NewPassword = "newpassword123",
-                ConfirmNewPassword = "newpassword123"
-            };
+            var mockService = new Mock<IProfileService>();
+            var controller = CreateController(mockService);
+            SetUserClaims(controller, userId, "User");
+
+            var request = ChangePasswordRequest();
 
             var expectedResponse = new ServiceResult<bool>
             {
@@ -166,9 +159,6 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             mockService
                 .Setup(x => x.ChangePasswordAsync(userId, request))
                 .ReturnsAsync(expectedResponse);
-
-            var controller = new ProfileController(mockService.Object);
-            SetUserClaims(controller, userId, "User");
 
             // Act
             var result = await controller.ChangePassword(request);
@@ -186,21 +176,16 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         {
             // Arrange
             var userId = 1;
-            var mockService = new Mock<IProfileService>();
 
-            var request = new ChangePasswordReqDto
-            {
-                CurrentPassword = "oldpassword123",
-                NewPassword = "newpassword123",
-                ConfirmNewPassword = "newpassword123"
-            };
+            var mockService = new Mock<IProfileService>();
+            var controller = CreateController(mockService);
+            SetUserClaims(controller, userId, "User");
+
+            var request = ChangePasswordRequest();
 
             mockService
                 .Setup(x => x.ChangePasswordAsync(userId, request))
                 .ThrowsAsync(new Exception("Database error"));
-
-            var controller = new ProfileController(mockService.Object);
-            SetUserClaims(controller, userId, "User");
 
             // Act
             var result = await controller.ChangePassword(request);
@@ -230,6 +215,21 @@ namespace ExpenseTracker.Tests.Unit.Controllers
                     User = new ClaimsPrincipal(
                         new ClaimsIdentity(claims, "Test"))
                 }
+            };
+        }
+
+        private static ProfileController CreateController(Mock<IProfileService> mockService)
+        {
+            return new ProfileController(mockService.Object);
+        }
+
+        private static ChangePasswordReqDto ChangePasswordRequest()
+        {
+            return new ChangePasswordReqDto
+            {
+                CurrentPassword = "oldpassword123",
+                NewPassword = "newpassword123",
+                ConfirmNewPassword = "newpassword123"
             };
         }
     }

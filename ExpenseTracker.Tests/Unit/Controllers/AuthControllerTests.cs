@@ -210,111 +210,6 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             Assert.Equal(errorMessage, response.ErrorMessage);
         }
 
-        //[Fact]
-        //public async Task Login_ReturnsBadRequest_WhenUserNotFound()
-        //{
-        //    // Arrange
-        //    var mockService = new Mock<IAuthService>();
-
-        //    var request = new LoginUserReqDto
-        //    {
-        //        Username = "testuser",
-        //        Password = "Password123!"
-        //    };
-
-        //    var expectedResponse = new ServiceResult<TokenResDto>
-        //    {
-        //        Success = false,
-        //        ErrorMessage = "No account found with that username.",
-        //    };
-
-        //    mockService
-        //        .Setup(x => x.LoginAsync(request))
-        //        .ReturnsAsync(expectedResponse);
-
-        //    var controller = new AuthController(mockService.Object);
-
-        //    // Act
-        //    var result = await controller.Login(request);
-
-        //    // Assert
-        //    var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        //    var response = Assert.IsType<ApiResDto<TokenResDto>>(badRequestResult.Value);
-
-        //    Assert.False(response.Success);
-        //    Assert.Equal(expectedResponse.ErrorMessage, response.ErrorMessage);
-        //}
-
-        //[Fact]
-        //public async Task Login_ReturnsBadRequest_WhenPasswordIsIncorrect()
-        //{
-        //    // Arrange
-        //    var mockService = new Mock<IAuthService>();
-
-        //    var request = new LoginUserReqDto
-        //    {
-        //        Username = "testuser",
-        //        Password = "Password456!"
-        //    };
-
-        //    var expectedResponse = new ServiceResult<TokenResDto>
-        //    {
-        //        Success = false,
-        //        ErrorMessage = "Incorrect password.",
-        //    };
-
-        //    mockService
-        //        .Setup(x => x.LoginAsync(request))
-        //        .ReturnsAsync(expectedResponse);
-
-        //    var controller = new AuthController(mockService.Object);
-
-        //    // Act
-        //    var result = await controller.Login(request);
-
-        //    // Assert
-        //    var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        //    var response = Assert.IsType<ApiResDto<TokenResDto>>(badRequestResult.Value);
-
-        //    Assert.False(response.Success);
-        //    Assert.Equal(expectedResponse.ErrorMessage, response.ErrorMessage);
-        //}
-
-        //[Fact]
-        //public async Task Login_ReturnsBadRequest_WhenAccountIsInactive()
-        //{
-        //    // Arrange
-        //    var mockService = new Mock<IAuthService>();
-
-        //    var request = new LoginUserReqDto
-        //    {
-        //        Username = "testuser",
-        //        Password = "Password123!"
-        //    };
-
-        //    var expectedResponse = new ServiceResult<TokenResDto>
-        //    {
-        //        Success = false,
-        //        ErrorMessage = "Your account has been deactivated. Please contact support for assistance.",
-        //    };
-
-        //    mockService
-        //        .Setup(x => x.LoginAsync(request))
-        //        .ReturnsAsync(expectedResponse);
-
-        //    var controller = new AuthController(mockService.Object);
-
-        //    // Act
-        //    var result = await controller.Login(request);
-
-        //    // Assert
-        //    var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        //    var response = Assert.IsType<ApiResDto<TokenResDto>>(badRequestResult.Value);
-
-        //    Assert.False(response.Success);
-        //    Assert.Equal(expectedResponse.ErrorMessage, response.ErrorMessage);
-        //}
-
         [Fact]
         public async Task Login_Returns500_WhenExceptionOccurs()
         {
@@ -419,6 +314,180 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             Assert.Contains("An error occurred while refreshing token.", response.ErrorMessage);
         }
 
+        [Fact]
+        public async Task ForgotPassword_ReturnsOk_WhenUpdatePasswordSucceeds()
+        {
+            // Arrange
+            var mockService = new Mock<IAuthService>();
+            var controller = CreateController(mockService);
+
+            var request = CreateForgotPasswordRequest();
+
+            mockService.Setup(x => x.ForgotPasswordAsync(request))
+                .ReturnsAsync(true);
+
+            // Act
+            var result = await controller.ForgotPassword(request);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            var response = Assert.IsType<ApiResDto<bool>>(okResult.Value);
+
+            Assert.True(response.Success);
+            Assert.True(response.Data);
+        }
+
+        [Fact]
+        public async Task ForgotPassword_ReturnsNotFound_WhenAccountDoesNotExist()
+        {
+            // Arrange
+            var mockService = new Mock<IAuthService>();
+            var controller = CreateController(mockService);
+
+            var request = CreateForgotPasswordRequest();
+
+            var expectedResponse = new ApiResDto<object>
+            {
+                Success = false,
+                ErrorMessage = "Passwords do not match.",
+            };
+
+            mockService
+                .Setup(x => x.ForgotPasswordAsync(request))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await controller.ForgotPassword(request);
+
+            // Assert
+            var badRequestResult = Assert.IsType<NotFoundObjectResult>(result.Result);
+            var response = Assert.IsType<ApiResDto<object>>(badRequestResult.Value);
+
+            Assert.False(response.Success);
+            Assert.Equal("Account not found.", response.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task ForgotPassword_Returns500_WhenExceptionOccurs()
+        {
+            // Arrange
+            var mockService = new Mock<IAuthService>();
+            var controller = CreateController(mockService);
+
+            var request = CreateForgotPasswordRequest();
+
+            var expectedResponse = new ServiceResult<TokenResDto>
+            {
+                Success = false,
+                ErrorMessage = "An error occurred while resetting password:"
+            };
+
+            mockService
+                .Setup(x => x.ForgotPasswordAsync(request))
+                .ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var result = await controller.ForgotPassword(request);
+
+            // Assert
+            var statusCodeResult = Assert.IsType<ObjectResult>(result.Result);
+            Assert.Equal(500, statusCodeResult.StatusCode);
+
+            var response = Assert.IsType<ApiResDto<object>>(statusCodeResult.Value);
+            Assert.False(response.Success);
+            Assert.Contains(expectedResponse.ErrorMessage, response.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task ResetPassword_ReturnsOk_WhenUpdatePasswordSucceeds()
+        {
+            // Arrange
+            var mockService = new Mock<IAuthService>();
+            var controller = CreateController(mockService);
+
+            var request = CreateResetPasswordRequest();
+
+            var expectedResponse = new ServiceResult<bool>
+            {
+                Success = true,
+                Data = true
+            };
+
+            mockService.Setup(x => x.ResetPasswordAsync(request))
+                .ReturnsAsync(expectedResponse);
+
+            // Act
+            var result = await controller.ChangePassword(request);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            var response = Assert.IsType<ApiResDto<bool?>>(okResult.Value);
+
+            Assert.True(response.Success);
+            Assert.True(response.Data);
+        }
+
+        [Fact]
+        public async Task ResetPassword_ReturnsNotFound_WhenPasswordDoesNotMatch()
+        {
+            // Arrange
+            var mockService = new Mock<IAuthService>();
+            var controller = CreateController(mockService);
+
+            var request = CreateResetPasswordRequest();
+
+            var expectedResponse = new ServiceResult<bool>
+            {
+                Success = false,
+                ErrorMessage = "Passwords do not match.",
+            };
+
+            mockService
+                .Setup(x => x.ResetPasswordAsync(request))
+                .ReturnsAsync(expectedResponse);
+
+            // Act
+            var result = await controller.ChangePassword(request);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+            var response = Assert.IsType<ApiResDto<bool?>>(badRequestResult.Value);
+
+            Assert.False(response.Success);
+            Assert.Equal(expectedResponse.ErrorMessage, response.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task ResetPassword_Returns500_WhenExceptionOccurs()
+        {
+            // Arrange
+            var mockService = new Mock<IAuthService>();
+            var controller = CreateController(mockService);
+
+            var request = CreateResetPasswordRequest();
+
+            var expectedResponse = new ServiceResult<bool>
+            {
+                Success = false,
+                ErrorMessage = "An error occurred while resetting password:"
+            };
+
+            mockService
+                .Setup(x => x.ResetPasswordAsync(request))
+                .ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var result = await controller.ChangePassword(request);
+
+            // Assert
+            var statusCodeResult = Assert.IsType<ObjectResult>(result.Result);
+            Assert.Equal(500, statusCodeResult.StatusCode);
+
+            var response = Assert.IsType<ApiResDto<object>>(statusCodeResult.Value);
+            Assert.False(response.Success);
+            Assert.Contains(expectedResponse.ErrorMessage, response.ErrorMessage);
+        }
+
         // Helper Functions
         private static AuthController CreateController(Mock<IAuthService> mockService)
         {
@@ -463,6 +532,28 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             {
                 AccessToken = "test-access-token",
                 RefreshToken = "test-refresh-token"
+            };
+        }
+
+        private static ForgotPasswordReqDto CreateForgotPasswordRequest(
+            string email = "testuser@email.com")
+        {
+            return new ForgotPasswordReqDto
+            {
+                Email = email
+            };
+        }
+
+        private static ResetPasswordReqDto CreateResetPasswordRequest(
+            string token = "testuser@email.com",
+            string newPassword = "password456",
+            string confirmNewPassword = "password456")
+        {
+            return new ResetPasswordReqDto
+            {
+                Token = token,
+                NewPassword = newPassword,
+                ConfirmNewPassword = confirmNewPassword
             };
         }
     }

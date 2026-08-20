@@ -368,15 +368,15 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         public async Task DeleteExpense_ReturnsOk_WhenExpenseExist()
         {
             // Arrange
-            var mockService = new Mock<IExpenseService>();
             var userId = 1;
             var expenseId = 1;
 
+            var mockService = new Mock<IExpenseService>();
+            var controller = CreateController(mockService);
+            SetUserClaims(controller, userId, "User");
+
             mockService.Setup(x => x.DeleteExpenseAsync(userId, "User", expenseId))
                 .ReturnsAsync(true);
-
-            var controller = new ExpenseController(mockService.Object);
-            SetUserClaims(controller, userId, "User");
 
             // Act
             var result = await controller.DeleteExpense(expenseId);
@@ -392,15 +392,15 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         public async Task DeleteExpense_ReturnsNotFound_WhenNoExpenseExist()
         {
             // Arrange
-            var mockService = new Mock<IExpenseService>();
             var userId = 1;
             var expenseId = 1;
 
+            var mockService = new Mock<IExpenseService>();
+            var controller = CreateController(mockService);
+            SetUserClaims(controller, userId, "User");
+
             mockService.Setup(x => x.DeleteExpenseAsync(userId, "User", expenseId))
                 .ReturnsAsync(false);
-
-            var controller = new ExpenseController(mockService.Object);
-            SetUserClaims(controller, userId, "User");
 
             // Act
             var result = await controller.DeleteExpense(expenseId);
@@ -417,15 +417,15 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         public async Task DeleteExpense_Returns500_WhenExceptionOccurs()
         {
             // Arrange
-            var mockService = new Mock<IExpenseService>();
             var userId = 1;
             var expenseId = 1;
 
+            var mockService = new Mock<IExpenseService>();
+            var controller = CreateController(mockService);
+            SetUserClaims(controller, userId, "User");
+
             mockService.Setup(x => x.DeleteExpenseAsync(userId, "User", expenseId))
                 .ThrowsAsync(new Exception("Database error"));
-
-            var controller = new ExpenseController(mockService.Object);
-            SetUserClaims(controller, userId, "User");
 
             // Act
             var result = await controller.DeleteExpense(expenseId);

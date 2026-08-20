@@ -22,8 +22,10 @@ namespace ExpenseTracker.Tests.Unit.Services
         public async Task GetUserByIdAsync_ReturnsUserExpenses_WhenUserExist()
         {
             // Arrange
-            var mockRepo = new Mock<IProfileRepository>();
             var userId = 1;
+
+            var mockRepo = new Mock<IProfileRepository>();
+            var service = new ProfileService(mockRepo.Object, mockMapper.Object);
 
             var user = new User
             {
@@ -56,8 +58,6 @@ namespace ExpenseTracker.Tests.Unit.Services
                 .Setup(x => x.Map<ProfileResDto>(user))
                 .Returns(expectedResponse);
 
-            var service = new ProfileService(mockRepo.Object, mockMapper.Object);
-
             // Act
             var result = await service.GetUserProfileAsync(userId);
 
@@ -71,8 +71,10 @@ namespace ExpenseTracker.Tests.Unit.Services
         public async Task GetUserProfileAsync_ReturnsNull_WhenUserDoesNotExist()
         {
             // Arrange
-            var mockRepo = new Mock<IProfileRepository>();
             var userId = 1;
+
+            var mockRepo = new Mock<IProfileRepository>();
+            var service = new ProfileService(mockRepo.Object, mockMapper.Object);
 
             var expectedResponse = new ProfileResDto
             {
@@ -90,8 +92,6 @@ namespace ExpenseTracker.Tests.Unit.Services
                 .Setup(x => x.GetUserByIdAsync(userId))
                 .ReturnsAsync((User?)null);
 
-            var service = new ProfileService(mockRepo.Object, mockMapper.Object);
-
             // Act
             var result = await service.GetUserProfileAsync(userId);
 
@@ -107,11 +107,12 @@ namespace ExpenseTracker.Tests.Unit.Services
         public async Task ChangePasswordAsync_ReturnsSuccess_WhenPasswordIsChangedSuccessfully()
         {
             // Arrange
-            var mockRepo = new Mock<IProfileRepository>();
             var userId = 1;
-
             var currentPassword = "oldpassword123";
             var newPassword = "newpassword123";
+
+            var mockRepo = new Mock<IProfileRepository>();
+            var service = new ProfileService(mockRepo.Object, mockMapper.Object);
 
             var user = new User
             {
@@ -137,8 +138,6 @@ namespace ExpenseTracker.Tests.Unit.Services
                 .Setup(x => x.UpdatePasswordAsync(It.IsAny<User>()))
                 .Returns(Task.CompletedTask);
 
-            var service = new ProfileService(mockRepo.Object, mockMapper.Object);
-
             // Act
             var result = await service.ChangePasswordAsync(userId, request);
 
@@ -155,18 +154,12 @@ namespace ExpenseTracker.Tests.Unit.Services
         public async Task ChangePasswordAsync_ReturnsFailure_WhenUserNotFound()
         {
             // Arrange
-            var mockRepo = new Mock<IProfileRepository>();
             var userId = 1;
 
-            var currentPassword = "oldpassword123";
-            var newPassword = "newpassword123";
+            var mockRepo = new Mock<IProfileRepository>();
+            var service = new ProfileService(mockRepo.Object, mockMapper.Object);
 
-            var request = new ChangePasswordReqDto
-            {
-                CurrentPassword = currentPassword,
-                NewPassword = newPassword,
-                ConfirmNewPassword = newPassword
-            };
+            var request = ChangePassword();
 
             mockRepo
                 .Setup(x => x.GetUserByIdAsync(userId))
@@ -175,8 +168,6 @@ namespace ExpenseTracker.Tests.Unit.Services
             mockRepo
                 .Setup(x => x.UpdatePasswordAsync(It.IsAny<User>()))
                 .Returns(Task.CompletedTask);
-
-            var service = new ProfileService(mockRepo.Object, mockMapper.Object);
 
             // Act
             var result = await service.ChangePasswordAsync(userId, request);
@@ -191,15 +182,17 @@ namespace ExpenseTracker.Tests.Unit.Services
                 Times.Never);
         }
 
+        // new
         [Fact]
         public async Task ChangePasswordAsync_ReturnsFailure_WhenCurrentPasswordIsIncorrect()
         {
             // Arrange
-            var mockRepo = new Mock<IProfileRepository>();
             var userId = 1;
-
             var currentPassword = "oldpassword123";
-            var newPassword = "newpassword123";
+
+            var mockRepo = new Mock<IProfileRepository>();
+
+            var request = ChangePassword(currentPassword: "wrongpassword123");
 
             var user = new User
             {
@@ -209,13 +202,6 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             user.HashedPassword = new PasswordHasher<User>()
                 .HashPassword(user, currentPassword);
-
-            var request = new ChangePasswordReqDto
-            {
-                CurrentPassword = "wrongpassword123",
-                NewPassword = newPassword,
-                ConfirmNewPassword = newPassword
-            };
 
             mockRepo
                 .Setup(x => x.GetUserByIdAsync(userId))
@@ -244,11 +230,13 @@ namespace ExpenseTracker.Tests.Unit.Services
         public async Task ChangePasswordAsync_ReturnsFailure_WhenNewPasswordMatchesCurrentPassword()
         {
             // Arrange
-            var mockRepo = new Mock<IProfileRepository>();
             var userId = 1;
-
             var currentPassword = "oldpassword123";
-            var newPassword = "oldpassword123";
+
+            var mockRepo = new Mock<IProfileRepository>();
+            var service = new ProfileService(mockRepo.Object, mockMapper.Object);
+
+            var request = ChangePassword(newPassword: "oldpassword123");
 
             var user = new User
             {
@@ -259,13 +247,6 @@ namespace ExpenseTracker.Tests.Unit.Services
             user.HashedPassword = new PasswordHasher<User>()
                 .HashPassword(user, currentPassword);
 
-            var request = new ChangePasswordReqDto
-            {
-                CurrentPassword = currentPassword,
-                NewPassword = newPassword,
-                ConfirmNewPassword = newPassword
-            };
-
             mockRepo
                 .Setup(x => x.GetUserByIdAsync(userId))
                 .ReturnsAsync(user);
@@ -273,8 +254,6 @@ namespace ExpenseTracker.Tests.Unit.Services
             mockRepo
                 .Setup(x => x.UpdatePasswordAsync(It.IsAny<User>()))
                 .Returns(Task.CompletedTask);
-
-            var service = new ProfileService(mockRepo.Object, mockMapper.Object);
 
             // Act
             var result = await service.ChangePasswordAsync(userId, request);
@@ -287,6 +266,19 @@ namespace ExpenseTracker.Tests.Unit.Services
             mockRepo.Verify(
                 x => x.UpdatePasswordAsync(It.IsAny<User>()),
                 Times.Never); ;
+        }
+
+        // Helper Functions
+        private static ChangePasswordReqDto ChangePassword(
+            string currentPassword = "oldpassword123",
+            string newPassword = "newpassword123")
+        {
+            return new ChangePasswordReqDto
+            {
+                CurrentPassword = currentPassword,
+                NewPassword = newPassword,
+                ConfirmNewPassword = newPassword
+            };
         }
     }
 }

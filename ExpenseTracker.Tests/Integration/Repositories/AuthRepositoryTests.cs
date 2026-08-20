@@ -69,6 +69,85 @@ namespace ExpenseTracker.Tests.Integration.Repositories
         }
 
         [Fact]
+        public async Task GetByEmailAsync_ReturnsUser_WhenUserExists()
+        {
+            // Arrange
+            var userId = 1;
+
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
+
+            var user = CreateUser(userId);
+
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+
+            // Act
+            var result = await repository.GetByEmailAsync(user.Email);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(user.Id, result.Id);
+            Assert.Equal(user.Username, result.Username);
+        }
+
+        [Fact]
+        public async Task GetByEmailAsync_ReturnsNull_WhenUserDoesNotExist()
+        {
+            // Arrange
+            var email = "unkownuser@email.com";
+
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
+
+            // Act
+            var result = await repository.GetByEmailAsync(email);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        //
+        [Fact]
+        public async Task GetUserByResetToken_ReturnsUser_WhenUserExists()
+        {
+            // Arrange
+            var userId = 1;
+
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
+
+            var user = CreateUser(userId);
+
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+
+            // Act
+            var result = await repository.GetUserByResetToken(user.ResetToken!);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(user.Id, result.Id);
+            Assert.Equal(user.Username, result.Username);
+        }
+
+        [Fact]
+        public async Task GetUserByResetToken_ReturnsNull_WhenUserDoesNotExist()
+        {
+            // Arrange
+            var email = "unkownuser@email.com";
+
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
+
+            // Act
+            var result = await repository.GetUserByResetToken(email);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
         public async Task IsUsernameTakenAsync_ReturnsTrue_WhenUsernameExists()
         {
             // Arrange
@@ -137,10 +216,13 @@ namespace ExpenseTracker.Tests.Integration.Repositories
                 Id = id,
                 Username = username,
                 FullName = "Test User",
+                Email = "testuser@gmail.com",
                 ContactNumber = "09123456789",
                 HashedPassword = "password",
                 Role = UserRole.User,
                 IsActive = true,
+                ResetToken = "Qm8vLkzTpF7Wa2+sdN5HrJxCUG9myEbq14KoYVnRDtA=",
+                ResetTokenExpiryTime = DateTime.UtcNow.AddMinutes(5),
                 CreatedAt = DateTime.UtcNow
             };
         }

@@ -103,5 +103,66 @@ namespace ExpenseTracker.API.Controllers
                 });
             }
         }
+
+        [HttpPatch("forgot-password")]
+        public async Task<ActionResult<ApiResDto<bool>>> ForgotPassword(ForgotPasswordReqDto request)
+        {
+            try
+            {
+                var data = await authService.ForgotPasswordAsync(request);
+
+                if (!data) return NotFound(new ApiResDto<object>
+                {
+                    Success = false,
+                    ErrorMessage = "Account not found."
+                });
+
+                return Ok(new ApiResDto<bool>
+                {
+                    Success = true,
+                    Data = data
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ApiResDto<object>
+                {
+                    Success = false,
+                    ErrorMessage = $"An error occurred while resetting password: {ex.Message}"
+                });
+            }
+        }
+
+        [HttpPatch("reset-password")]
+        public async Task<ActionResult<ApiResDto<bool>>> ChangePassword([FromBody] ResetPasswordReqDto request)
+        {
+            try
+            {
+                var result = await authService.ResetPasswordAsync(request);
+
+                if (!result.Success)
+                {
+                    return BadRequest(new ApiResDto<bool?>
+                    {
+                        Success = false,
+                        ErrorMessage = result.ErrorMessage
+                    });
+                }
+
+                return Ok(new ApiResDto<bool?>
+                {
+                    Success = true,
+                    Data = result.Data
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ApiResDto<object>
+                {
+                    Success = false,
+                    ErrorMessage = $"An error occurred while resetting password: {ex.Message}"
+                });
+            }
+        }
     }
 }

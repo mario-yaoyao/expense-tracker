@@ -36,6 +36,34 @@ namespace ExpenseTracker.DAL.Repositories
             }
         }
 
+        public async Task<User?> GetByEmailAsync(string email)
+        {
+            try
+            {
+                return await context.Users
+                    .FirstOrDefaultAsync(u => u.Email == email);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Database error while fetching user by email: {Message}", ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<User?> GetUserByResetToken(string resetToken)
+        {
+            try
+            {
+                return await context.Users
+                    .FirstOrDefaultAsync(u => u.ResetToken == resetToken);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Database error while fetching user by email: {Message}", ex.Message);
+                throw;
+            }
+        }
+
         public async Task<bool> IsUsernameTakenAsync(string username)
         {
             try
@@ -60,6 +88,20 @@ namespace ExpenseTracker.DAL.Repositories
             catch (Exception ex)
             {
                 logger.LogError("Database error while adding user: {Message}", ex.Message);
+                throw;
+            }
+        }
+
+        public async Task UpdatePasswordAsync(User user)
+        {
+            try
+            {
+                context.Users.Update(user);
+                await context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Database error while saving updating password: {Message}", ex.Message);
                 throw;
             }
         }

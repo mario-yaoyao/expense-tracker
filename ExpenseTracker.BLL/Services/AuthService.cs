@@ -1,9 +1,9 @@
 ﻿using ExpenseTracker.BLL.Interfaces;
 using ExpenseTracker.DAL.Interfaces;
+using ExpenseTracker.Models.Common;
 using ExpenseTracker.Models.Dtos.Requests;
 using ExpenseTracker.Models.Dtos.Responses;
 using ExpenseTracker.Models.Models;
-using ExpenseTracker.Models.Common;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -14,7 +14,7 @@ using System.Text;
 
 namespace ExpenseTracker.BLL.Services
 {
-    public class AuthService(IConfiguration configuration, IAuthRepository authRepository) : IAuthService
+    public class AuthService(IConfiguration configuration, IAuthRepository authRepository, IEmailService emailService) : IAuthService
     {
         public async Task<ServiceResult<TokenResDto>> LoginAsync(LoginUserReqDto request)
         {
@@ -106,6 +106,72 @@ namespace ExpenseTracker.BLL.Services
             };
         }
 
+        public async Task<bool> ForgotPasswordAsync(ForgotPasswordReqDto request)
+        {
+            var user = await authRepository.GetByEmailAsync(request.Email);
+
+            if (user == null) return false;
+
+            var resetToken = await GenerateAndSaveResetTokenAsync(user);
+
+            var emailSent = await emailService.SendEmailAsync(
+                user.FullName,
+                user.Username,
+                user.Email,
+                "Reset your BudgetWise password",
+                $"""
+                We received a request to reset your BudgetWise password. Use the button below to create your new password.
+                """,
+                resetToken);
+
+            return emailSent;
+        }
+
+        public async Task<ServiceResult<bool>> ResetPasswordAsync(ResetPasswordReqDto request)
+        {
+            if (request.NewPassword != request.ConfirmNewPassword)
+            {
+                return new ServiceResult<bool>
+                {
+                    Success = false,
+                    ErrorMessage = "Passwords do not match."
+                };
+            }
+
+            var user = await authRepository.GetUserByResetToken(request.Token);
+
+            if (user == null)
+            {
+                return new ServiceResult<bool>
+                {
+                    Success = false,
+                    ErrorMessage = "Invalid reset token."
+                };
+            }
+
+            if (user.ResetTokenExpiryTime < DateTime.UtcNow)
+            {
+                return new ServiceResult<bool>
+                {
+                    Success = false,
+                    ErrorMessage = "Reset token has expired. Please submit a new password reset request."
+                };
+            }
+
+            user.HashedPassword = new PasswordHasher<User>().HashPassword(user, request.NewPassword);
+            user.ResetToken = null;
+            user.ResetTokenExpiryTime = null;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await authRepository.UpdatePasswordAsync(user);
+
+            return new ServiceResult<bool>
+            {
+                Success = true,
+                Data = true
+            };
+        }
+
         private static bool IsPasswordValid(User user, string password) =>
             new PasswordHasher<User>().VerifyHashedPassword(user, user.HashedPassword, password) != PasswordVerificationResult.Failed;
 
@@ -139,7 +205,7 @@ namespace ExpenseTracker.BLL.Services
             return user;
         }
 
-        private static string GenerateRefreshToken()
+        private static string GenerateRandomToken()
         {
             using var rng = RandomNumberGenerator.Create();
             var randomNumber = new byte[32];
@@ -149,12 +215,22 @@ namespace ExpenseTracker.BLL.Services
 
         private async Task<string> GenerateAndSaveRefreshTokenAsync(User user)
         {
-            var refreshToken = GenerateRefreshToken();
+            var refreshToken = GenerateRandomToken();
             user.RefreshToken = refreshToken;
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
             await authRepository.SaveChangesAsync();
 
             return refreshToken;
+        }
+
+        private async Task<string> GenerateAndSaveResetTokenAsync(User user)
+        {
+            var resetToken = GenerateRandomToken();
+            user.ResetToken = resetToken;
+            user.ResetTokenExpiryTime = DateTime.UtcNow.AddMinutes(5);
+            await authRepository.SaveChangesAsync();
+
+            return resetToken;
         }
 
         private string CreateToken(User user)

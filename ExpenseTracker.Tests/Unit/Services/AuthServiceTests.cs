@@ -19,29 +19,13 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var mockRepo = new Mock<IAuthRepository>();
+            var mockEmailService = new Mock<IEmailService>();
+            var service = CreateAuthService(mockRepo, mockEmailService);
+
+            var request = CreateRegisterRequest();
 
             mockRepo.Setup(x => x.IsUsernameTakenAsync("testuser"))
                 .ReturnsAsync(false);
-
-            var configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["AppSettings:Token"] = "mK9#xV2!pL7$qR4@tY8^nH3&zW6*eC1+sF5=uJ0~dA9%gB2?oN7!rT4#kP8@vX3&yL6*cD1+sM5=uQ0~hZ9%fG2",
-                    ["AppSettings:Issuer"] = "TestIssuer",
-                    ["AppSettings:Audience"] = "TestAudience"
-                })
-                .Build();
-
-            var service = new AuthService(configuration, mockRepo.Object);
-
-            var request = new RegisterReqDto
-            {
-                FullName = "Test User",
-                Username = "testuser",
-                ContactNumber = "09876543210",
-                Password = "Password123!",
-                ConfirmPassword = "Password123!"
-            };
 
             // Act
             var result = await service.RegisterAsync(request);
@@ -61,29 +45,14 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var mockRepo = new Mock<IAuthRepository>();
+            var mockEmailService = new Mock<IEmailService>();
+            var service = CreateAuthService(mockRepo, mockEmailService);
+
+            var request = CreateRegisterRequest(confirmPassword: "Password456!");
 
             mockRepo.Setup(x => x.IsUsernameTakenAsync("testuser"))
                 .ReturnsAsync(true);
 
-            var configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["AppSettings:Token"] = "mK9#xV2!pL7$qR4@tY8^nH3&zW6*eC1+sF5=uJ0~dA9%gB2?oN7!rT4#kP8@vX3&yL6*cD1+sM5=uQ0~hZ9%fG2",
-                    ["AppSettings:Issuer"] = "TestIssuer",
-                    ["AppSettings:Audience"] = "TestAudience"
-                })
-                .Build();
-
-            var service = new AuthService(configuration, mockRepo.Object);
-
-            var request = new RegisterReqDto
-            {
-                FullName = "Test User",
-                Username = "testuser",
-                ContactNumber = "09876543210",
-                Password = "Password123!",
-                ConfirmPassword = "Password456!"
-            };
             // Act
             var result = await service.RegisterAsync(request);
 
@@ -97,29 +66,14 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var mockRepo = new Mock<IAuthRepository>();
+            var mockEmailService = new Mock<IEmailService>();
+            var service = CreateAuthService(mockRepo, mockEmailService);
+
+            var request = CreateRegisterRequest();
 
             mockRepo.Setup(x => x.IsUsernameTakenAsync("testuser"))
                 .ReturnsAsync(true);
 
-            var configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["AppSettings:Token"] = "mK9#xV2!pL7$qR4@tY8^nH3&zW6*eC1+sF5=uJ0~dA9%gB2?oN7!rT4#kP8@vX3&yL6*cD1+sM5=uQ0~hZ9%fG2",
-                    ["AppSettings:Issuer"] = "TestIssuer",
-                    ["AppSettings:Audience"] = "TestAudience"
-                })
-                .Build();
-
-            var service = new AuthService(configuration, mockRepo.Object);
-
-            var request = new RegisterReqDto
-            {
-                FullName = "Test User",
-                Username = "testuser",
-                ContactNumber = "09876543210",
-                Password = "Password123!",
-                ConfirmPassword = "Password123!"
-            };
             // Act
             var result = await service.RegisterAsync(request);
 
@@ -133,6 +87,10 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var mockRepo = new Mock<IAuthRepository>();
+            var mockEmailService = new Mock<IEmailService>();
+            var service = CreateAuthService(mockRepo, mockEmailService);
+
+            var request = CreateLoginRequest();
 
             var user = new User
             {
@@ -147,23 +105,6 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             mockRepo.Setup(x => x.GetByUsernameAsync("testuser"))
                 .ReturnsAsync(user);
-
-            var configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["AppSettings:Token"] = "mK9#xV2!pL7$qR4@tY8^nH3&zW6*eC1+sF5=uJ0~dA9%gB2?oN7!rT4#kP8@vX3&yL6*cD1+sM5=uQ0~hZ9%fG2",
-                    ["AppSettings:Issuer"] = "TestIssuer",
-                    ["AppSettings:Audience"] = "TestAudience"
-                })
-                .Build();
-
-            var service = new AuthService(configuration, mockRepo.Object);
-
-            var request = new LoginUserReqDto
-            {
-                Username = "testuser",
-                Password = "Password123!"
-            };
 
             // Act
             var result = await service.LoginAsync(request);
@@ -181,6 +122,10 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var mockRepo = new Mock<IAuthRepository>();
+            var mockEmailService = new Mock<IEmailService>();
+            var service = CreateAuthService(mockRepo, mockEmailService);
+
+            var request = CreateLoginRequest();
 
             var expectedResponse = new User
             {
@@ -192,23 +137,6 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             mockRepo.Setup(x => x.GetByUsernameAsync("testuser"))
                 .ReturnsAsync(expectedResponse);
-
-            var configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["AppSettings:Token"] = "mK9#xV2!pL7$qR4@tY8^nH3&zW6*eC1+sF5=uJ0~dA9%gB2?oN7!rT4#kP8@vX3&yL6*cD1+sM5=uQ0~hZ9%fG2",
-                    ["AppSettings:Issuer"] = "TestIssuer",
-                    ["AppSettings:Audience"] = "TestAudience"
-                })
-                .Build();
-
-            var service = new AuthService(configuration, mockRepo.Object);
-
-            var request = new LoginUserReqDto
-            {
-                Username = "testuser",
-                Password = "Password123!"
-            };
 
             // Act
             var result = await service.LoginAsync(request);
@@ -223,6 +151,10 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var mockRepo = new Mock<IAuthRepository>();
+            var mockEmailService = new Mock<IEmailService>();
+            var service = CreateAuthService(mockRepo, mockEmailService);
+
+            var request = CreateLoginRequest(password: "DifferentPassword123!");
 
             var user = new User
             {
@@ -237,23 +169,6 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             mockRepo.Setup(x => x.GetByUsernameAsync("testuser"))
                 .ReturnsAsync(user);
-
-            var configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["AppSettings:Token"] = "mK9#xV2!pL7$qR4@tY8^nH3&zW6*eC1+sF5=uJ0~dA9%gB2?oN7!rT4#kP8@vX3&yL6*cD1+sM5=uQ0~hZ9%fG2",
-                    ["AppSettings:Issuer"] = "TestIssuer",
-                    ["AppSettings:Audience"] = "TestAudience"
-                })
-                .Build();
-
-            var service = new AuthService(configuration, mockRepo.Object);
-
-            var request = new LoginUserReqDto
-            {
-                Username = "testuser",
-                Password = "DifferentPassword123!"
-            };
 
             // Act
             var result = await service.LoginAsync(request);
@@ -272,26 +187,13 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var mockRepo = new Mock<IAuthRepository>();
+            var mockEmailService = new Mock<IEmailService>();
+            var service = CreateAuthService(mockRepo, mockEmailService);
+
+            var request = CreateLoginRequest();
 
             mockRepo.Setup(x => x.GetByUsernameAsync("testuser"))
                 .ReturnsAsync((User?)null);
-
-            var configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["AppSettings:Token"] = "mK9#xV2!pL7$qR4@tY8^nH3&zW6*eC1+sF5=uJ0~dA9%gB2?oN7!rT4#kP8@vX3&yL6*cD1+sM5=uQ0~hZ9%fG2",
-                    ["AppSettings:Issuer"] = "TestIssuer",
-                    ["AppSettings:Audience"] = "TestAudience"
-                })
-                .Build();
-
-            var service = new AuthService(configuration, mockRepo.Object);
-
-            var request = new LoginUserReqDto
-            {
-                Username = "testuser",
-                Password = "Password123!"
-            };
 
             // Act
             var result = await service.LoginAsync(request);
@@ -306,23 +208,13 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var mockService = new Mock<IAuthService>();
+            var controller = CreateController(mockService);
 
-            var request = new RefreshTokenReqDto
-            {
-                UserId = 1,
-                RefreshToken = "test-refresh-token"
-            };
-
-            var tokenResponse = new TokenResDto
-            {
-                AccessToken = "test-access-token",
-                RefreshToken = "test-refresh-token"
-            };
+            var request = CreateRefreshTokenRequest();
+            var tokenResponse = CreateTokenResponse();
 
             mockService.Setup(x => x.RefreshTokensAsync(request))
                 .ReturnsAsync(tokenResponse);
-
-            var controller = new AuthController(mockService.Object);
 
             // Act
             var result = await controller.RefreshToken(request);
@@ -340,23 +232,13 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var mockService = new Mock<IAuthService>();
+            var controller = CreateController(mockService);
 
-            var request = new RefreshTokenReqDto
-            {
-                UserId = 1,
-                RefreshToken = "test-refresh-token"
-            };
-
-            var tokenResponse = new TokenResDto
-            {
-                AccessToken = "test-access-token",
-                RefreshToken = "test-refresh-token"
-            };
+            var request = CreateRefreshTokenRequest();
+            var tokenResponse = CreateTokenResponse();
 
             mockService.Setup(x => x.RefreshTokensAsync(request))
                 .ReturnsAsync((tokenResponse));
-
-            var controller = new AuthController(mockService.Object);
 
             // Act
             var result = await controller.RefreshToken(request);
@@ -375,23 +257,13 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var mockService = new Mock<IAuthService>();
+            var controller = CreateController(mockService);
 
-            var request = new RefreshTokenReqDto
-            {
-                UserId = 1,
-                RefreshToken = "test-different-refresh-token"
-            };
-
-            var tokenResponse = new TokenResDto
-            {
-                AccessToken = "test-access-token",
-                RefreshToken = "test-refresh-token"
-            };
+            var request = CreateRefreshTokenRequest();
+            var tokenResponse = CreateTokenResponse();
 
             mockService.Setup(x => x.RefreshTokensAsync(request))
                 .ReturnsAsync((TokenResDto?)null);
-
-            var controller = new AuthController(mockService.Object);
 
             // Act
             var result = await controller.RefreshToken(request);
@@ -410,6 +282,9 @@ namespace ExpenseTracker.Tests.Unit.Services
             // Arrange
             var mockRepo = new Mock<IAuthRepository>();
             var mockConfig = new Mock<IConfiguration>();
+            var mockEmailService = new Mock<IEmailService>();
+
+            var request = CreateRefreshTokenRequest();
 
             var user = new User
             {
@@ -423,19 +298,221 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var authService = new AuthService(
                 mockConfig.Object,
-                mockRepo.Object);
-
-            var request = new RefreshTokenReqDto
-            {
-                UserId = user.Id,
-                RefreshToken = "test-refresh-token"
-            };
+                mockRepo.Object,
+                mockEmailService.Object);
 
             // Act
             var result = await authService.RefreshTokensAsync(request);
 
             // Assert
             Assert.Null(result);
+        }
+
+        //
+        [Fact]
+        public async Task ResetPasswordAsync_ReturnsSuccess_WhenUpdatePasswordSucceeds()
+        {
+            // Arrange
+            var mockRepo = new Mock<IAuthRepository>();
+            var mockEmailService = new Mock<IEmailService>();
+            var service = CreateAuthService(mockRepo, mockEmailService);
+
+            var request = CreateResetPasswordRequest();
+
+            var user = new User
+            {
+                Id = 1,
+                FullName = "Test User",
+                Username = "testuser",
+                ContactNumber = "09876543210",
+                IsActive = true,
+                ResetToken = request.Token,
+                ResetTokenExpiryTime = DateTime.UtcNow.AddMinutes(5),
+                HashedPassword = "old-password"
+            };
+
+            user.HashedPassword = new PasswordHasher<User>().HashPassword(user, "Password123!");
+
+            mockRepo.Setup(x => x.GetUserByResetToken(request.Token))
+                .ReturnsAsync(user);
+
+            // Act
+            var result = await service.ResetPasswordAsync(request);
+
+            // Assert
+            Assert.True(result.Success);
+            Assert.True(result.Data);
+
+            mockRepo.Verify(
+                x => x.GetUserByResetToken(request.Token),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task ResetPasswordAsync_ReturnsFailure_WhenPasswordsDoesNotMatch()
+        {
+            // Arrange
+            var mockRepo = new Mock<IAuthRepository>();
+            var mockEmailService = new Mock<IEmailService>();
+            var service = CreateAuthService(mockRepo, mockEmailService);
+
+            var request = CreateResetPasswordRequest(confirmNewPassword: "password789");
+
+            var expectedResponse = new User
+            {
+                Id = 1,
+                Username = "testuser",
+                HashedPassword = "hashed-password",
+                IsActive = false
+            };
+
+            mockRepo.Setup(x => x.GetUserByResetToken(request.Token))
+                .ReturnsAsync(expectedResponse);
+
+            // Act
+            var result = await service.ResetPasswordAsync(request);
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Equal("Passwords do not match.", result.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task ResetPasswordAsync_ReturnsFailure_WhenResetTokenIsInvalid()
+        {
+            // Arrange
+            var mockRepo = new Mock<IAuthRepository>();
+            var mockEmailService = new Mock<IEmailService>();
+            var service = CreateAuthService(mockRepo, mockEmailService);
+
+            var request = CreateResetPasswordRequest();
+
+            mockRepo.Setup(x => x.GetUserByResetToken(request.Token))
+                .ReturnsAsync((User?)null);
+
+            // Act
+            var result = await service.ResetPasswordAsync(request);
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Equal("Invalid reset token.", result.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task ResetPasswordAsync_ReturnsFailure_WhenResetTokenIsExpired()
+        {
+            // Arrange
+            var mockRepo = new Mock<IAuthRepository>();
+            var mockEmailService = new Mock<IEmailService>();
+            var service = CreateAuthService(mockRepo, mockEmailService);
+
+            var request = CreateResetPasswordRequest();
+
+            var user = new User
+            {
+                Id = 1,
+                Username = "testuser",
+                ResetToken = request.Token,
+                ResetTokenExpiryTime = DateTime.UtcNow.AddMinutes(-1)
+            };
+
+            mockRepo.Setup(x => x.GetUserByResetToken(request.Token))
+                .ReturnsAsync(user);
+
+            // Act
+            var result = await service.ResetPasswordAsync(request);
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Equal("Reset token has expired. Please submit a new password reset request.", result.ErrorMessage);
+        }
+
+        // Helper Functions
+        private static IConfiguration CreateConfiguration()
+        {
+            return new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["AppSettings:Token"] = "mK9#xV2!pL7$qR4@tY8^nH3&zW6*eC1+sF5=uJ0~dA9%gB2?oN7!rT4#kP8@vX3&yL6*cD1+sM5=uQ0~hZ9%fG2",
+                    ["AppSettings:Issuer"] = "TestIssuer",
+                    ["AppSettings:Audience"] = "TestAudience"
+                })
+                .Build();
+        }
+
+        private static AuthService CreateAuthService(
+            Mock<IAuthRepository> mockRepo,
+            Mock<IEmailService> mockEmailService)
+        {
+            return new AuthService(
+                CreateConfiguration(),
+                mockRepo.Object,
+                mockEmailService.Object);
+        }
+
+        private static AuthController CreateController(Mock<IAuthService> mockService)
+        {
+            return new AuthController(mockService.Object);
+        }
+
+        private static RegisterReqDto CreateRegisterRequest(
+            string fullName = "Test User",
+            string username = "testuser",
+            string contactNumber = "09876543210",
+            string password = "Password123!",
+            string confirmPassword = "Password123!"
+            )
+        {
+            return new RegisterReqDto
+            {
+                FullName = fullName,
+                Username = username,
+                ContactNumber = contactNumber,
+                Password = password,
+                ConfirmPassword = confirmPassword
+            };
+        }
+
+        private static LoginUserReqDto CreateLoginRequest(
+            string username = "testuser",
+            string password = "Password123!")
+        {
+            return new LoginUserReqDto
+            {
+                Username = username,
+                Password = password
+            };
+        }
+
+        private static RefreshTokenReqDto CreateRefreshTokenRequest()
+        {
+            return new RefreshTokenReqDto
+            {
+                UserId = 1,
+                RefreshToken = "test-refresh-token"
+            };
+        }
+
+        private static TokenResDto CreateTokenResponse()
+        {
+            return new TokenResDto
+            {
+                AccessToken = "test-access-token",
+                RefreshToken = "test-refresh-token"
+            };
+        }
+
+        private static ResetPasswordReqDto CreateResetPasswordRequest(
+            string token = "Qm8vLkzTpF7Wa2+sdN5HrJxCUG9myEbq14KoYVnRDtA=",
+            string newPassword = "password456",
+            string confirmNewPassword = "password456")
+        {
+            return new ResetPasswordReqDto
+            {
+                Token = token,
+                NewPassword = newPassword,
+                ConfirmNewPassword = confirmNewPassword
+            };
         }
     }
 }
