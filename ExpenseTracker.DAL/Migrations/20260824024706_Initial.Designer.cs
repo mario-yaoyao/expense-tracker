@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExpenseTracker.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260820032608_AddPasswordResetToken")]
-    partial class AddPasswordResetToken
+    [Migration("20260824024706_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -49,7 +49,12 @@ namespace ExpenseTracker.DAL.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Categories");
                 });
@@ -125,11 +130,16 @@ namespace ExpenseTracker.DAL.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("UserId1")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("UserId1");
 
                     b.ToTable("Incomes");
                 });
@@ -205,6 +215,17 @@ namespace ExpenseTracker.DAL.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ExpenseTracker.Models.Models.Category", b =>
+                {
+                    b.HasOne("ExpenseTracker.Models.Models.User", "User")
+                        .WithMany("Categories")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("ExpenseTracker.Models.Models.Expense", b =>
                 {
                     b.HasOne("ExpenseTracker.Models.Models.Category", "Category")
@@ -216,7 +237,7 @@ namespace ExpenseTracker.DAL.Migrations
                     b.HasOne("ExpenseTracker.Models.Models.User", "User")
                         .WithMany("Expenses")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Category");
@@ -235,8 +256,12 @@ namespace ExpenseTracker.DAL.Migrations
                     b.HasOne("ExpenseTracker.Models.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("ExpenseTracker.Models.Models.User", null)
+                        .WithMany("Incomes")
+                        .HasForeignKey("UserId1");
 
                     b.Navigation("Category");
 
@@ -252,7 +277,11 @@ namespace ExpenseTracker.DAL.Migrations
 
             modelBuilder.Entity("ExpenseTracker.Models.Models.User", b =>
                 {
+                    b.Navigation("Categories");
+
                     b.Navigation("Expenses");
+
+                    b.Navigation("Incomes");
                 });
 #pragma warning restore 612, 618
         }

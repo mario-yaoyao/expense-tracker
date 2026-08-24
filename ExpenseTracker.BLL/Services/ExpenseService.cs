@@ -58,7 +58,7 @@ namespace ExpenseTracker.BLL.Services
             return mapper.Map<ExpenseResDto>(newExpense);
         }
 
-        public async Task<ExpenseResDto?> UpdateExpenseAsync(int userId, string role, int expenseId, UpdateExpenseReqDto expense)
+        public async Task<ExpenseResDto?> UpdateExpenseAsync(int userId, int expenseId, UpdateExpenseReqDto expense)
         {
             var existingExpense = await expenseRepository.GetExpenseByUserAsync(userId, expenseId);
 
@@ -91,7 +91,7 @@ namespace ExpenseTracker.BLL.Services
         //}
 
         //NOTE: soft delete the expense by setting IsDeleted to true
-        public async Task<bool> DeleteExpenseAsync(int userId, string role, int expenseId)
+        public async Task<bool> DeleteExpenseAsync(int userId, int expenseId)
         {
             var existingExpense = await expenseRepository.GetExpenseByUserAsync(userId, expenseId);
 

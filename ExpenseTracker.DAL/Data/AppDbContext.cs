@@ -22,6 +22,24 @@ namespace ExpenseTracker.DAL.Data
                 .Property(e => e.Amount)
                 .HasPrecision(18, 2);
 
+            modelBuilder.Entity<Category>()
+                .HasOne(c => c.User)
+                .WithMany(u => u.Categories)
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Expense>()
+                .HasOne(e => e.User)
+                .WithMany(u => u.Expenses)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Income>()
+                .HasOne(i => i.User)
+                .WithMany()
+                .HasForeignKey(i => i.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<User>().HasData(new User
             {
                 Id = 1,

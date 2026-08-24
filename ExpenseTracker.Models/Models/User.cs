@@ -20,5 +20,7 @@
         public bool IsActive { get; set; } = false;
 
         public ICollection<Expense> Expenses { get; set; } = [];
+        public ICollection<Category> Categories { get; set; } = [];
+        public ICollection<Income> Incomes { get; set; } = [];
     }
 }
