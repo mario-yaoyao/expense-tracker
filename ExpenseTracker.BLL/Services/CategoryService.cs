@@ -9,20 +9,26 @@ namespace ExpenseTracker.BLL.Services
 {
     public class CategoryService(ICategoryRepository categoryRepository, IMapper mapper) : ICategoryService
     {
-        public async Task<List<CategoryResDto>> GetCategoriesAsync(int userId, string role, CategoryType? type = null)
+        public async Task<(List<CategoryResDto> data, int totalCount, bool hasNextPage)> GetCategoriesAsync(int userId, string role, CategoryType? type = null, int page = 1, int limit = 12, string? search = null)
         {
-            List<Category> categories;
+            List<Category> data;
+            int totalCount;
+            bool hasNextPage;
 
             if (role == "User")
             {
-                categories = await categoryRepository.GetCategoriesByUserAsync(userId, type);
+                (data, totalCount, hasNextPage) = await categoryRepository.GetCategoriesByUserAsync(userId, type, page, limit, search); // get data, totalCount, hasNextPage
             }
             else
             {
-                categories = await categoryRepository.GetAllCategoriesAsync();
+                (data, totalCount, hasNextPage) = await categoryRepository.GetAllCategoriesAsync(page, limit, search);
             }
 
-            return mapper.Map<List<CategoryResDto>>(categories);
+            return (
+                mapper.Map<List<CategoryResDto>>(data),
+                totalCount,
+                hasNextPage
+            );
         }
 
         public async Task<CategoryResDto?> GetCategoryByIdAsync(int userId, string role, int categoryId)

@@ -3,7 +3,6 @@ using ExpenseTracker.Models.Dtos.Requests;
 using ExpenseTracker.Models.Dtos.Responses;
 using ExpenseTracker.Models.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -18,15 +17,24 @@ namespace ExpenseTracker.Controllers
         private string GetRole() => User.FindFirstValue(ClaimTypes.Role)!;
 
         [HttpGet]
-        public async Task<ActionResult<List<CategoryResDto>>> GetCategories([FromQuery] CategoryType? type = null)
+        public async Task<ActionResult<ApiResDto<List<CategoryResDto>>>> GetCategories([FromQuery] CategoryType? type = null, [FromQuery] int page = 1, [FromQuery] int limit = 12, [FromQuery] string? search = null)
         {
             try
             {
+                if (page < 1 || limit < 1)
+                {
+                    return BadRequest(new ApiResDto<object>
+                    {
+                        Success = false,
+                        ErrorMessage = "Page and limit must be greater than 0."
+                    });
+                }
+
                 var userId = GetUserId();
                 var role = GetRole();
-                var data = await categoryService.GetCategoriesAsync(userId, role, type);
+                var result = await categoryService.GetCategoriesAsync(userId, role, type, page, limit, search);
 
-                if (data.Count == 0) return NotFound(new ApiResDto<object>
+                if (result.totalCount == 0) return NotFound(new ApiResDto<object>
                 {
                     Success = false,
                     ErrorMessage = "No categories found."
@@ -35,7 +43,11 @@ namespace ExpenseTracker.Controllers
                 return Ok(new ApiResDto<List<CategoryResDto>>
                 {
                     Success = true,
-                    Data = data,
+                    Data = result.data,
+                    TotalCount = result.totalCount,
+                    Page = page,
+                    Limit = limit,
+                    HasNextPage = result.hasNextPage
                 });
             }
             catch (Exception ex)

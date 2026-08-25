@@ -8,13 +8,28 @@ namespace ExpenseTracker.DAL.Repositories
 {
     public class CategoryRepository(AppDbContext context, ILogger<CategoryRepository> logger) : ICategoryRepository
     {
-        public async Task<List<Category>> GetAllCategoriesAsync()
+        public async Task<(List<Category> data, int totalCount, bool hasNextPage)> GetAllCategoriesAsync(int page = 1, int limit = 12, string? search = null)
         {
             try
             {
-                return await context.Categories
+                var query = context.Categories.AsQueryable();
+
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    query = query.Where(c => c.Name.Contains(search));
+                }
+
+                var totalCount = await query.CountAsync();
+
+                var data = await query
                     .OrderByDescending(c => c.UpdatedAt ?? c.CreatedAt)
+                    .Skip((page - 1) * limit)
+                    .Take(limit)
                     .ToListAsync();
+
+                var hasNextPage = (page * limit) < totalCount;
+
+                return (data, totalCount, hasNextPage);
             }
             catch (Exception ex)
             {
@@ -23,7 +38,7 @@ namespace ExpenseTracker.DAL.Repositories
             }
         }
 
-        public async Task<List<Category>> GetCategoriesByUserAsync(int userId, CategoryType? type = null)
+        public async Task<(List<Category> data, int totalCount, bool hasNextPage)> GetCategoriesByUserAsync(int userId, CategoryType? type = null, int page = 1, int limit = 12, string? search = null)
         {
             try
             {
@@ -35,9 +50,22 @@ namespace ExpenseTracker.DAL.Repositories
                     query = query.Where(c => c.Type == type.Value);
                 }
 
-                return await query
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    query = query.Where(c => c.Name.Contains(search));
+                }
+
+                var totalCount = await query.CountAsync();
+
+                var data = await query
                     .OrderByDescending(c => c.UpdatedAt ?? c.CreatedAt)
+                    .Skip((page - 1) * limit)
+                    .Take(limit)
                     .ToListAsync();
+
+                var hasNextPage = (page * limit) < totalCount;
+
+                return (data, totalCount, hasNextPage);
             }
             catch (Exception ex)
             {
