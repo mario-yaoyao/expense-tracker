@@ -8,7 +8,7 @@ namespace ExpenseTracker.DAL.Repositories
 {
     public class CategoryRepository(AppDbContext context, ILogger<CategoryRepository> logger) : ICategoryRepository
     {
-        public async Task<(List<Category> data, int totalCount, bool hasNextPage)> GetAllCategoriesAsync(int page = 1, int limit = 12, string? search = null)
+        public async Task<(List<Category> data, int totalCount, bool hasNextPage)> GetAllCategoriesAsync(int page = 1, int limit = 20, string? search = null)
         {
             try
             {
@@ -57,8 +57,11 @@ namespace ExpenseTracker.DAL.Repositories
 
                 var totalCount = await query.CountAsync();
 
+                query = type == CategoryType.Expense || type == CategoryType.Income
+                    ? query.OrderBy(c => c.Name)
+                    : query.OrderByDescending(c => c.UpdatedAt ?? c.CreatedAt);
+
                 var data = await query
-                    .OrderByDescending(c => c.UpdatedAt ?? c.CreatedAt)
                     .Skip((page - 1) * limit)
                     .Take(limit)
                     .ToListAsync();

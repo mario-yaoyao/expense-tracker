@@ -17,7 +17,7 @@ namespace ExpenseTracker.Controllers
         private string GetRole() => User.FindFirstValue(ClaimTypes.Role)!;
 
         [HttpGet]
-        public async Task<ActionResult<ApiResDto<List<CategoryResDto>>>> GetCategories([FromQuery] CategoryType? type = null, [FromQuery] int page = 1, [FromQuery] int limit = 12, [FromQuery] string? search = null)
+        public async Task<ActionResult<ApiResDto<List<CategoryResDto>>>> GetCategories([FromQuery] CategoryType? type = null, [FromQuery] int page = 1, [FromQuery] int limit = 20, [FromQuery] string? search = null)
         {
             try
             {

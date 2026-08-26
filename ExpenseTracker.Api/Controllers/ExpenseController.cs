@@ -16,15 +16,15 @@ namespace ExpenseTracker.API.Controllers
         private string GetRole() => User.FindFirstValue(ClaimTypes.Role)!;
 
         [HttpGet]
-        public async Task<ActionResult<List<ExpenseResDto>>> GetExpenses()
+        public async Task<ActionResult<List<ExpenseResDto>>> GetExpenses([FromQuery] int page = 1, [FromQuery] int limit = 20, [FromQuery] string? search = null)
         {
             try
             {
                 var userId = GetUserId();
                 var role = GetRole();
-                var data = await expenseService.GetExpensesAsync(userId, role);
+                var result = await expenseService.GetExpensesAsync(userId, role, page, limit, search);
 
-                if (data.Count == 0) return NotFound(new ApiResDto<object>
+                if (result.totalCount == 0) return NotFound(new ApiResDto<object>
                 {
                     Success = false,
                     ErrorMessage = "No expenses found."
@@ -33,7 +33,13 @@ namespace ExpenseTracker.API.Controllers
                 return Ok(new ApiResDto<List<ExpenseResDto>>
                 {
                     Success = true,
-                    Data = data,
+                    Data = result.data,
+                    TotalExpense = result.totalExpense,
+                    HighestExpense = result.highestExpense,
+                    TotalCount = result.totalCount,
+                    Page = page,
+                    Limit = limit,
+                    HasNextPage = result.hasNextPage
                 });
             }
             catch (Exception ex)

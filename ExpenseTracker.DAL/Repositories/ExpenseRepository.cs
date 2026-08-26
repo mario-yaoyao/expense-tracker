@@ -1,22 +1,41 @@
-﻿using ExpenseTracker.DAL.Data;
+﻿using Azure;
+using ExpenseTracker.DAL.Data;
 using ExpenseTracker.DAL.Interfaces;
+using ExpenseTracker.Models.Dtos.Responses;
 using ExpenseTracker.Models.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ExpenseTracker.DAL.Repositories
 {
     public class ExpenseRepository(AppDbContext context, ILogger<ExpenseRepository> logger) : IExpenseRepository
     {
-        public async Task<List<Expense>> GetAllExpensesAsync()
+        public async Task<(List<Expense> data, int totalCount, bool hasNextPage)> GetAllExpensesAsync(int page = 1, int limit = 20, string? search = null)
         {
             try
             {
-                return await context.Expenses
+                var query = context.Expenses
                     .Include(e => e.Category)
                     .Include(e => e.User)
-                    .OrderByDescending(e => e.UpdatedAt ?? e.CreatedAt)
+                    .AsQueryable();
+
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    query = query.Where(e => e.Description.Contains(search));
+                }
+
+                var totalCount = await query.CountAsync();
+
+                var data = await query
+                    .OrderByDescending(c => c.UpdatedAt ?? c.CreatedAt)
+                    .Skip((page - 1) * limit)
+                    .Take(limit)
                     .ToListAsync();
+
+                var hasNextPage = (page * limit) < totalCount;
+
+                return (data, totalCount, hasNextPage);
             }
             catch (Exception ex)
             {
@@ -25,16 +44,50 @@ namespace ExpenseTracker.DAL.Repositories
             }
         }
 
-        public async Task<List<Expense>> GetExpensesByUserAsync(int userId)
+        public async Task<(List<Expense> data, decimal totalExpense, HighestExpenseResDto? highestExpense, int totalCount, bool hasNextPage)> GetExpensesByUserAsync(int userId, int page = 1, int limit = 12, string? search = null)
         {
             try
             {
-                return await context.Expenses
+                var currentMonth = DateTime.UtcNow.Month;
+                var currentYear = DateTime.UtcNow.Year;
+
+                var query = context.Expenses
                     .Include(e => e.Category)
                     .Include(e => e.User)
-                    .Where(e => e.UserId == userId && !e.IsDeleted)
-                    .OrderByDescending(e => e.UpdatedAt ?? e.CreatedAt)
+                    .Where(e =>
+                        e.UserId == userId &&
+                        !e.IsDeleted &&
+                        e.CreatedAt.Month == currentMonth &&
+                        e.CreatedAt.Year == currentYear)
+                    .AsQueryable();
+
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    query = query.Where(e => e.Description.Contains(search));
+                }
+
+                var totalCount = await query.CountAsync();
+
+                var totalExpense = await query.SumAsync(e => e.Amount);
+
+                var highestExpense = await query
+                    .OrderByDescending(e => e.Amount)
+                    .Select(e => new HighestExpenseResDto
+                    {
+                        Name = e.Category.Name,
+                        Amount = e.Amount
+                    })
+                    .FirstOrDefaultAsync();
+
+                var data = await query
+                    .OrderByDescending(c => c.UpdatedAt ?? c.CreatedAt)
+                    .Skip((page - 1) * limit)
+                    .Take(limit)
                     .ToListAsync();
+
+                var hasNextPage = (page * limit) < totalCount;
+
+                return (data, totalExpense, highestExpense, totalCount, hasNextPage);
             }
             catch (Exception ex)
             {
