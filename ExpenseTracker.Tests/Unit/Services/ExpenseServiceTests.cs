@@ -265,7 +265,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             var category = CreateCategory();
             var request = CreateExpenseRequest();
 
-            var expectedResDto = new ExpenseResDto
+            var expectedResponseDto = new ExpenseResDto
             {
                 Id = expenseId,
                 UserId = userId,
@@ -279,7 +279,7 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             mockMapper
                 .Setup(x => x.Map<ExpenseResDto>(It.IsAny<Expense>()))
-                .Returns(expectedResDto);
+                .Returns(expectedResponseDto);
 
             // Act
             var result = await service.CreateExpenseAsync(userId, request);

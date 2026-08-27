@@ -257,14 +257,13 @@ namespace ExpenseTracker.Tests.Unit.Services
             // Arrange
             var categoryId = 1;
             var userId = 1;
-            var categoryType = CategoryType.Expense;
 
             var mockRepo = new Mock<ICategoryRepository>();
             var service = new CategoryService(mockRepo.Object, mockMapper.Object);
 
-            var request = CreateCategory(categoryId, userId, "Grocery", categoryType);
+            var request = CreateCategoryRequest();
 
-            var expectedResponse = new CategoryResDto
+            var expectedResponseDto = new CategoryResDto
             {
                 Id = categoryId,
                 UserId = userId,
@@ -276,7 +275,7 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             mockMapper
                 .Setup(x => x.Map<CategoryResDto>(It.IsAny<Category>()))
-                .Returns(expectedResponse);
+                .Returns(expectedResponseDto);
 
             // Act
             var result = await service.CreateCategoryAsync(userId, request);
@@ -284,7 +283,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             // Assert
             Assert.NotNull(result);
             Assert.Equal(userId, result.UserId);
-            Assert.Equal(request.Name, result.Description);
+            Assert.Equal(request.Name, result.Name);
             Assert.Equal(request.Type, result.Type);
 
             mockRepo.Verify(
@@ -292,160 +291,139 @@ namespace ExpenseTracker.Tests.Unit.Services
                 Times.Once);
         }
 
-        //[Fact]
-        //public async Task UpdateExpenseAsync_ReturnsUpdatedExpense_WhenExpenseExists()
-        //{
-        //    // Arrange
-        //    var firstExpenseId = 1;
-        //    var userId = 1;
+        [Fact]
+        public async Task UpdateCategoryAsync_ReturnsUpdatedCategory_WhenCategoryExists()
+        {
+            // Arrange
+            var firstCategoryId = 1;
+            var userId = 1;
 
-        //    var mockRepo = new Mock<IExpenseRepository>();
+            var mockRepo = new Mock<ICategoryRepository>();
 
-        //    var firstCategory = CreateCategory();
-        //    var secondCategory = CreateCategory(id: 2, name: "Grocery");
-        //    var request = UpdateExpense();
+            var request = UpdateCategory();
 
-        //    var existingExpense = new Expense
-        //    {
-        //        Id = firstExpenseId,
-        //        UserId = userId,
-        //        Description = "Expense 4",
-        //        Amount = 400,
-        //        CategoryId = firstCategory.Id,
-        //        IsDeleted = false,
-        //        CreatedAt = DateTime.UtcNow,
-        //        UpdatedAt = null
-        //    };
+            var existingCategory = new Category
+            {
+                Id = firstCategoryId,
+                UserId = userId,
+                Name = request.Name,
+                Type = request.Type!.Value,
+                IsDeleted = false,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = null
+            };
 
-        //    var expectedResDto = new ExpenseResDto
-        //    {
-        //        Id = firstExpenseId,
-        //        UserId = userId,
-        //        Description = request.Description,
-        //        Amount = (decimal)request.Amount!,
-        //        CategoryName = secondCategory.Name,
-        //        CategoryType = secondCategory.Type,
-        //        CreatedAt = existingExpense.CreatedAt,
-        //        UpdatedAt = DateTime.UtcNow
-        //    };
+            var expectedResponseDto = new CategoryResDto
+            {
+                Id = firstCategoryId,
+                UserId = userId,
+                Name = existingCategory.Name,
+                Type = existingCategory.Type,
+                CreatedAt = existingCategory.CreatedAt,
+                UpdatedAt = DateTime.UtcNow
+            };
 
-        //    mockMapper
-        //        .Setup(x => x.Map<ExpenseResDto>(It.IsAny<Expense>()))
-        //        .Returns(expectedResDto);
+            mockMapper
+                .Setup(x => x.Map<CategoryResDto>(It.IsAny<Category>()))
+                .Returns(expectedResponseDto);
 
-        //    mockRepo.Setup(x => x.GetExpenseByUserAsync(userId, existingExpense.Id))
-        //        .ReturnsAsync(existingExpense);
+            mockRepo.Setup(x => x.GetCategoryByUserAsync(userId, existingCategory.Id))
+                .ReturnsAsync(existingCategory);
 
-        //    var service = new ExpenseService(mockRepo.Object, mockMapper.Object);
+            var service = new CategoryService(mockRepo.Object, mockMapper.Object);
 
-        //    // Act
-        //    var result = await service.UpdateExpenseAsync(userId, existingExpense.Id, request);
+            // Act
+            var result = await service.UpdateCategoryAsync(userId, existingCategory.Id, request);
 
-        //    // Assert
-        //    Assert.NotNull(result);
-        //    Assert.NotNull(result.UpdatedAt);
-        //    Assert.True(result.UpdatedAt > result.CreatedAt);
-        //    Assert.Equal(userId, result.UserId);
-        //    Assert.Equal(request.Description, result.Description);
-        //    Assert.Equal(request.Amount, result.Amount);
-        //    Assert.Equal(secondCategory.Name, result.CategoryName);
-        //    Assert.Equal(secondCategory.Type, result.CategoryType);
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotNull(result.UpdatedAt);
+            Assert.True(result.UpdatedAt > result.CreatedAt);
+            Assert.Equal(userId, result.UserId);
+            Assert.Equal(expectedResponseDto.Name, result.Name);
+            Assert.Equal(expectedResponseDto.Type, result.Type);
 
-        //    mockRepo.Verify(
-        //        x => x.GetExpenseByUserAsync(userId, existingExpense.Id),
-        //        Times.Once);
+            mockRepo.Verify(
+                x => x.GetCategoryByUserAsync(userId, existingCategory.Id),
+                Times.Once);
 
-        //    mockRepo.Verify(
-        //        x => x.SaveChangesAsync(),
-        //        Times.Once);
-        //}
+            mockRepo.Verify(
+                x => x.SaveChangesAsync(),
+                Times.Once);
+        }
 
-        //[Fact]
-        //public async Task UpdateExpenseAsync_ReturnsNull_WhenExpenseDoesNotExist()
-        //{
-        //    // Arrange
-        //    var userId = 1;
-        //    var expenseId = 1;
+        [Fact]
+        public async Task UpdateCategoryAsync_ReturnsNull_WhenCategoryDoesNotExist()
+        {
+            // Arrange
+            var categoryId = 1;
+            var userId = 1;
 
-        //    var mockRepo = new Mock<IExpenseRepository>();
-        //    var service = new ExpenseService(mockRepo.Object, mockMapper.Object);
+            var mockRepo = new Mock<ICategoryRepository>();
+            var service = new CategoryService(mockRepo.Object, mockMapper.Object);
 
-        //    var request = UpdateExpense();
+            var request = UpdateCategory();
 
-        //    mockRepo.Setup(x => x.GetExpenseByUserAsync(userId, expenseId))
-        //        .ReturnsAsync((Expense?)null);
+            mockRepo.Setup(x => x.GetCategoryByUserAsync(userId, categoryId))
+                .ReturnsAsync((Category?)null);
 
-        //    // Act
-        //    var result = await service.UpdateExpenseAsync(userId, expenseId, request);
+            // Act
+            var result = await service.UpdateCategoryAsync(userId, categoryId, request);
 
-        //    // Assert
-        //    Assert.Null(result);
-        //}
+            // Assert
+            Assert.Null(result);
+        }
 
-        //[Fact]
-        //public async Task DeleteExpenseAsync_ReturnsTrue_WhenExpenseExists()
-        //{
-        //    // Arrange
-        //    var userId = 1;
-        //    var expenseId = 1;
+        [Fact]
+        public async Task DeleteExpenseAsync_ReturnsTrue_WhenExpenseExists()
+        {
+            // Arrange
+            var categoryId = 1;
+            var userId = 1;
 
-        //    var mockRepo = new Mock<IExpenseRepository>();
-        //    var service = new ExpenseService(mockRepo.Object, mockMapper.Object);
+            var mockRepo = new Mock<ICategoryRepository>();
+            var service = new CategoryService(mockRepo.Object, mockMapper.Object);
 
-        //    var category = CreateCategory();
+            var existingCategory = new Category 
+            {
+                Id = categoryId,
+                UserId = userId,
+                Name = "Grocery",
+                Type = CategoryType.Expense,
+                IsDeleted = false
+            };
 
-        //    var existingExpense = new Expense
-        //    {
-        //        Id = expenseId,
-        //        UserId = userId,
-        //        Description = "Expense 1",
-        //        Amount = 100,
-        //        CategoryId = category.Id,
-        //        IsDeleted = false
-        //    };
+            mockRepo.Setup(x => x.GetCategoryByUserAsync(userId, categoryId))
+                .ReturnsAsync(existingCategory);
 
-        //    mockRepo.Setup(x => x.GetExpenseByUserAsync(userId, expenseId))
-        //        .ReturnsAsync(existingExpense);
+            // Act
+            var result = await service.DeleteCategoryAsync(userId, categoryId);
 
-        //    // Act
-        //    var result = await service.DeleteExpenseAsync(userId, expenseId);
+            // Assert
+            Assert.True(result);
+        }
 
-        //    // Assert
-        //    Assert.True(result);
-        //}
+        [Fact]
+        public async Task DeleteCategoryAsync_ReturnsFalse_WhenCategoryDoesNotExist()
+        {
+            // Arrange
+            var categoryId = 1;
+            var userId = 1;
 
-        //[Fact]
-        //public async Task DeleteExpenseAsync_ReturnsFalse_WhenExpenseDoesNotExist()
-        //{
-        //    // Arrange
-        //    var expenseId = 1;
-        //    var userId = 1;
+            var mockRepo = new Mock<ICategoryRepository>();
+            var service = new CategoryService(mockRepo.Object, mockMapper.Object);
 
-        //    var mockRepo = new Mock<IExpenseRepository>();
-        //    var service = new ExpenseService(mockRepo.Object, mockMapper.Object);
+            mockRepo.Setup(x => x.GetCategoryByUserAsync(userId, categoryId))
+                .ReturnsAsync((Category?)null);
 
-        //    mockRepo.Setup(x => x.GetExpenseByUserAsync(userId, expenseId))
-        //        .ReturnsAsync((Expense?)null);
+            // Act
+            var result = await service.DeleteCategoryAsync(userId, categoryId);
 
-        //    // Act
-        //    var result = await service.DeleteExpenseAsync(userId, expenseId);
-
-        //    // Assert
-        //    Assert.False(result);
-        //}
+            // Assert
+            Assert.False(result);
+        }
 
         // Helper Functions
-        //private static Category CreateCategory(
-        //    int id = 1,
-        //    string name = "Transportation")
-        //{
-        //    return new Category
-        //    {
-        //        Id = id,
-        //        Name = name
-        //    };
-        //}
-
         private static Category CreateCategory(
             int id,
             int userId,
@@ -467,7 +445,7 @@ namespace ExpenseTracker.Tests.Unit.Services
 
         private static UpdateCategoryReqDto UpdateCategory(
             string name = "Rent",
-            CategoryType type = 0)
+            CategoryType type = CategoryType.Expense)
         {
             return new UpdateCategoryReqDto
             {
@@ -476,17 +454,15 @@ namespace ExpenseTracker.Tests.Unit.Services
             };
         }
 
-        //private static CreateExpenseReqDto CreateExpenseRequest(
-        //    string description = "Expense 4",
-        //    decimal amount = 400m,
-        //    int categoryId = 1)
-        //{
-        //    return new CreateExpenseReqDto
-        //    {
-        //        Description = description,
-        //        Amount = amount,
-        //        CategoryId = categoryId
-        //    };
-        //}
+        private static CreateCategoryReqDto CreateCategoryRequest(
+            string name = "Rent",
+            CategoryType type = CategoryType.Expense)
+        {
+            return new CreateCategoryReqDto
+            {
+                Name = name,
+                Type = type
+            };
+        }
     }
 }
