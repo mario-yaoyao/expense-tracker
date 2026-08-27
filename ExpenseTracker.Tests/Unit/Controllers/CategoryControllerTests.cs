@@ -1,7 +1,17 @@
-﻿using ExpenseTracker.API.Controllers;
+﻿//using ExpenseTracker.BLL.Interfaces;
+//using ExpenseTracker.Controllers;
+//using ExpenseTracker.Models.Dtos.Responses;
+//using ExpenseTracker.Models.Models;
+//using Microsoft.AspNetCore.Http;
+//using Microsoft.AspNetCore.Mvc;
+//using Moq;
+//using System.Security.Claims;
+
 using ExpenseTracker.BLL.Interfaces;
+using ExpenseTracker.Controllers;
 using ExpenseTracker.Models.Dtos.Requests;
 using ExpenseTracker.Models.Dtos.Responses;
+using ExpenseTracker.Models.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -9,28 +19,39 @@ using System.Security.Claims;
 
 namespace ExpenseTracker.Tests.Unit.Controllers
 {
-    public class ExpensesControllerTests
+    public class CategoryControllerTests
     {
+        //TODO:
+
+        //GetCategories
+
+        //GetCategoryById
+
+        //CreateCategory
+
+        //UpdateCategory
+
+        //DeleteExpense
+
         [Fact]
-        public async Task GetExpenses_ReturnsOk_WhenExpensesExist()
+        public async Task GetCategories_ReturnsOk_WhenCategoriesExist()
         {
             // Arrange
             var userId = 1;
+            var categoryType = CategoryType.Expense;
 
-            var mockService = new Mock<IExpenseService>();
+            var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            var expectedResponseData = new List<ExpenseResDto>
+            var expectedResponseData = new List<CategoryResDto>
             {
                 new()
                 {
                     Id = 1,
                     UserId = userId,
-                    Description = "Breakfast",
-                    Amount = 24.99m,
-                    CategoryName = "Food",
-                    CategoryType = 0,
+                    Name = "Utilities",
+                    Type = 0,
                     IsDeleted = false,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = null
@@ -39,10 +60,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
                 {
                     Id = 2,
                     UserId = userId,
-                    Description = "Lunch",
-                    Amount = 29.50m,
-                    CategoryName = "Food",
-                    CategoryType = 0,
+                    Name = "Rent",
+                    Type = 0,
                     IsDeleted = false,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = null
@@ -51,87 +70,79 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var expectedResponse = (
                 Data: expectedResponseData,
-                TotalExpense: 49.49m,
-                HighestRecord: new HighestRecordResDto
-                {
-                    Name = "Lunch",
-                    Amount = 29.50m,
-                },
                 TotalCount: 2,
                 HasNextPage: false
             );
 
             mockService
-                .Setup(x => x.GetExpensesAsync(userId, "User", 1, 20, null))
+                .Setup(x => x.GetCategoriesAsync(userId, "User", categoryType, 1, 20, null))
                 .ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.GetExpenses();
+            var result = await controller.GetCategories(categoryType);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<List<ExpenseResDto>>>(okResult.Value);
+            var response = Assert.IsType<ApiResDto<List<CategoryResDto>>>(okResult.Value);
 
             Assert.True(response.Success);
             Assert.Equal(2, response.TotalCount);
-            Assert.Equal(expectedResponseData[0].Description, response.Data![0].Description);
-            Assert.Equal(expectedResponseData[1].Amount, response.Data[1].Amount);
-            Assert.Equal(expectedResponse.HighestRecord.Name, response.HighestRecord!.Name);
+            Assert.Equal(expectedResponseData[0].Name, response.Data![0].Name);
+            Assert.Equal(expectedResponseData[1].Type, response.Data![1].Type);
 
             mockService.Verify(
-                x => x.GetExpensesAsync(userId, "User"),
+                x => x.GetCategoriesAsync(userId, "User", categoryType, 1, 20, null),
                 Times.Once);
         }
 
         [Fact]
-        public async Task GetExpenses_ReturnsNotFound_WhenNoExpensesExist()
+        public async Task GetCategories_ReturnsNotFound_WhenNoCategoriesExist()
         {
             // Arrange
             var userId = 1;
+            var categoryType = CategoryType.Expense;
 
-            var mockService = new Mock<IExpenseService>();
+            var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            var expectedResponseData = new List<ExpenseResDto>();
+            var expectedResponseData = new List<CategoryResDto>();
 
             var expectedResponse = (
                 Data: expectedResponseData,
-                TotalExpense: 0m,
-                HighestExpense: (HighestRecordResDto?)null,
                 TotalCount: 0,
                 HasNextPage: false
             );
 
-            mockService.Setup(x => x.GetExpensesAsync(userId, "User", 1, 20, null))
+            mockService.Setup(x => x.GetCategoriesAsync(userId, "User", categoryType, 1, 20, null))
                 .ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.GetExpenses();
+            var result = await controller.GetCategories();
 
             // Assert
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<object>>(notFoundResult.Value);
 
             Assert.False(response.Success);
-            Assert.Equal("No expenses found.", response.ErrorMessage);
+            Assert.Equal("No categories found.", response.ErrorMessage);
         }
 
         [Fact]
-        public async Task GetExpenses_Returns500_WhenExceptionOccurs()
+        public async Task GetCategories_Returns500_WhenExceptionOccurs()
         {
             // Arrange
             var userId = 1;
 
-            var mockService = new Mock<IExpenseService>();
+            var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            mockService.Setup(x => x.GetExpensesAsync(userId, "User"))
+            mockService.Setup(x => x.GetCategoriesAsync(userId, "User"))
                 .ThrowsAsync(new Exception("Database error"));
 
             // Act
-            var result = await controller.GetExpenses();
+            var result = await controller.GetCategories();
 
             // Assert
             var statusCodeResult = Assert.IsType<ObjectResult>(result.Result);
@@ -139,132 +150,131 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var response = Assert.IsType<ApiResDto<object>>(statusCodeResult.Value);
             Assert.False(response.Success);
-            Assert.Contains("An error occurred while retrieving expenses.", response.ErrorMessage);
+            Assert.Contains("An error occurred while retrieving categories.", response.ErrorMessage);
         }
 
         [Fact]
-        public async Task GetExpenseById_ReturnsOk_WhenExpenseExist()
-        {
-            // Arrange
-            var userId = 1;
-            var expenseId = 1;
-
-            var mockService = new Mock<IExpenseService>();
-            var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
-
-            var expectedResponse = new ExpenseResDto
-            {
-                Id = expenseId,
-                UserId = userId,
-                Description = "Food",
-                Amount = 50.00m,
-                CategoryName = "Food",
-                CategoryType = 0,
-                IsDeleted = false,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = null
-            };
-
-            mockService.Setup(x => x.GetExpenseByIdAsync(userId, "User", expenseId))
-                .ReturnsAsync(expectedResponse);
-
-            // Act
-            var result = await controller.GetExpenseById(expenseId);
-
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
-
-            Assert.True(response.Success);
-        }
-
-        [Fact]
-        public async Task GetExpenseById_ReturnsNotFound_WhenNoExpenseExist()
-        {
-            // Arrange
-            var userId = 1;
-            var expenseId = 1;
-
-            var mockService = new Mock<IExpenseService>();
-            var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
-
-            mockService.Setup(x => x.GetExpenseByIdAsync(userId, "User", expenseId))
-                .ReturnsAsync((ExpenseResDto?)null);
-
-            // Act
-            var result = await controller.GetExpenseById(expenseId);
-
-            // Assert
-            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<object>>(notFoundResult.Value);
-
-            Assert.False(response.Success);
-            Assert.Equal("Expense not found.", response.ErrorMessage);
-        }
-
-        [Fact]
-        public async Task CreateExpense_ReturnsOk_WhenExpenseCreated()
+        public async Task GetCategoryById_ReturnsOk_WhenCategoryExist()
         {
             // Arrange
             var userId = 1;
             var categoryId = 1;
 
-            var mockService = new Mock<IExpenseService>();
+            var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            var request = new CreateExpenseReqDto
+            var expectedResponse = new CategoryResDto
             {
-                Description = "Breakfast",
-                Amount = 50.00m,
-                CategoryId = categoryId
-            };
-
-            var expectedResponse = new ExpenseResDto
-            {
-                Id = 1,
+                Id = categoryId,
                 UserId = userId,
-                Description = "Food"
+                Name = "Rent",
+                Type = 0,
+                IsDeleted = false,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = null
             };
 
-            mockService.Setup(x => x.CreateExpenseAsync(userId, request))
+            mockService.Setup(x => x.GetCategoryByIdAsync(userId, "User", categoryId))
                 .ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.CreateExpense(request);
+            var result = await controller.GetCategoryById(categoryId);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
+            var response = Assert.IsType<ApiResDto<CategoryResDto>>(okResult.Value);
 
             Assert.True(response.Success);
         }
 
         [Fact]
-        public async Task CreateExpense_Returns500_WhenExceptionOccurs()
+        public async Task GetCategoryById_ReturnsNotFound_WhenNoCategoryxist()
+        {
+            // Arrange
+            var userId = 1;
+            var categoryId = 1;
+
+            var mockService = new Mock<ICategoryService>();
+            var controller = CreateController(mockService);
+            SetUserClaims(controller, userId, "User");
+
+            mockService.Setup(x => x.GetCategoryByIdAsync(userId, "User", categoryId))
+                .ReturnsAsync((CategoryResDto?)null);
+
+            // Act
+            var result = await controller.GetCategoryById(categoryId);
+
+            // Assert
+            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
+            var response = Assert.IsType<ApiResDto<object>>(notFoundResult.Value);
+
+            Assert.False(response.Success);
+            Assert.Equal("Category not found.", response.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task CreateCategory_ReturnsOk_WhenCategoryCreated()
         {
             // Arrange
             var userId = 1;
 
-            var mockService = new Mock<IExpenseService>();
+            var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            var request = new CreateExpenseReqDto
+            var request = new CreateCategoryReqDto
             {
-                Description = "Breakfast",
-                Amount = 50.00m,
-                CategoryId = 1
+                Name = "Rent",
+                Type = 0,
+            };
+
+            var expectedResponse = new CategoryResDto
+            {
+                Id = 1,
+                UserId = userId,
+                Name = "Rent",
+                Type = 0,
+                IsDeleted = false,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = null
+            };
+
+            mockService.Setup(x => x.CreateCategoryAsync(userId, request))
+                .ReturnsAsync(expectedResponse);
+
+            // Act
+            var result = await controller.CreateCategory(request);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            var response = Assert.IsType<ApiResDto<CategoryResDto>>(okResult.Value);
+
+            Assert.True(response.Success);
+        }
+
+        [Fact]
+        public async Task CreateCategory_Returns500_WhenExceptionOccurs()
+        {
+            // Arrange
+            var userId = 1;
+
+            var mockService = new Mock<ICategoryService>();
+            var controller = CreateController(mockService);
+            SetUserClaims(controller, userId, "User");
+
+            var request = new CreateCategoryReqDto
+            {
+                Name = "Rent",
+                Type = 0,
             };
 
             mockService
-                .Setup(x => x.CreateExpenseAsync(userId, request))
+                .Setup(x => x.CreateCategoryAsync(userId, request))
                 .ThrowsAsync(new Exception("Database error"));
 
             // Act
-            var result = await controller.CreateExpense(request);
+            var result = await controller.CreateCategory(request);
 
             // Assert
             var statusCodeResult = Assert.IsType<ObjectResult>(result.Result);
@@ -272,109 +282,105 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var response = Assert.IsType<ApiResDto<object>>(statusCodeResult.Value);
             Assert.False(response.Success);
-            Assert.Contains("An error occurred while creating the expense.", response.ErrorMessage);
+            Assert.Contains("An error occurred while creating the category.", response.ErrorMessage);
         }
 
         [Fact]
-        public async Task UpdateExpense_ReturnsOk_WhenExpenseExist()
+        public async Task UpdateCategory_ReturnsOk_WhenCategoryExist()
         {
             // Arrange
             var userId = 1;
-            var expenseId = 1;
+            var categoryId = 1;
 
-            var mockService = new Mock<IExpenseService>();
+            var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            var request = new UpdateExpenseReqDto
+            var request = new UpdateCategoryReqDto
             {
-                Description = "Breakfast",
-                Amount = 50.00m,
-                CategoryId = 1
+                Name = "Rent",
+                Type = 0,
             };
 
-            var expectedResponse = new ExpenseResDto
+            var expectedResponse = new CategoryResDto
             {
-                Id = expenseId,
+                Id = categoryId,
                 UserId = userId,
-                Description = "Lunch",
-                Amount = 50.00m,
-                CategoryName = "Food",
-                CategoryType = 0,
+                Name = "Rent",
+                Type = 0,
                 IsDeleted = false,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
 
-            mockService.Setup(x => x.UpdateExpenseAsync(userId, expenseId, request))
+            mockService.Setup(x => x.UpdateCategoryAsync(userId, categoryId, request))
                 .ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.UpdateExpense(expenseId, request);
+            var result = await controller.UpdateCategory(categoryId, request);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
+            var response = Assert.IsType<ApiResDto<CategoryResDto>>(okResult.Value);
 
             Assert.True(response.Success);
-            Assert.Equal(expectedResponse.Description, response.Data!.Description);
+            Assert.Equal(expectedResponse.Name, response.Data!.Name);
+            Assert.Equal(expectedResponse.Type, response.Data!.Type);
         }
 
         [Fact]
-        public async Task UpdateExpense_ReturnsNotFound_WhenNoExpenseExist()
+        public async Task UpdateCategory_ReturnsNotFound_WhenNoCategoryExist()
         {
             // Arrange
             var userId = 1;
-            var expenseId = 1;
+            var categoryId = 1;
 
-            var mockService = new Mock<IExpenseService>();
+            var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            var request = new UpdateExpenseReqDto
+            var request = new UpdateCategoryReqDto
             {
-                Description = "Breakfast",
-                Amount = 50.00m,
-                CategoryId = 1
+                Name = "Rent",
+                Type = 0,
             };
 
-            mockService.Setup(x => x.UpdateExpenseAsync(userId, expenseId, request))
-                .ReturnsAsync((ExpenseResDto?)null);
+            mockService.Setup(x => x.UpdateCategoryAsync(userId, categoryId, request))
+                .ReturnsAsync((CategoryResDto?)null);
 
             // Act
-            var result = await controller.UpdateExpense(expenseId, request);
+            var result = await controller.UpdateCategory(categoryId, request);
 
             // Assert
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<object>>(notFoundResult.Value);
 
             Assert.False(response.Success);
-            Assert.Equal("Expense not found.", response.ErrorMessage);
+            Assert.Equal("Category not found.", response.ErrorMessage);
         }
 
         [Fact]
-        public async Task UpdateExpense_Returns500_WhenExceptionOccurs()
+        public async Task UpdateCategory_Returns500_WhenExceptionOccurs()
         {
             // Arrange
             var userId = 1;
-            var expenseId = 1;
+            var categoryId = 1;
 
-            var mockService = new Mock<IExpenseService>();
+            var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            var request = new UpdateExpenseReqDto
+            var request = new UpdateCategoryReqDto
             {
-                Description = "Breakfast",
-                Amount = 50.00m,
-                CategoryId = 1
+                Name = "Rent",
+                Type = 0,
             };
 
-            mockService.Setup(x => x.UpdateExpenseAsync(userId, expenseId, request))
+            mockService.Setup(x => x.UpdateCategoryAsync(userId, categoryId, request))
                 .ThrowsAsync(new Exception("Database error"));
 
             // Act
-            var result = await controller.UpdateExpense(expenseId, request);
+            var result = await controller.UpdateCategory(categoryId, request);
 
             // Assert
             var statusCodeResult = Assert.IsType<ObjectResult>(result.Result);
@@ -382,74 +388,74 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var response = Assert.IsType<ApiResDto<object>>(statusCodeResult.Value);
             Assert.False(response.Success);
-            Assert.Contains("An error occurred while updating the expense.", response.ErrorMessage);
+            Assert.Contains("An error occurred while updating the category.", response.ErrorMessage);
         }
 
         [Fact]
-        public async Task DeleteExpense_ReturnsOk_WhenExpenseExist()
+        public async Task DeleteCategory_ReturnsOk_WhenCategoryExist()
         {
             // Arrange
             var userId = 1;
-            var expenseId = 1;
+            var categoryId = 1;
 
-            var mockService = new Mock<IExpenseService>();
+            var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            mockService.Setup(x => x.DeleteExpenseAsync(userId, expenseId))
+            mockService.Setup(x => x.DeleteCategoryAsync(userId, categoryId))
                 .ReturnsAsync(true);
 
             // Act
-            var result = await controller.DeleteExpense(expenseId);
+            var result = await controller.DeleteCategory(categoryId);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
+            var response = Assert.IsType<ApiResDto<CategoryResDto>>(okResult.Value);
 
             Assert.True(response.Success);
         }
 
         [Fact]
-        public async Task DeleteExpense_ReturnsNotFound_WhenNoExpenseExist()
+        public async Task DeleteCategory_ReturnsNotFound_WhenNoCategoryExist()
         {
             // Arrange
             var userId = 1;
-            var expenseId = 1;
+            var categoryId = 1;
 
-            var mockService = new Mock<IExpenseService>();
+            var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            mockService.Setup(x => x.DeleteExpenseAsync(userId, expenseId))
+            mockService.Setup(x => x.DeleteCategoryAsync(userId, categoryId))
                 .ReturnsAsync(false);
 
             // Act
-            var result = await controller.DeleteExpense(expenseId);
+            var result = await controller.DeleteCategory(categoryId);
 
             // Assert
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<object>>(notFoundResult.Value);
 
             Assert.False(response.Success);
-            Assert.Equal("Expense not found.", response.ErrorMessage);
+            Assert.Equal("Category not found.", response.ErrorMessage);
         }
 
         [Fact]
-        public async Task DeleteExpense_Returns500_WhenExceptionOccurs()
+        public async Task DeleteCategory_Returns500_WhenExceptionOccurs()
         {
             // Arrange
             var userId = 1;
-            var expenseId = 1;
+            var categoryId = 1;
 
-            var mockService = new Mock<IExpenseService>();
+            var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            mockService.Setup(x => x.DeleteExpenseAsync(userId, expenseId))
+            mockService.Setup(x => x.DeleteCategoryAsync(userId, categoryId))
                 .ThrowsAsync(new Exception("Database error"));
 
             // Act
-            var result = await controller.DeleteExpense(expenseId);
+            var result = await controller.DeleteCategory(categoryId);
 
             // Assert
             var statusCodeResult = Assert.IsType<ObjectResult>(result.Result);
@@ -457,7 +463,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var response = Assert.IsType<ApiResDto<object>>(statusCodeResult.Value);
             Assert.False(response.Success);
-            Assert.Contains("An error occurred while deleting the expense.", response.ErrorMessage);
+            Assert.Contains("An error occurred while deleting the category.", response.ErrorMessage);
         }
 
         // Helper Functions
@@ -479,9 +485,9 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             };
         }
 
-        private static ExpenseController CreateController(Mock<IExpenseService> mockService)
+        private static CategoryController CreateController(Mock<ICategoryService> mockService)
         {
-            return new ExpenseController(mockService.Object);
+            return new CategoryController(mockService.Object);
         }
     }
 }

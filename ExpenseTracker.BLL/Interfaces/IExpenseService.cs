@@ -5,7 +5,7 @@ namespace ExpenseTracker.BLL.Interfaces
 {
     public interface IExpenseService
     {
-        Task<(List<ExpenseResDto> data, decimal totalExpense, HighestExpenseResDto? highestExpense, int totalCount, bool hasNextPage)> GetExpensesAsync(int userId, string role, int page = 1, int limit = 20, string? search = null);
+        Task<(List<ExpenseResDto> data, decimal totalExpense, HighestRecordResDto? highestExpense, int totalCount, bool hasNextPage)> GetExpensesAsync(int userId, string role, int page = 1, int limit = 20, string? search = null);
         Task<ExpenseResDto?> GetExpenseByIdAsync(int userId, string role, int id);
         Task<ExpenseResDto?> CreateExpenseAsync(int userId, CreateExpenseReqDto expense);
         Task<ExpenseResDto?> UpdateExpenseAsync(int userId, int id, UpdateExpenseReqDto expense);

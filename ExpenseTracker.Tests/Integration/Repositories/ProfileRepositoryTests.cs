@@ -10,24 +10,6 @@ namespace ExpenseTracker.Tests.Integration.Repositories
 {
     public class ProfileRepositoryTests
     {
-        //// Arrange
-        //var userId = 1;
-
-        //using var context = CreateContext();
-        //var repository = CreateRepository(context);
-
-        //var user = CreateUser(userId);
-
-        //context.Users.Add(user);
-        //        await context.SaveChangesAsync();
-
-        //// Act
-        //var result = await repository.GetByUsernameAsync(user.Username);
-
-        //// Assert
-        //Assert.NotNull(result);
-        //Assert.Equal(user.Username, result.Username);
-
         [Fact]
         public async Task GetUserProfileAsync_ReturnsOwnUserDetails()
         {

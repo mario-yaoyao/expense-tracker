@@ -159,7 +159,7 @@ namespace ExpenseTracker.Controllers
 
         // DONE: add endpoint for deleting (soft delete) a category
         [HttpDelete("{categoryId}")]
-        public async Task<ActionResult<CategoryResDto?>> DeleteExpense(int categoryId)
+        public async Task<ActionResult<CategoryResDto?>> DeleteCategory(int categoryId)
         {
             try
             {

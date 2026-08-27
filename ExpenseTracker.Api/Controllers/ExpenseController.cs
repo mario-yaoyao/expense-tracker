@@ -35,7 +35,7 @@ namespace ExpenseTracker.API.Controllers
                     Success = true,
                     Data = result.data,
                     TotalExpense = result.totalExpense,
-                    HighestExpense = result.highestExpense,
+                    HighestRecord = result.highestExpense,
                     TotalCount = result.totalCount,
                     Page = page,
                     Limit = limit,

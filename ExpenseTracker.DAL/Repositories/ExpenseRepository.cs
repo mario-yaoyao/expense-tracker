@@ -1,11 +1,9 @@
-﻿using Azure;
-using ExpenseTracker.DAL.Data;
+﻿using ExpenseTracker.DAL.Data;
 using ExpenseTracker.DAL.Interfaces;
 using ExpenseTracker.Models.Dtos.Responses;
 using ExpenseTracker.Models.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ExpenseTracker.DAL.Repositories
 {
@@ -44,7 +42,7 @@ namespace ExpenseTracker.DAL.Repositories
             }
         }
 
-        public async Task<(List<Expense> data, decimal totalExpense, HighestExpenseResDto? highestExpense, int totalCount, bool hasNextPage)> GetExpensesByUserAsync(int userId, int page = 1, int limit = 12, string? search = null)
+        public async Task<(List<Expense> data, decimal totalExpense, HighestRecordResDto? highestExpense, int totalCount, bool hasNextPage)> GetExpensesByUserAsync(int userId, int page = 1, int limit = 12, string? search = null)
         {
             try
             {
@@ -72,7 +70,7 @@ namespace ExpenseTracker.DAL.Repositories
 
                 var highestExpense = await query
                     .OrderByDescending(e => e.Amount)
-                    .Select(e => new HighestExpenseResDto
+                    .Select(e => new HighestRecordResDto
                     {
                         Name = e.Category.Name,
                         Amount = e.Amount

@@ -39,8 +39,12 @@ namespace ExpenseTracker.Tests.Integration.Repositories
             var result = await repository.GetAllExpensesAsync();
 
             // Assert
-            Assert.Equal(2, result.Count);
-            Assert.Equal(expenses[1].Description, result[0].Description);
+            Assert.Equal(2, result.totalCount);
+
+            Assert.Contains(
+                result.data,
+                e => e.Description == expenses[1].Description
+            );
         }
 
         [Fact]
@@ -78,9 +82,9 @@ namespace ExpenseTracker.Tests.Integration.Repositories
             var result = await repository.GetExpensesByUserAsync(firstUserId);
 
             // Assert
-            Assert.Single(result);
+            Assert.Single(result.data);
 
-            var expense = result.Single();
+            var expense = result.data.Single();
 
             Assert.Equal(2, expense.Id);
             Assert.Equal(firstUserId, expense.UserId);
@@ -202,7 +206,7 @@ namespace ExpenseTracker.Tests.Integration.Repositories
             Assert.Equal(expense.Amount, savedExpense.Amount);
             Assert.Equal(expense.Description, savedExpense.Description);
         }
-    
+
         // Helper Functions
         private static AppDbContext CreateContext()
         {

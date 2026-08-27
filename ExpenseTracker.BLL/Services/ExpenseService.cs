@@ -9,12 +9,12 @@ namespace ExpenseTracker.BLL.Services
 {
     public class ExpenseService(IExpenseRepository expenseRepository, IMapper mapper) : IExpenseService
     {
-        public async Task<(List<ExpenseResDto> data, decimal totalExpense, HighestExpenseResDto? highestExpense, int totalCount, bool hasNextPage)> GetExpensesAsync(int userId, string role, int page = 1, int limit = 20, string? search = null)
+        public async Task<(List<ExpenseResDto> data, decimal totalExpense, HighestRecordResDto? highestExpense, int totalCount, bool hasNextPage)> GetExpensesAsync(int userId, string role, int page = 1, int limit = 20, string? search = null)
         {
             List<Expense> data;
             decimal totalExpense = 0;
             int totalCount;
-            HighestExpenseResDto? highestExpense = null;
+            HighestRecordResDto? highestExpense = null;
             bool hasNextPage;
 
             if (role == "User")
