@@ -1,16 +1,18 @@
-﻿namespace ExpenseTracker.Models.Dtos.Responses
+﻿using System.Text.Json.Serialization;
+
+namespace ExpenseTracker.Models.Dtos.Responses
 {
     public class ApiResDto<T>
     {
         public bool Success { get; set; }
-        public decimal? TotalExpense { get; set; }
-        public int? TotalCount { get; set; }
-        public HighestRecordResDto? HighestRecord { get; set; }
-        public int? Page { get; set; }
-        public int? Limit { get; set; }
-        public bool? HasNextPage { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? ErrorMessage { get; set; }
-        public object? Errors { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public object? ValidationErrors { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public T? Data { get; set; }
     }
 }

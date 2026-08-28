@@ -1,4 +1,4 @@
-﻿using ExpenseTracker.API.Controllers;
+﻿using ExpenseTracker.Controllers;
 using ExpenseTracker.BLL.Interfaces;
 using ExpenseTracker.BLL.Services;
 using ExpenseTracker.DAL.Interfaces;

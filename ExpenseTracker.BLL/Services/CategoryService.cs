@@ -9,24 +9,22 @@ namespace ExpenseTracker.BLL.Services
 {
     public class CategoryService(ICategoryRepository categoryRepository, IMapper mapper) : ICategoryService
     {
-        public async Task<(List<CategoryResDto> data, int totalCount, bool hasNextPage)> GetCategoriesAsync(int userId, string role, CategoryType? type = null, int page = 1, int limit = 20, string? search = null)
+        public async Task<(List<CategoryResDto> data, bool hasNextPage)> GetCategoriesAsync(int userId, string role, CategoryQueryReqDto request)
         {
             List<Category> data;
-            int totalCount;
             bool hasNextPage;
 
             if (role == "User")
             {
-                (data, totalCount, hasNextPage) = await categoryRepository.GetCategoriesByUserAsync(userId, type, page, limit, search);
+                (data, hasNextPage) = await categoryRepository.GetCategoriesByUserAsync(userId, request.Type, request.Page, request.Limit, request.Search);
             }
             else
             {
-                (data, totalCount, hasNextPage) = await categoryRepository.GetAllCategoriesAsync(page, limit, search);
+                (data, hasNextPage) = await categoryRepository.GetAllCategoriesAsync(request.Page, request.Limit, request.Search);
             }
 
             return (
                 mapper.Map<List<CategoryResDto>>(data),
-                totalCount,
                 hasNextPage
             );
         }
@@ -88,7 +86,6 @@ namespace ExpenseTracker.BLL.Services
             return mapper.Map<CategoryResDto>(existingCategory);
         }
 
-        //NOTE: soft delete the category by setting IsDeleted to true
         public async Task<bool> DeleteCategoryAsync(int userId, int categoryId)
         {
             var existingCategory = await categoryRepository.GetCategoryByUserAsync(userId, categoryId);

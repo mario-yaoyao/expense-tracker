@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
-namespace ExpenseTracker.API.Controllers
+namespace ExpenseTracker.Controllers
 {
     [Authorize]
     [Route("api/expenses")]
@@ -16,38 +16,41 @@ namespace ExpenseTracker.API.Controllers
         private string GetRole() => User.FindFirstValue(ClaimTypes.Role)!;
 
         [HttpGet]
-        public async Task<ActionResult<List<ExpenseResDto>>> GetExpenses([FromQuery] int page = 1, [FromQuery] int limit = 20, [FromQuery] string? search = null)
+        public async Task<ActionResult<ApiResDto<ExpensesResDto>>> GetExpenses([FromQuery] ExpenseQueryReqDto request)
         {
             try
             {
                 var userId = GetUserId();
                 var role = GetRole();
-                var result = await expenseService.GetExpensesAsync(userId, role, page, limit, search);
+                var (data, totalExpense, highestExpense, totalCount, hasNextPage) = await expenseService.GetExpensesAsync(userId, role, request);
 
-                if (result.totalCount == 0) return NotFound(new ApiResDto<object>
-                {
-                    Success = false,
-                    ErrorMessage = "No expenses found."
-                });
-
-                return Ok(new ApiResDto<List<ExpenseResDto>>
+                return Ok(new ApiResDto<ExpensesResDto>
                 {
                     Success = true,
-                    Data = result.data,
-                    TotalExpense = result.totalExpense,
-                    HighestRecord = result.highestExpense,
-                    TotalCount = result.totalCount,
-                    Page = page,
-                    Limit = limit,
-                    HasNextPage = result.hasNextPage
+                    Data = new ExpensesResDto
+                    {
+                        Items = data,
+                        Metrics = new FinancialMetricsResDto
+                        {
+                            TotalAmount = totalExpense,
+                            TotalCount = totalCount,
+                            HighestAmount= highestExpense
+                        },
+                        Pagination = new PaginatedResDto
+                        {
+                            Page = request.Page,
+                            Limit = request.Limit,
+                            HasNextPage = hasNextPage
+                        }
+                    }
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new ApiResDto<object>
                 {
                     Success = false,
-                    ErrorMessage = $"An error occurred while retrieving expenses. {ex.Message}"
+                    ErrorMessage = "An error occurred while retrieving expenses."
                 });
             }
         }
@@ -61,24 +64,24 @@ namespace ExpenseTracker.API.Controllers
                 var role = GetRole();
                 var data = await expenseService.GetExpenseByIdAsync(userId, role, expenseId);
 
-                if (data == null) return NotFound(new ApiResDto<object>
-                {
-                    Success = false,
-                    ErrorMessage = "Expense not found."
-                });
-
-                return Ok(new ApiResDto<ExpenseResDto>
-                {
-                    Success = true,
-                    Data = data,
-                });
+                return data == null
+                    ? NotFound(new ApiResDto<object>
+                    {
+                        Success = false,
+                        ErrorMessage = "Expense not found."
+                    })
+                    : Ok(new ApiResDto<ExpenseResDto>
+                    {
+                        Success = true,
+                        Data = data
+                    });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new ApiResDto<object>
                 {
                     Success = false,
-                    ErrorMessage = $"An error occurred while retrieving the expense. {ex.Message}"
+                    ErrorMessage = "An error occurred while retrieving the expense."
                 });
             }
         }
@@ -98,71 +101,71 @@ namespace ExpenseTracker.API.Controllers
                     Data = data,
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new ApiResDto<object>
                 {
                     Success = false,
-                    ErrorMessage = $"An error occurred while creating the expense. {ex.Message}"
+                    ErrorMessage = "An error occurred while creating the expense."
                 });
             }
         }
 
-        [HttpPut("{expenseId}")]
-        public async Task<ActionResult<ExpenseResDto>> UpdateExpense(int expenseId, [FromBody] UpdateExpenseReqDto request)
+        [HttpPatch("{expenseId}")]
+        public async Task<ActionResult<ApiResDto<ExpenseResDto>>> UpdateExpense(int expenseId, [FromBody] UpdateExpenseReqDto request)
         {
             try
             {
                 var userId = GetUserId();
                 var data = await expenseService.UpdateExpenseAsync(userId, expenseId, request);
 
-                if (data == null) return NotFound(new ApiResDto<object>
-                {
-                    Success = false,
-                    ErrorMessage = "Expense not found."
-                });
-
-                return Ok(new ApiResDto<ExpenseResDto>
-                {
-                    Success = true,
-                    Data = data,
-                });
+                return data == null
+                    ? NotFound(new ApiResDto<object>
+                    {
+                        Success = false,
+                        ErrorMessage = "Expense not found."
+                    })
+                    : Ok(new ApiResDto<ExpenseResDto>
+                    {
+                        Success = true,
+                        Data = data
+                    });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new ApiResDto<object>
                 {
                     Success = false,
-                    ErrorMessage = $"An error occurred while updating the expense. {ex.Message}"
+                    ErrorMessage = "An error occurred while updating the expense."
                 });
             }
         }
 
         [HttpDelete("{expenseId}")]
-        public async Task<ActionResult<ExpenseResDto?>> DeleteExpense(int expenseId)
+        public async Task<ActionResult<ApiResDto<object>>> DeleteExpense(int expenseId)
         {
             try
             {
                 var userId = GetUserId();
                 var data = await expenseService.DeleteExpenseAsync(userId, expenseId);
 
-                if (!data) return NotFound(new ApiResDto<object>
-                {
-                    Success = false,
-                    ErrorMessage = "Expense not found."
-                });
-
-                return Ok(new ApiResDto<ExpenseResDto> // NOTE: only return ApiResDto in this scenario?
-                {
-                    Success = true,
-                });
+                return !data
+                    ? NotFound(new ApiResDto<object>
+                    {
+                        Success = false,
+                        ErrorMessage = "Expense not found."
+                    })
+                    : Ok(new ApiResDto<object>
+                    {
+                        Success = true,
+                    });
             }
-            catch (Exception ex)
+            catch (Exception )
             {
                 return StatusCode(500, new ApiResDto<object>
                 {
                     Success = false,
-                    ErrorMessage = $"An error occurred while deleting the expense. {ex.Message}"
+                    ErrorMessage = "An error occurred while deleting the expense."
                 });
             }
         }

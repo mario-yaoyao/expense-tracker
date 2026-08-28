@@ -8,7 +8,7 @@ namespace ExpenseTracker.DAL.Repositories
 {
     public class CategoryRepository(AppDbContext context, ILogger<CategoryRepository> logger) : ICategoryRepository
     {
-        public async Task<(List<Category> data, int totalCount, bool hasNextPage)> GetAllCategoriesAsync(int page = 1, int limit = 20, string? search = null)
+        public async Task<(List<Category> data, bool hasNextPage)> GetAllCategoriesAsync(int page = 1, int limit = 20, string? search = null)
         {
             try
             {
@@ -29,7 +29,7 @@ namespace ExpenseTracker.DAL.Repositories
 
                 var hasNextPage = (page * limit) < totalCount;
 
-                return (data, totalCount, hasNextPage);
+                return (data, hasNextPage);
             }
             catch (Exception ex)
             {
@@ -38,7 +38,7 @@ namespace ExpenseTracker.DAL.Repositories
             }
         }
 
-        public async Task<(List<Category> data, int totalCount, bool hasNextPage)> GetCategoriesByUserAsync(int userId, CategoryType? type = null, int page = 1, int limit = 12, string? search = null)
+        public async Task<(List<Category> data, bool hasNextPage)> GetCategoriesByUserAsync(int userId, CategoryType? type = null, int page = 1, int limit = 12, string? search = null)
         {
             try
             {
@@ -68,7 +68,7 @@ namespace ExpenseTracker.DAL.Repositories
 
                 var hasNextPage = (page * limit) < totalCount;
 
-                return (data, totalCount, hasNextPage);
+                return (data, hasNextPage);
             }
             catch (Exception ex)
             {

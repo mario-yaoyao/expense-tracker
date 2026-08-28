@@ -4,27 +4,12 @@ using ExpenseTracker.DAL.Interfaces;
 using ExpenseTracker.Models.Dtos.Requests;
 using ExpenseTracker.Models.Dtos.Responses;
 using ExpenseTracker.Models.Models;
-
-//using ExpenseTracker.Models.Dtos.Requests;
-//using ExpenseTracker.Models.Dtos.Responses;
-//using ExpenseTracker.Models.Models;
 using Moq;
 
 namespace ExpenseTracker.Tests.Unit.Services
 {
     public class CategoryServiceTests
     {
-        //TODO:
-
-        //GetCategoriesAsync
-
-        //GetCategoryByIdAsync
-
-        //CreateCategoryAsync
-
-        //UpdateCategoryAsync
-
-        //DeleteCategoryAsync
 
         private readonly Mock<IMapper> mockMapper;
 
@@ -50,6 +35,7 @@ namespace ExpenseTracker.Tests.Unit.Services
                 CreateCategory(firstCategoryId, userId, "Grocery", categoryType),
                 CreateCategory(secondCategoryId, userId, "Transportation", categoryType),
             };
+            var queryRequest = CreateQueryRequest();
 
             var expectedResponseData = new List<CategoryResDto>
             {
@@ -77,12 +63,11 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var expectedResponse = (
                 Data: request,
-                TotalCount: 2,
                 HasNextPage: false
             );
 
             mockRepo
-                .Setup(x => x.GetCategoriesByUserAsync(userId, categoryType, 1, 20, null))
+                .Setup(x => x.GetCategoriesByUserAsync(userId, queryRequest.Type, queryRequest.Page, queryRequest.Limit, queryRequest.Search))
                 .ReturnsAsync(expectedResponse);
 
             mockMapper
@@ -90,10 +75,9 @@ namespace ExpenseTracker.Tests.Unit.Services
                 .Returns(expectedResponseData);
 
             // Act
-            var result = await service.GetCategoriesAsync(userId, "User", categoryType);
+            var result = await service.GetCategoriesAsync(userId, "User", queryRequest);
 
             // Assert
-            Assert.Equal(2, result.totalCount);
             Assert.Equal(expectedResponseData[0].Name, result.data[0].Name);
             Assert.Equal(CategoryType.Expense, result.data[1].Type);
 
@@ -122,6 +106,7 @@ namespace ExpenseTracker.Tests.Unit.Services
                 CreateCategory(secondCategoryId, firstUserId, "Transportation", categoryType),
                 CreateCategory(thirdCategoryId, secondUserId, "Internet", categoryType),
             };
+            var queryRequest = CreateQueryRequest();
 
             var expectedResponseData = new List<CategoryResDto>
             {
@@ -150,12 +135,11 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var expectedResponse = (
                 Data: request,
-                TotalCount: 3,
                 HasNextPage: false
             );
 
             mockRepo
-                .Setup(x => x.GetAllCategoriesAsync(1, 20, null))
+                .Setup(x => x.GetAllCategoriesAsync(queryRequest.Page, queryRequest.Limit, queryRequest.Search))
                 .ReturnsAsync(expectedResponse);
 
             mockMapper
@@ -163,10 +147,9 @@ namespace ExpenseTracker.Tests.Unit.Services
                 .Returns(expectedResponseData);
 
             // Act
-            var result = await service.GetCategoriesAsync(firstUserId, "SuperAdmin");
+            var result = await service.GetCategoriesAsync(firstUserId, "SuperAdmin", queryRequest);
 
             // Assert
-            Assert.Equal(expectedResponse.TotalCount, result.totalCount);
             Assert.Equal(expectedResponseData[0].Name, result.data[0].Name);
             Assert.Equal(expectedResponseData[1].Type, result.data[1].Type);
 
@@ -384,7 +367,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             var mockRepo = new Mock<ICategoryRepository>();
             var service = new CategoryService(mockRepo.Object, mockMapper.Object);
 
-            var existingCategory = new Category 
+            var existingCategory = new Category
             {
                 Id = categoryId,
                 UserId = userId,
@@ -462,6 +445,21 @@ namespace ExpenseTracker.Tests.Unit.Services
             {
                 Name = name,
                 Type = type
+            };
+        }
+
+        private static CategoryQueryReqDto CreateQueryRequest(
+            CategoryType type = CategoryType.Expense,
+            int page = 1,
+            int limit = 20,
+            string? search = null)
+        {
+            return new CategoryQueryReqDto
+            {
+                Type = type,
+                Page = page,
+                Limit = limit,
+                Search = search
             };
         }
     }

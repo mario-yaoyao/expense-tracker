@@ -9,21 +9,21 @@ namespace ExpenseTracker.BLL.Services
 {
     public class ExpenseService(IExpenseRepository expenseRepository, IMapper mapper) : IExpenseService
     {
-        public async Task<(List<ExpenseResDto> data, decimal totalExpense, HighestRecordResDto? highestExpense, int totalCount, bool hasNextPage)> GetExpensesAsync(int userId, string role, int page = 1, int limit = 20, string? search = null)
+        public async Task<(List<ExpenseResDto> data, decimal totalExpense, HighestAmountResDto? highestExpense, int totalCount, bool hasNextPage)> GetExpensesAsync(int userId, string role, ExpenseQueryReqDto request)
         {
             List<Expense> data;
             decimal totalExpense = 0;
             int totalCount;
-            HighestRecordResDto? highestExpense = null;
+            HighestAmountResDto? highestExpense = null;
             bool hasNextPage;
 
             if (role == "User")
             {
-                (data, totalExpense, highestExpense, totalCount, hasNextPage) = await expenseRepository.GetExpensesByUserAsync(userId, page, limit, search);
+                (data, totalExpense, highestExpense, totalCount, hasNextPage) = await expenseRepository.GetExpensesByUserAsync(userId, request.Page, request.Limit, request.Search);
             }
             else
             {
-                (data, totalCount, hasNextPage) = await expenseRepository.GetAllExpensesAsync(page, limit, search);
+                (data, totalCount, hasNextPage) = await expenseRepository.GetAllExpensesAsync(request.Page, request.Limit, request.Search);
             }
 
             return (
@@ -64,8 +64,9 @@ namespace ExpenseTracker.BLL.Services
             };
 
             await expenseRepository.AddExpenseAsync(newExpense);
+            var createdExpense = await expenseRepository.GetExpenseByIdAsync(newExpense.Id);
 
-            return mapper.Map<ExpenseResDto>(newExpense);
+            return mapper.Map<ExpenseResDto>(createdExpense);
         }
 
         public async Task<ExpenseResDto?> UpdateExpenseAsync(int userId, int expenseId, UpdateExpenseReqDto expense)
@@ -87,20 +88,6 @@ namespace ExpenseTracker.BLL.Services
             return mapper.Map<ExpenseResDto>(existingExpense);
         }
 
-        ////NOTE: permanent delete the expense from the database
-        //public async Task<bool> DeleteExpenseAsync(Guid userId, string role, Guid expenseId)
-        //{
-        //    var existingExpense = await expenseRepository.GetExpenseByIdAsync(userId, role, expenseId);
-
-        //    if (existingExpense == null) return false;
-
-        //    context.Expenses.Remove(existingExpense);
-        //    await expenseRepository.SaveChangesAsync();
-
-        //    return true;
-        //}
-
-        //NOTE: soft delete the expense by setting IsDeleted to true
         public async Task<bool> DeleteExpenseAsync(int userId, int expenseId)
         {
             var existingExpense = await expenseRepository.GetExpenseByUserAsync(userId, expenseId);

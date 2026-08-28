@@ -1,5 +1,5 @@
-﻿using ExpenseTracker.API.Controllers;
-using ExpenseTracker.BLL.Interfaces;
+﻿using ExpenseTracker.BLL.Interfaces;
+using ExpenseTracker.Controllers;
 using ExpenseTracker.Models.Dtos.Requests;
 using ExpenseTracker.Models.Dtos.Responses;
 using Microsoft.AspNetCore.Http;
@@ -21,100 +21,45 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
+            var paginationReq = CreatePaginationRequest();
             var expectedResponseData = new List<ExpenseResDto>
             {
-                new()
-                {
-                    Id = 1,
-                    UserId = userId,
-                    Description = "Breakfast",
-                    Amount = 24.99m,
-                    CategoryName = "Food",
-                    CategoryType = 0,
-                    IsDeleted = false,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = null
-                },
-                new()
-                {
-                    Id = 2,
-                    UserId = userId,
-                    Description = "Lunch",
-                    Amount = 29.50m,
-                    CategoryName = "Food",
-                    CategoryType = 0,
-                    IsDeleted = false,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = null
-                }
+                CreateExpenseResponse(id: 1, userId: userId, description: "Breakfast", amount: 24.99m),
+                CreateExpenseResponse(id: 2,  userId: userId, description: "Lunch", amount: 29.50m)
             };
 
             var expectedResponse = (
                 Data: expectedResponseData,
                 TotalExpense: 49.49m,
-                HighestRecord: new HighestRecordResDto
+                HighestAmount: new HighestAmountResDto
                 {
-                    Name = "Lunch",
-                    Amount = 29.50m,
+                    Name = expectedResponseData[1].Description,
+                    Amount = expectedResponseData[1].Amount,
                 },
                 TotalCount: 2,
                 HasNextPage: false
             );
 
             mockService
-                .Setup(x => x.GetExpensesAsync(userId, "User", 1, 20, null))
+                .Setup(x => x.GetExpensesAsync(userId, "User", paginationReq))
                 .ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.GetExpenses();
+            var result = await controller.GetExpenses(paginationReq);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<List<ExpenseResDto>>>(okResult.Value);
+            var response = Assert.IsType<ApiResDto<ExpensesResDto>>(okResult.Value);
 
             Assert.True(response.Success);
-            Assert.Equal(2, response.TotalCount);
-            Assert.Equal(expectedResponseData[0].Description, response.Data![0].Description);
-            Assert.Equal(expectedResponseData[1].Amount, response.Data[1].Amount);
-            Assert.Equal(expectedResponse.HighestRecord.Name, response.HighestRecord!.Name);
+            Assert.Equal(2, response.Data!.Metrics.TotalCount);
+            Assert.Equal(expectedResponseData[0].Description, response.Data.Items[0].Description);
+            Assert.Equal(expectedResponseData[1].Amount, response.Data.Items[1].Amount);
+            Assert.Equal(expectedResponse.HighestAmount.Name, response.Data!.Metrics.HighestAmount!.Name);
 
             mockService.Verify(
-                x => x.GetExpensesAsync(userId, "User"),
+                x => x.GetExpensesAsync(userId, "User", paginationReq),
                 Times.Once);
-        }
-
-        [Fact]
-        public async Task GetExpenses_ReturnsNotFound_WhenNoExpensesExist()
-        {
-            // Arrange
-            var userId = 1;
-
-            var mockService = new Mock<IExpenseService>();
-            var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
-
-            var expectedResponseData = new List<ExpenseResDto>();
-
-            var expectedResponse = (
-                Data: expectedResponseData,
-                TotalExpense: 0m,
-                HighestExpense: (HighestRecordResDto?)null,
-                TotalCount: 0,
-                HasNextPage: false
-            );
-
-            mockService.Setup(x => x.GetExpensesAsync(userId, "User", 1, 20, null))
-                .ReturnsAsync(expectedResponse);
-
-            // Act
-            var result = await controller.GetExpenses();
-
-            // Assert
-            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<object>>(notFoundResult.Value);
-
-            Assert.False(response.Success);
-            Assert.Equal("No expenses found.", response.ErrorMessage);
         }
 
         [Fact]
@@ -127,11 +72,13 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            mockService.Setup(x => x.GetExpensesAsync(userId, "User"))
+            var paginationReq = CreatePaginationRequest();
+
+            mockService.Setup(x => x.GetExpensesAsync(userId, "User", paginationReq))
                 .ThrowsAsync(new Exception("Database error"));
 
             // Act
-            var result = await controller.GetExpenses();
+            var result = await controller.GetExpenses(paginationReq);
 
             // Assert
             var statusCodeResult = Assert.IsType<ObjectResult>(result.Result);
@@ -153,18 +100,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            var expectedResponse = new ExpenseResDto
-            {
-                Id = expenseId,
-                UserId = userId,
-                Description = "Food",
-                Amount = 50.00m,
-                CategoryName = "Food",
-                CategoryType = 0,
-                IsDeleted = false,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = null
-            };
+            var expectedResponse = CreateExpenseResponse();
 
             mockService.Setup(x => x.GetExpenseByIdAsync(userId, "User", expenseId))
                 .ReturnsAsync(expectedResponse);
@@ -215,19 +151,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            var request = new CreateExpenseReqDto
-            {
-                Description = "Breakfast",
-                Amount = 50.00m,
-                CategoryId = categoryId
-            };
-
-            var expectedResponse = new ExpenseResDto
-            {
-                Id = 1,
-                UserId = userId,
-                Description = "Food"
-            };
+            var request = CreateExpenseRequest(categoryId: categoryId);
+            var expectedResponse = CreateExpenseResponse();
 
             mockService.Setup(x => x.CreateExpenseAsync(userId, request))
                 .ReturnsAsync(expectedResponse);
@@ -252,12 +177,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            var request = new CreateExpenseReqDto
-            {
-                Description = "Breakfast",
-                Amount = 50.00m,
-                CategoryId = 1
-            };
+            var request = CreateExpenseRequest();
 
             mockService
                 .Setup(x => x.CreateExpenseAsync(userId, request))
@@ -286,25 +206,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            var request = new UpdateExpenseReqDto
-            {
-                Description = "Breakfast",
-                Amount = 50.00m,
-                CategoryId = 1
-            };
-
-            var expectedResponse = new ExpenseResDto
-            {
-                Id = expenseId,
-                UserId = userId,
-                Description = "Lunch",
-                Amount = 50.00m,
-                CategoryName = "Food",
-                CategoryType = 0,
-                IsDeleted = false,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
+            var request = UpdateExpenseRequest();
+            var expectedResponse = CreateExpenseResponse();
 
             mockService.Setup(x => x.UpdateExpenseAsync(userId, expenseId, request))
                 .ReturnsAsync(expectedResponse);
@@ -331,12 +234,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            var request = new UpdateExpenseReqDto
-            {
-                Description = "Breakfast",
-                Amount = 50.00m,
-                CategoryId = 1
-            };
+            var request = UpdateExpenseRequest();
 
             mockService.Setup(x => x.UpdateExpenseAsync(userId, expenseId, request))
                 .ReturnsAsync((ExpenseResDto?)null);
@@ -363,12 +261,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            var request = new UpdateExpenseReqDto
-            {
-                Description = "Breakfast",
-                Amount = 50.00m,
-                CategoryId = 1
-            };
+            var request = UpdateExpenseRequest();
 
             mockService.Setup(x => x.UpdateExpenseAsync(userId, expenseId, request))
                 .ThrowsAsync(new Exception("Database error"));
@@ -404,7 +297,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
+            var response = Assert.IsType<ApiResDto<object>>(okResult.Value);
 
             Assert.True(response.Success);
         }
@@ -482,6 +375,64 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         private static ExpenseController CreateController(Mock<IExpenseService> mockService)
         {
             return new ExpenseController(mockService.Object);
+        }
+
+        private static ExpenseQueryReqDto CreatePaginationRequest(
+            int page = 1,
+            int limit = 20,
+            string? search = null)
+        {
+            return new ExpenseQueryReqDto
+            {
+                Page = page,
+                Limit = limit,
+                Search = search
+            };
+        }
+
+        private static ExpenseResDto CreateExpenseResponse(
+            int id = 1,
+            int userId = 1,
+            string description = "Breakfast",
+            decimal amount = 24.99m)
+        {
+            return new ExpenseResDto
+            {
+                Id = id,
+                UserId = userId,
+                Description = description,
+                Amount = amount,
+                CategoryName = "Food",
+                CategoryType = 0,
+                IsDeleted = false,
+                CreatedAt = DateTime.UtcNow
+            };
+        }
+
+        private static CreateExpenseReqDto CreateExpenseRequest(
+            string description = "Breakfast",
+            decimal amount = 50.00m,
+            int categoryId = 1)
+        {
+            return new CreateExpenseReqDto
+            {
+                Description = description,
+                Amount = amount,
+                CategoryId = categoryId
+            };
+        }
+
+        private static UpdateExpenseReqDto UpdateExpenseRequest(
+            string description = "Breakfast",
+            decimal amount = 50.00m,
+            int categoryId = 1)
+        {
+            return new UpdateExpenseReqDto
+            {
+                Description = description,
+                Amount = amount,
+                CategoryId = categoryId
+            };
         }
     }
 }

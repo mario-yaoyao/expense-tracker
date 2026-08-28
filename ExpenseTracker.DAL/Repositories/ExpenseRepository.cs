@@ -42,7 +42,7 @@ namespace ExpenseTracker.DAL.Repositories
             }
         }
 
-        public async Task<(List<Expense> data, decimal totalExpense, HighestRecordResDto? highestExpense, int totalCount, bool hasNextPage)> GetExpensesByUserAsync(int userId, int page = 1, int limit = 12, string? search = null)
+        public async Task<(List<Expense> data, decimal totalExpense, HighestAmountResDto? highestExpense, int totalCount, bool hasNextPage)> GetExpensesByUserAsync(int userId, int page = 1, int limit = 12, string? search = null)
         {
             try
             {
@@ -70,7 +70,7 @@ namespace ExpenseTracker.DAL.Repositories
 
                 var highestExpense = await query
                     .OrderByDescending(e => e.Amount)
-                    .Select(e => new HighestRecordResDto
+                    .Select(e => new HighestAmountResDto
                     {
                         Name = e.Category.Name,
                         Amount = e.Amount

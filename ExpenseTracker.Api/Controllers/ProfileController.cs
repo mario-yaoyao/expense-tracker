@@ -20,24 +20,24 @@ namespace ExpenseTracker.Controllers
                 var userId = GetUserId();
                 var data = await userService.GetUserProfileAsync(userId);
 
-                if (data == null) return NotFound(new ApiResDto<object>
-                {
-                    Success = false,
-                    ErrorMessage = "User information not found."
-                });
-
-                return Ok(new ApiResDto<ProfileResDto>
-                {
-                    Success = true,
-                    Data = data,
-                });
+                return data == null
+                    ? NotFound(new ApiResDto<object>
+                    {
+                        Success = false,
+                        ErrorMessage = "User information not found."
+                    })
+                    : Ok(new ApiResDto<ProfileResDto>
+                    {
+                        Success = true,
+                        Data = data
+                    });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new ApiResDto<object>
                 {
                     Success = false,
-                    ErrorMessage = $"An error occurred while retrieving user information. {ex.Message}"
+                    ErrorMessage = "An error occurred while retrieving user information."
                 });
             }
         }
@@ -50,27 +50,25 @@ namespace ExpenseTracker.Controllers
                 var userId = GetUserId();
                 var result = await userService.ChangePasswordAsync(userId, request);
 
-                if (!result.Success)
-                {
-                    return BadRequest(new ApiResDto<bool?>
+                return result.Success
+                    ? Ok(new ApiResDto<bool?>
+                    {
+                        Success = true,
+                        Data = result.Data
+                        
+                    })
+                    : BadRequest(new ApiResDto<bool?>
                     {
                         Success = false,
                         ErrorMessage = result.ErrorMessage
                     });
-                }
-
-                return Ok(new ApiResDto<bool?>
-                {
-                    Success = true,
-                    Data = result.Data
-                });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new ApiResDto<object>
                 {
                     Success = false,
-                    ErrorMessage = $"An error occurred while changing password. {ex.Message}"
+                    ErrorMessage = "An error occurred while changing password."
                 });
             }
         }

@@ -1,4 +1,4 @@
-﻿using ExpenseTracker.API.Controllers;
+﻿using ExpenseTracker.Controllers;
 using ExpenseTracker.BLL.Interfaces;
 using ExpenseTracker.Models.Common;
 using ExpenseTracker.Models.Dtos.Requests;
@@ -121,7 +121,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var expectedResponse = new ServiceResult<TokenResDto>
             {
                 Success = false,
-                ErrorMessage = "An error occurred while registering account:"
+                ErrorMessage = "An error occurred while registering account."
             };
 
             mockService
@@ -222,7 +222,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var expectedResponse = new ServiceResult<TokenResDto>
             {
                 Success = false,
-                ErrorMessage = "An error occurred while logging in:"
+                ErrorMessage = "An error occurred while logging in."
             };
 
             mockService
@@ -238,7 +238,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var response = Assert.IsType<ApiResDto<object>>(statusCodeResult.Value);
             Assert.False(response.Success);
-            Assert.Contains(expectedResponse.ErrorMessage, response.ErrorMessage);
+            Assert.Equal(expectedResponse.ErrorMessage, response.ErrorMessage);
         }
 
         [Fact]
@@ -331,10 +331,9 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<bool>>(okResult.Value);
+            var response = Assert.IsType<ApiResDto<object>>(okResult.Value);
 
             Assert.True(response.Success);
-            Assert.True(response.Data);
         }
 
         [Fact]
@@ -379,7 +378,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var expectedResponse = new ServiceResult<TokenResDto>
             {
                 Success = false,
-                ErrorMessage = "An error occurred while resetting password:"
+                ErrorMessage = "An error occurred while resetting password."
             };
 
             mockService
@@ -395,7 +394,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var response = Assert.IsType<ApiResDto<object>>(statusCodeResult.Value);
             Assert.False(response.Success);
-            Assert.Contains(expectedResponse.ErrorMessage, response.ErrorMessage);
+            Assert.Equal(expectedResponse.ErrorMessage, response.ErrorMessage);
         }
 
         [Fact]
@@ -469,7 +468,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var expectedResponse = new ServiceResult<bool>
             {
                 Success = false,
-                ErrorMessage = "An error occurred while resetting password:"
+                ErrorMessage = "An error occurred while resetting password."
             };
 
             mockService
@@ -485,7 +484,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var response = Assert.IsType<ApiResDto<object>>(statusCodeResult.Value);
             Assert.False(response.Success);
-            Assert.Contains(expectedResponse.ErrorMessage, response.ErrorMessage);
+            Assert.Equal(expectedResponse.ErrorMessage, response.ErrorMessage);
         }
 
         // Helper Functions

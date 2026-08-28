@@ -1,13 +1,4 @@
-﻿//using ExpenseTracker.BLL.Interfaces;
-//using ExpenseTracker.Controllers;
-//using ExpenseTracker.Models.Dtos.Responses;
-//using ExpenseTracker.Models.Models;
-//using Microsoft.AspNetCore.Http;
-//using Microsoft.AspNetCore.Mvc;
-//using Moq;
-//using System.Security.Claims;
-
-using ExpenseTracker.BLL.Interfaces;
+﻿using ExpenseTracker.BLL.Interfaces;
 using ExpenseTracker.Controllers;
 using ExpenseTracker.Models.Dtos.Requests;
 using ExpenseTracker.Models.Dtos.Responses;
@@ -21,111 +12,45 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 {
     public class CategoryControllerTests
     {
-        //TODO:
-
-        //GetCategories
-
-        //GetCategoryById
-
-        //CreateCategory
-
-        //UpdateCategory
-
-        //DeleteExpense
-
         [Fact]
         public async Task GetCategories_ReturnsOk_WhenCategoriesExist()
         {
             // Arrange
             var userId = 1;
-            var categoryType = CategoryType.Expense;
 
             var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
+            var queryRequest = CreateQueryRequest();
             var expectedResponseData = new List<CategoryResDto>
             {
-                new()
-                {
-                    Id = 1,
-                    UserId = userId,
-                    Name = "Utilities",
-                    Type = 0,
-                    IsDeleted = false,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = null
-                },
-                new()
-                {
-                    Id = 2,
-                    UserId = userId,
-                    Name = "Rent",
-                    Type = 0,
-                    IsDeleted = false,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = null
-                }
+                CreateCategoryResponse(),
+                CreateCategoryResponse(name: "Rent")
             };
-
             var expectedResponse = (
                 Data: expectedResponseData,
-                TotalCount: 2,
                 HasNextPage: false
             );
 
             mockService
-                .Setup(x => x.GetCategoriesAsync(userId, "User", categoryType, 1, 20, null))
+                .Setup(x => x.GetCategoriesAsync(userId, "User", queryRequest))
                 .ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.GetCategories(categoryType);
+            var result = await controller.GetCategories(queryRequest);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<List<CategoryResDto>>>(okResult.Value);
+            var response = Assert.IsType<ApiResDto<CategoriesResDto>>(okResult.Value);
 
             Assert.True(response.Success);
-            Assert.Equal(2, response.TotalCount);
-            Assert.Equal(expectedResponseData[0].Name, response.Data![0].Name);
-            Assert.Equal(expectedResponseData[1].Type, response.Data![1].Type);
+            Assert.Equal(expectedResponseData[0].Name, response.Data!.Items[0].Name);
+            Assert.Equal(expectedResponseData[1].Type, response.Data!.Items[1].Type);
 
             mockService.Verify(
-                x => x.GetCategoriesAsync(userId, "User", categoryType, 1, 20, null),
+                x => x.GetCategoriesAsync(userId, "User", queryRequest),
                 Times.Once);
-        }
-
-        [Fact]
-        public async Task GetCategories_ReturnsNotFound_WhenNoCategoriesExist()
-        {
-            // Arrange
-            var userId = 1;
-            var categoryType = CategoryType.Expense;
-
-            var mockService = new Mock<ICategoryService>();
-            var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
-
-            var expectedResponseData = new List<CategoryResDto>();
-
-            var expectedResponse = (
-                Data: expectedResponseData,
-                TotalCount: 0,
-                HasNextPage: false
-            );
-
-            mockService.Setup(x => x.GetCategoriesAsync(userId, "User", categoryType, 1, 20, null))
-                .ReturnsAsync(expectedResponse);
-
-            // Act
-            var result = await controller.GetCategories();
-
-            // Assert
-            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<object>>(notFoundResult.Value);
-
-            Assert.False(response.Success);
-            Assert.Equal("No categories found.", response.ErrorMessage);
         }
 
         [Fact]
@@ -138,11 +63,13 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            mockService.Setup(x => x.GetCategoriesAsync(userId, "User"))
+            var queryRequest = CreateQueryRequest();
+
+            mockService.Setup(x => x.GetCategoriesAsync(userId, "User", queryRequest))
                 .ThrowsAsync(new Exception("Database error"));
 
             // Act
-            var result = await controller.GetCategories();
+            var result = await controller.GetCategories(queryRequest);
 
             // Assert
             var statusCodeResult = Assert.IsType<ObjectResult>(result.Result);
@@ -488,6 +415,39 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         private static CategoryController CreateController(Mock<ICategoryService> mockService)
         {
             return new CategoryController(mockService.Object);
+        }
+
+        private static CategoryResDto CreateCategoryResponse(
+            int id = 1,
+            int userId = 1,
+            string name = "Utilities",
+            CategoryType type = CategoryType.Expense,
+            bool isDeleted = false)
+        {
+            return new CategoryResDto
+            {
+                Id = id,
+                UserId = userId,
+                Name = name,
+                Type = type,
+                IsDeleted = isDeleted,
+                CreatedAt = DateTime.UtcNow
+            };
+        }
+
+        private static CategoryQueryReqDto CreateQueryRequest(
+            CategoryType type = CategoryType.Expense,
+            int page = 1,
+            int limit = 20,
+            string? search = null)
+        {
+            return new CategoryQueryReqDto
+            {
+                Type = type,
+                Page = page,
+                Limit = limit,
+                Search = search
+            };
         }
     }
 }

@@ -32,10 +32,10 @@ builder.Services.AddControllers()
             return new BadRequestObjectResult(new ApiResDto<object>
             {
                 Success = false,
-                Errors = errors
+                ValidationErrors = errors
             });
         };
-    });
+    });    
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

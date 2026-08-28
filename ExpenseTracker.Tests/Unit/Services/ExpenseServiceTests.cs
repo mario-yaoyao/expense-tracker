@@ -35,6 +35,7 @@ namespace ExpenseTracker.Tests.Unit.Services
                 CreateExpense(firstExpenseId, userId, category),
                 CreateExpense(secondExpenseId, userId, category),
             };
+            var paginationReq = CreatePaginationRequest();
 
             var expectedResponseData = new List<ExpenseResDto>
             {
@@ -61,7 +62,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             var expectedResponse = (
                 Data: request,
                 TotalExpense: 49.49m,
-                HighestExpense: new HighestRecordResDto
+                HighestExpense: new HighestAmountResDto
                 {
                     Name = "Expense 4",
                     Amount = 400m,
@@ -79,7 +80,7 @@ namespace ExpenseTracker.Tests.Unit.Services
                 .Returns(expectedResponseData);
 
             // Act
-            var result = await service.GetExpensesAsync(userId, "User");
+            var result = await service.GetExpensesAsync(userId, "User", paginationReq);
 
             // Assert
             Assert.Equal(2, result.totalCount);
@@ -105,6 +106,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             var service = new ExpenseService(mockRepo.Object, mockMapper.Object);
 
             var category = CreateCategory();
+            var paginationReq = CreatePaginationRequest();
 
             var request = new List<Expense>
             {
@@ -157,7 +159,7 @@ namespace ExpenseTracker.Tests.Unit.Services
                 .Returns(expectedResponseData);
 
             // Act
-            var result = await service.GetExpensesAsync(firstUserId, "SuperAdmin");
+            var result = await service.GetExpensesAsync(firstUserId, "SuperAdmin", paginationReq);
 
             // Assert
             Assert.Equal(expectedResponse.TotalCount, result.totalCount);
@@ -494,6 +496,19 @@ namespace ExpenseTracker.Tests.Unit.Services
                 Description = description,
                 Amount = amount,
                 CategoryId = categoryId
+            };
+        }
+
+        private static ExpenseQueryReqDto CreatePaginationRequest(
+            int page = 1,
+            int limit = 20,
+            string? search = null)
+        {
+            return new ExpenseQueryReqDto
+            {
+                Page = page,
+                Limit = limit,
+                Search = search
             };
         }
     }

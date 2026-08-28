@@ -17,50 +17,39 @@ namespace ExpenseTracker.Controllers
         private string GetRole() => User.FindFirstValue(ClaimTypes.Role)!;
 
         [HttpGet]
-        public async Task<ActionResult<ApiResDto<List<CategoryResDto>>>> GetCategories([FromQuery] CategoryType? type = null, [FromQuery] int page = 1, [FromQuery] int limit = 20, [FromQuery] string? search = null)
+        public async Task<ActionResult<ApiResDto<CategoriesResDto>>> GetCategories([FromQuery] CategoryQueryReqDto request)
         {
             try
             {
-                if (page < 1 || limit < 1)
-                {
-                    return BadRequest(new ApiResDto<object>
-                    {
-                        Success = false,
-                        ErrorMessage = "Page and limit must be greater than 0."
-                    });
-                }
-
                 var userId = GetUserId();
                 var role = GetRole();
-                var result = await categoryService.GetCategoriesAsync(userId, role, type, page, limit, search);
+                var (data, hasNextPage) = await categoryService.GetCategoriesAsync(userId, role, request);
 
-                if (result.totalCount == 0) return NotFound(new ApiResDto<object>
-                {
-                    Success = false,
-                    ErrorMessage = "No categories found."
-                });
-
-                return Ok(new ApiResDto<List<CategoryResDto>>
+                return Ok(new ApiResDto<CategoriesResDto>
                 {
                     Success = true,
-                    Data = result.data,
-                    TotalCount = result.totalCount,
-                    Page = page,
-                    Limit = limit,
-                    HasNextPage = result.hasNextPage
+                    Data = new CategoriesResDto
+                    {
+                        Items = data,
+                        Pagination = new PaginatedResDto
+                        {
+                            Page = request.Page,
+                            Limit = request.Limit,
+                            HasNextPage = hasNextPage
+                        }
+                    }
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new ApiResDto<object>
                 {
                     Success = false,
-                    ErrorMessage = $"An error occurred while retrieving categories. {ex.Message}"
+                    ErrorMessage = "An error occurred while retrieving categories."
                 });
             }
         }
 
-         //DONE: add endpoint for fetching a specific category details
         [HttpGet("{categoryId}")]
         public async Task<ActionResult<ApiResDto<CategoryResDto>>> GetCategoryById(int categoryId)
         {
@@ -82,17 +71,16 @@ namespace ExpenseTracker.Controllers
                     Data = data,
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new ApiResDto<object>
                 {
                     Success = false,
-                    ErrorMessage = $"An error occurred while retrieving the category. {ex.Message}"
+                    ErrorMessage = "An error occurred while retrieving the category."
                 });
             }
         }
 
-        // DONE: add endpoint for adding a category
         [HttpPost]
         public async Task<ActionResult<ApiResDto<CategoryResDto>>> CreateCategory([FromBody] CreateCategoryReqDto request)
         {
@@ -116,18 +104,17 @@ namespace ExpenseTracker.Controllers
                     Data = data,
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new ApiResDto<object>
                 {
                     Success = false,
-                    ErrorMessage = $"An error occurred while creating the category. {ex.Message}"
+                    ErrorMessage = "An error occurred while creating the category."
                 });
             }
         }
 
-        // DONE: add endpoint for updating a category
-        [HttpPut("{categoryId}")]
+        [HttpPatch("{categoryId}")]
         public async Task<ActionResult<CategoryResDto>> UpdateCategory(int categoryId, [FromBody] UpdateCategoryReqDto request)
         {
             try
@@ -147,17 +134,16 @@ namespace ExpenseTracker.Controllers
                     Data = data,
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new ApiResDto<object>
                 {
                     Success = false,
-                    ErrorMessage = $"An error occurred while updating the category. {ex.Message}"
+                    ErrorMessage = "An error occurred while updating the category."
                 });
             }
         }
 
-        // DONE: add endpoint for deleting (soft delete) a category
         [HttpDelete("{categoryId}")]
         public async Task<ActionResult<CategoryResDto?>> DeleteCategory(int categoryId)
         {
@@ -178,12 +164,12 @@ namespace ExpenseTracker.Controllers
                     Success = true,
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new ApiResDto<object>
                 {
                     Success = false,
-                    ErrorMessage = $"An error occurred while deleting the category. {ex.Message}"
+                    ErrorMessage = "An error occurred while deleting the category."
                 });
             }
         }
