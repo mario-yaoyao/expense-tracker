@@ -36,7 +36,7 @@ namespace ExpenseTracker.DAL.Data
 
             modelBuilder.Entity<Income>()
                 .HasOne(i => i.User)
-                .WithMany()
+                .WithMany(u => u.Incomes)
                 .HasForeignKey(i => i.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
