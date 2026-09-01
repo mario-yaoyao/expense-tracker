@@ -8,7 +8,7 @@ namespace ExpenseTracker.DAL.Repositories
 {
     public class CategoryRepository(AppDbContext context, ILogger<CategoryRepository> logger) : ICategoryRepository
     {
-        public async Task<(List<Category> data, bool hasNextPage)> GetAllCategoriesAsync(int page = 1, int limit = 20, string? search = null)
+        public async Task<(List<Category> data, bool hasNextPage)> GetAllCategoriesAsync(int page = 1, int limit = 20, string? search = null, DateOnly? startDate = null, DateOnly? endDate = null)
         {
             try
             {
@@ -17,6 +17,20 @@ namespace ExpenseTracker.DAL.Repositories
                 if (!string.IsNullOrWhiteSpace(search))
                 {
                     query = query.Where(c => c.Name.Contains(search));
+                }
+
+                if (startDate.HasValue)
+                {
+                    var startDateTime = startDate.Value.ToDateTime(TimeOnly.MinValue);
+
+                    query = query.Where(e => e.CreatedAt >= startDateTime);
+                }
+
+                if (endDate.HasValue)
+                {
+                    var endDateTime = endDate.Value.ToDateTime(TimeOnly.MaxValue);
+
+                    query = query.Where(e => e.CreatedAt <= endDateTime);
                 }
 
                 var totalCount = await query.CountAsync();
@@ -38,7 +52,7 @@ namespace ExpenseTracker.DAL.Repositories
             }
         }
 
-        public async Task<(List<Category> data, bool hasNextPage)> GetCategoriesByUserAsync(int userId, CategoryType? type = null, int page = 1, int limit = 12, string? search = null)
+        public async Task<(List<Category> data, bool hasNextPage)> GetCategoriesByUserAsync(int userId, CategoryType? type = null, int page = 1, int limit = 12, string? search = null, DateOnly? startDate = null, DateOnly? endDate = null)
         {
             try
             {
@@ -53,6 +67,20 @@ namespace ExpenseTracker.DAL.Repositories
                 if (!string.IsNullOrWhiteSpace(search))
                 {
                     query = query.Where(c => c.Name.Contains(search));
+                }
+
+                if (startDate.HasValue)
+                {
+                    var startDateTime = startDate.Value.ToDateTime(TimeOnly.MinValue);
+
+                    query = query.Where(e => e.CreatedAt >= startDateTime);
+                }
+
+                if (endDate.HasValue)
+                {
+                    var endDateTime = endDate.Value.ToDateTime(TimeOnly.MaxValue);
+
+                    query = query.Where(e => e.CreatedAt <= endDateTime);
                 }
 
                 var totalCount = await query.CountAsync();

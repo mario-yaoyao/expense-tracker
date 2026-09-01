@@ -9,7 +9,7 @@ namespace ExpenseTracker.DAL.Repositories
 {
     public class ExpenseRepository(AppDbContext context, ILogger<ExpenseRepository> logger) : IExpenseRepository
     {
-        public async Task<(List<Expense> data, int totalCount, bool hasNextPage)> GetAllExpensesAsync(int page = 1, int limit = 20, string? search = null)
+        public async Task<(List<Expense> data, int totalCount, bool hasNextPage)> GetAllExpensesAsync(int page = 1, int limit = 20, string? search = null, DateOnly? startDate = null, DateOnly? endDate = null)
         {
             try
             {
@@ -21,6 +21,20 @@ namespace ExpenseTracker.DAL.Repositories
                 if (!string.IsNullOrWhiteSpace(search))
                 {
                     query = query.Where(e => e.Description.Contains(search));
+                }
+
+                if (startDate.HasValue)
+                {
+                    var startDateTime = startDate.Value.ToDateTime(TimeOnly.MinValue);
+
+                    query = query.Where(e => e.CreatedAt >= startDateTime);
+                }
+
+                if (endDate.HasValue)
+                {
+                    var endDateTime = endDate.Value.ToDateTime(TimeOnly.MaxValue);
+
+                    query = query.Where(e => e.CreatedAt <= endDateTime);
                 }
 
                 var totalCount = await query.CountAsync();
@@ -42,7 +56,7 @@ namespace ExpenseTracker.DAL.Repositories
             }
         }
 
-        public async Task<(List<Expense> data, decimal totalExpense, HighestAmountResDto? highestExpense, int totalCount, bool hasNextPage)> GetExpensesByUserAsync(int userId, int page = 1, int limit = 12, string? search = null)
+        public async Task<(List<Expense> data, decimal totalExpense, HighestAmountResDto? highestExpense, int totalCount, bool hasNextPage)> GetExpensesByUserAsync(int userId, int page = 1, int limit = 12, string? search = null, DateOnly? startDate = null, DateOnly? endDate = null)
         {
             try
             {
@@ -54,14 +68,26 @@ namespace ExpenseTracker.DAL.Repositories
                     .Include(e => e.User)
                     .Where(e =>
                         e.UserId == userId &&
-                        !e.IsDeleted &&
-                        e.CreatedAt.Month == currentMonth &&
-                        e.CreatedAt.Year == currentYear)
+                        !e.IsDeleted)
                     .AsQueryable();
 
                 if (!string.IsNullOrWhiteSpace(search))
                 {
                     query = query.Where(e => e.Description.Contains(search));
+                }
+
+                if (startDate.HasValue)
+                {
+                    var startDateTime = startDate.Value.ToDateTime(TimeOnly.MinValue);
+
+                    query = query.Where(e => e.CreatedAt >= startDateTime);
+                }
+
+                if (endDate.HasValue)
+                {
+                    var endDateTime = endDate.Value.ToDateTime(TimeOnly.MaxValue);
+
+                    query = query.Where(e => e.CreatedAt <= endDateTime);
                 }
 
                 var totalCount = await query.CountAsync();

@@ -19,11 +19,11 @@ namespace ExpenseTracker.BLL.Services
 
             if (role == "User")
             {
-                (data, totalExpense, highestExpense, totalCount, hasNextPage) = await expenseRepository.GetExpensesByUserAsync(userId, request.Page, request.Limit, request.Search);
+                (data, totalExpense, highestExpense, totalCount, hasNextPage) = await expenseRepository.GetExpensesByUserAsync(userId, request.Page, request.Limit, request.Search, request.StartDate, request.EndDate);
             }
             else
             {
-                (data, totalCount, hasNextPage) = await expenseRepository.GetAllExpensesAsync(request.Page, request.Limit, request.Search);
+                (data, totalCount, hasNextPage) = await expenseRepository.GetAllExpensesAsync(request.Page, request.Limit, request.Search, request.StartDate, request.EndDate);
             }
 
             return (

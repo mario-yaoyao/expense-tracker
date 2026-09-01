@@ -16,11 +16,11 @@ namespace ExpenseTracker.BLL.Services
 
             if (role == "User")
             {
-                (data, hasNextPage) = await categoryRepository.GetCategoriesByUserAsync(userId, request.Type, request.Page, request.Limit, request.Search);
+                (data, hasNextPage) = await categoryRepository.GetCategoriesByUserAsync(userId, request.Type, request.Page, request.Limit, request.Search, request.StartDate, request.EndDate);
             }
             else
             {
-                (data, hasNextPage) = await categoryRepository.GetAllCategoriesAsync(request.Page, request.Limit, request.Search);
+                (data, hasNextPage) = await categoryRepository.GetAllCategoriesAsync(request.Page, request.Limit, request.Search, request.StartDate, request.EndDate);
             }
 
             return (

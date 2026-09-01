@@ -11,5 +11,9 @@ namespace ExpenseTracker.Models.Dtos.Requests
         public int Limit { get; set; } = 20;
 
         public string? Search { get; set; }
+
+        public DateOnly? StartDate { get; set; }
+
+        public DateOnly? EndDate { get; set; }
     }
 }

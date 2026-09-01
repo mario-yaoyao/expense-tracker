@@ -1,7 +1,6 @@
 ﻿using ExpenseTracker.BLL.Interfaces;
 using ExpenseTracker.Models.Dtos.Requests;
 using ExpenseTracker.Models.Dtos.Responses;
-using ExpenseTracker.Models.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
