@@ -2,7 +2,7 @@
 
 namespace ExpenseTracker.Models.Dtos.Responses
 {
-    public class ProfileResDto
+    public class UserResDto
     {
         public int Id { get; set; }
         public string FullName { get; set; } = string.Empty;

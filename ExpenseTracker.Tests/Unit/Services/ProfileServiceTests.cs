@@ -11,13 +11,6 @@ namespace ExpenseTracker.Tests.Unit.Services
 {
     public class ProfileServiceTests
     {
-        private readonly Mock<IMapper> mockMapper;
-
-        public ProfileServiceTests()
-        {
-            mockMapper = new Mock<IMapper>();
-        }
-
         [Fact]
         public async Task GetUserByIdAsync_ReturnsUserExpenses_WhenUserExist()
         {
@@ -38,7 +31,7 @@ namespace ExpenseTracker.Tests.Unit.Services
                 CreatedAt = DateTime.UtcNow
             };
 
-            var expectedResponse = new ProfileResDto
+            var expectedResponse = new UserResDto
             {
                 Id = userId,
                 FullName = "Test User",
@@ -55,7 +48,7 @@ namespace ExpenseTracker.Tests.Unit.Services
                 .ReturnsAsync(user);
 
             mockMapper
-                .Setup(x => x.Map<ProfileResDto>(user))
+                .Setup(x => x.Map<UserResDto>(user))
                 .Returns(expectedResponse);
 
             // Act
@@ -76,7 +69,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             var mockRepo = new Mock<IProfileRepository>();
             var service = new ProfileService(mockRepo.Object, mockMapper.Object);
 
-            var expectedResponse = new ProfileResDto
+            var expectedResponse = new UserResDto
             {
                 Id = userId,
                 FullName = "Test User",
@@ -99,7 +92,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             Assert.Null(result);
 
             mockMapper.Verify(
-                x => x.Map<ProfileResDto>(It.IsAny<User>()),
+                x => x.Map<UserResDto>(It.IsAny<User>()),
                 Times.Never);
         }
 
@@ -269,6 +262,14 @@ namespace ExpenseTracker.Tests.Unit.Services
         }
 
         // Helper Functions
+        private readonly Mock<IMapper> mockMapper;
+
+        public ProfileServiceTests()
+        {
+            mockMapper = new Mock<IMapper>();
+        }
+
+
         private static ChangePasswordReqDto ChangePassword(
             string currentPassword = "oldpassword123",
             string newPassword = "newpassword123")

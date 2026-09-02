@@ -23,7 +23,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            var expectedResponse = new ProfileResDto
+            var expectedResponse = new UserResDto
             {
                 Id = userId,
                 FullName = "Test User",
@@ -44,7 +44,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<ProfileResDto>>(okResult.Value);
+            var response = Assert.IsType<ApiResDto<UserResDto>>(okResult.Value);
 
             Assert.True(response.Success);
             Assert.NotNull(response.Data);
@@ -62,11 +62,11 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            var expectedResponse = new ProfileResDto();
+            var expectedResponse = new UserResDto();
 
             mockService
                 .Setup(x => x.GetUserProfileAsync(userId))
-                .ReturnsAsync((ProfileResDto?)null);
+                .ReturnsAsync((UserResDto?)null);
 
             // Act
             var result = await controller.GetUserProfile();

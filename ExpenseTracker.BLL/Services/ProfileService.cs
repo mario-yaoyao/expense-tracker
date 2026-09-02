@@ -11,13 +11,13 @@ namespace ExpenseTracker.BLL.Services
 {
     public class ProfileService(IProfileRepository profileRepository, IMapper mapper) : IProfileService
     {
-        public async Task<ProfileResDto?> GetUserProfileAsync(int userId)
+        public async Task<UserResDto?> GetUserProfileAsync(int userId)
         {
             var user = await profileRepository.GetUserByIdAsync(userId);
 
             if (user == null) return null;
 
-            return mapper.Map<ProfileResDto>(user);
+            return mapper.Map<UserResDto>(user);
         }
 
         public async Task<ServiceResult<bool>> ChangePasswordAsync(int userId, ChangePasswordReqDto request)

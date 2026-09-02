@@ -13,7 +13,7 @@ namespace ExpenseTracker.Controllers
         private int GetUserId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         [HttpGet]
-        public async Task<ActionResult<ProfileResDto>> GetUserProfile()
+        public async Task<ActionResult<UserResDto>> GetUserProfile()
         {
             try
             {
@@ -26,7 +26,7 @@ namespace ExpenseTracker.Controllers
                         Success = false,
                         ErrorMessage = "User information not found."
                     })
-                    : Ok(new ApiResDto<ProfileResDto>
+                    : Ok(new ApiResDto<UserResDto>
                     {
                         Success = true,
                         Data = data

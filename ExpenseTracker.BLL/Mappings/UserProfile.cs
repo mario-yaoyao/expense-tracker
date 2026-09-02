@@ -8,7 +8,7 @@ namespace ExpenseTracker.BLL.Mappings
     {
         public UserProfile()
         {
-            CreateMap<User, ProfileResDto>();
+            CreateMap<User, UserResDto>();
         }
     }
 }

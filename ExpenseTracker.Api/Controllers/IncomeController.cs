@@ -48,7 +48,7 @@ namespace ExpenseTracker.Controllers
                 return StatusCode(500, new ApiResDto<object>
                 {
                     Success = false,
-                    ErrorMessage = "An error occurred while retrieving expenses."
+                    ErrorMessage = "An error occurred while retrieving incomes."
                 });
             }
         }

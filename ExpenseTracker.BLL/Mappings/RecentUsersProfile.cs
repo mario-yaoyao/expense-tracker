@@ -4,11 +4,11 @@ using ExpenseTracker.Models.Models;
 
 namespace ExpenseTracker.BLL.Mappings
 {
-    public class HighestExpenseProfile : Profile
+    public class RecentUsersProfile : Profile
     {
-        public HighestExpenseProfile()
+        public RecentUsersProfile()
         {
-            CreateMap<User, UserResDto>();
+            CreateMap<User, RecentUsersResDto>();
         }
     }
 }

@@ -10,14 +10,6 @@ namespace ExpenseTracker.Tests.Unit.Services
 {
     public class CategoryServiceTests
     {
-
-        private readonly Mock<IMapper> mockMapper;
-
-        public CategoryServiceTests()
-        {
-            mockMapper = new Mock<IMapper>();
-        }
-
         [Fact]
         public async Task GetCategoriesAsync_ReturnsUserCategories_WhenRoleIsUser()
         {
@@ -407,6 +399,13 @@ namespace ExpenseTracker.Tests.Unit.Services
         }
 
         // Helper Functions
+        private readonly Mock<IMapper> mockMapper;
+
+        public CategoryServiceTests()
+        {
+            mockMapper = new Mock<IMapper>();
+        }
+
         private static Category CreateCategory(
             int id,
             int userId,
