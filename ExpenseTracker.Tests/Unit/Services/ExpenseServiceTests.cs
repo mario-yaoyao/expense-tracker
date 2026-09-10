@@ -87,7 +87,7 @@ namespace ExpenseTracker.Tests.Unit.Services
         }
 
         [Fact]
-        public async Task GetExpensesAsync_ReturnsAllExpenses_WhenRoleIsNotUser()
+        public async Task GetExpensesAsync_ReturnsAllExpenses_WhenRoleIsSuperAdmin()
         {
             // Arrange
             var firstExpenseId = 1;

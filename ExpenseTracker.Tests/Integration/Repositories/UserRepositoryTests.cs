@@ -49,6 +49,36 @@ namespace ExpenseTracker.Tests.Integration.Repositories
             Assert.Null(result);
         }
 
+        [Fact]
+        public async Task GetUsersAsync_ReturnsAllRecords()
+        {
+            // Arrange
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
+
+            var users = new List<User>
+            {
+                CreateUser(id: 1),
+                CreateUser(id: 2),
+                CreateUser(id: 3, createdAt: new DateTime(2026, 7, 15)),
+                CreateUser(id: 4, isActive: false),
+            };
+
+            context.Users.AddRange(users);
+            await context.SaveChangesAsync();
+
+            //Act
+            var result = await repository.GetUsersAsync();
+
+            // Assert
+            Assert.Equal(4, result.totalCount);
+
+            Assert.Contains(
+                result.data,
+                e => e.Username == users[1].Username
+            );
+        }
+
         // Helper Functions
         private static AppDbContext CreateContext()
         {
@@ -68,18 +98,22 @@ namespace ExpenseTracker.Tests.Integration.Repositories
 
         private static User CreateUser(
             int id = 1,
-            string username = "testuser")
+            string username = "testuser",
+            UserRole role = UserRole.User,
+            bool isActive = true,
+            DateTime? createdAt = null)
         {
             return new User
             {
                 Id = id,
-                FullName = "Test User",
                 Username = username,
+                FullName = "Test User",
+                Email = $"{username}@gmail.com",
                 ContactNumber = "09123456789",
                 HashedPassword = "password",
-                Role = UserRole.User,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                Role = role,
+                IsActive = isActive,
+                CreatedAt = createdAt ?? DateTime.UtcNow
             };
         }
     }

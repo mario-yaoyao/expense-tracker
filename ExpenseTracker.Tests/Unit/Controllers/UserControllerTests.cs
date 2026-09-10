@@ -266,18 +266,5 @@ namespace ExpenseTracker.Tests.Unit.Controllers
                 CreatedAt = DateTime.UtcNow
             };
         }
-
-        //private static UpdateUserReqDto UpdateUserRequest(
-        //    string description = "Breakfast",
-        //    decimal amount = 50.00m,
-        //    int categoryId = 1)
-        //{
-        //    return new UpdateIncomeReqDto
-        //    {
-        //        Description = description,
-        //        Amount = amount,
-        //        CategoryId = categoryId
-        //    };
-        //}
     }
 }

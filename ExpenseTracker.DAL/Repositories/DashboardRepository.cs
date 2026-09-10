@@ -8,7 +8,7 @@ using System.Globalization;
 
 namespace ExpenseTracker.DAL.Repositories
 {
-    public class DashboardRepository(AppDbContext context, ILogger<ExpenseRepository> logger) : IDashboardRepository
+    public class DashboardRepository(AppDbContext context, ILogger<DashboardRepository> logger) : IDashboardRepository
     {
         public async Task<(SuperAdminDashboardMetricsResDto metrics, List<UserGrowthTrendResDto> userGrowthTrend, List<User> recentUsers, List<RecentTransactionsResDto> recentTransactions)> GetSuperAdminDashboardAsync()
         {
@@ -21,8 +21,7 @@ namespace ExpenseTracker.DAL.Repositories
                 var metrics = await GetSuperAdminDashboardMetricsAsync(context);
 
                 var monthlyUsers = await context.Users
-                    .Where(u => u.IsActive &&
-                                u.CreatedAt.Year == currentYear)
+                    .Where(u => u.CreatedAt.Year == currentYear)
                     .GroupBy(u => u.CreatedAt.Month)
                     .Select(g => new
                     {
