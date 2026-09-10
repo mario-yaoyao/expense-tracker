@@ -10,7 +10,7 @@ namespace ExpenseTracker.DAL.Repositories
 {
     public class DashboardRepository(AppDbContext context, ILogger<ExpenseRepository> logger) : IDashboardRepository
     {
-        public async Task<(SuperAdminDashboardMetricsResDto metrics, List<UserGrowthTrendResDto> userGrowthTrend, List<User> recentUsers)> GetSuperAdminDashboardAsync()
+        public async Task<(SuperAdminDashboardMetricsResDto metrics, List<UserGrowthTrendResDto> userGrowthTrend, List<User> recentUsers, List<RecentTransactionsResDto> recentTransactions)> GetSuperAdminDashboardAsync()
         {
             try
             {
@@ -39,7 +39,22 @@ namespace ExpenseTracker.DAL.Repositories
                     .Take(10)
                     .ToListAsync();
 
-                return (metrics, userGrowthTrend, recentUsers);
+                var recentTransactions = await context.TransactionLogs
+                    .Where(t => !string.IsNullOrEmpty(t.Action))
+                    .OrderByDescending(t => t.TimeStamp)
+                    .Take(10)
+                    .Select(t => new RecentTransactionsResDto
+                    {
+                        Id = t.Id,
+                        UserId = t.UserId,
+                        Username = t.Username,
+                        Action = t.Action,
+                        Message = t.Message,
+                        CreatedAt = t.TimeStamp
+                    })
+                    .ToListAsync();
+
+                return (metrics, userGrowthTrend, recentUsers, recentTransactions);
             }
             catch (Exception ex)
             {
@@ -48,8 +63,7 @@ namespace ExpenseTracker.DAL.Repositories
             }
         }
 
-        //public async Task<(DashboardMetricsResDto metrics, List<SavingsTrendResDto> savingsTrend, List<IncomeExpenseTrendResDto> incomeExpenseTrend, List<RecentTransactionsResDto> recentTransactions)> GetDashboardByUserAsync(int userId)
-        public async Task<(UserDashboardMetricsResDto metrics, List<SavingsTrendResDto> savingsTrend, List<IncomeExpenseTrendResDto> incomeExpenseTrend)> GetUserDashboardAsync(int userId)
+        public async Task<(UserDashboardMetricsResDto metrics, List<SavingsTrendResDto> savingsTrend, List<IncomeExpenseTrendResDto> incomeExpenseTrend, List<RecentTransactionsResDto> recentTransactions)> GetUserDashboardAsync(int userId)
         {
             try
             {
@@ -85,9 +99,24 @@ namespace ExpenseTracker.DAL.Repositories
 
                 var savingsTrend = BuildSavingsTrend(monthlyIncome, monthlyExpense);
                 var incomeExpenseTrend = BuildIncomeExpenseTrend(previousMonth.Month, monthlyIncome, monthlyExpense);
+                var recentTransactions = await context.TransactionLogs
+                    .Where(t =>
+                        t.UserId == userId &&
+                        !string.IsNullOrEmpty(t.Action))
+                    .OrderByDescending(t => t.TimeStamp)
+                    .Take(10)
+                    .Select(t => new RecentTransactionsResDto
+                    {
+                        Id = t.Id,
+                        UserId = t.UserId,
+                        Username = t.Username,
+                        Action = t.Action,
+                        Activity = t.Activity,
+                        CreatedAt = t.TimeStamp
+                    })
+                    .ToListAsync();
 
-                //return (metrics, savingsTrend, incomeExpenseTrend, recentTransactions);
-                return (metrics, savingsTrend, incomeExpenseTrend);
+                return (metrics, savingsTrend, incomeExpenseTrend, recentTransactions);
             }
             catch (Exception ex)
             {

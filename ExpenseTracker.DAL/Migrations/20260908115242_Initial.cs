@@ -12,6 +12,27 @@ namespace ExpenseTracker.DAL.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "TransactionLogs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Level = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TimeStamp = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Exception = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserId = table.Column<int>(type: "int", nullable: true),
+                    Username = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Action = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    EntityName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Activity = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TransactionLogs", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -102,7 +123,6 @@ namespace ExpenseTracker.DAL.Migrations
                     CategoryId = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    UserId1 = table.Column<int>(type: "int", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
@@ -121,11 +141,6 @@ namespace ExpenseTracker.DAL.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Incomes_Users_UserId1",
-                        column: x => x.UserId1,
-                        principalTable: "Users",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.InsertData(
@@ -157,11 +172,6 @@ namespace ExpenseTracker.DAL.Migrations
                 name: "IX_Incomes_UserId",
                 table: "Incomes",
                 column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Incomes_UserId1",
-                table: "Incomes",
-                column: "UserId1");
         }
 
         /// <inheritdoc />
@@ -172,6 +182,9 @@ namespace ExpenseTracker.DAL.Migrations
 
             migrationBuilder.DropTable(
                 name: "Incomes");
+
+            migrationBuilder.DropTable(
+                name: "TransactionLogs");
 
             migrationBuilder.DropTable(
                 name: "Categories");

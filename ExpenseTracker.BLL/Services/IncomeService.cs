@@ -1,13 +1,15 @@
 ﻿using AutoMapper;
 using ExpenseTracker.BLL.Interfaces;
 using ExpenseTracker.DAL.Interfaces;
+using ExpenseTracker.DAL.Repositories;
 using ExpenseTracker.Models.Dtos.Requests;
 using ExpenseTracker.Models.Dtos.Responses;
 using ExpenseTracker.Models.Models;
+using Serilog;
 
 namespace ExpenseTracker.BLL.Services
 {
-    public class IncomeService(IIncomeRepository incomeRepository, IMapper mapper) : IIncomeService
+    public class IncomeService(IIncomeRepository incomeRepository, IUserRepository userRepository, IMapper mapper) : IIncomeService
     {
         public async Task<(List<IncomeResDto> data, decimal totalIncome, HighestAmountResDto? highestIncome, int totalCount, bool hasNextPage)> GetIncomesAsync(int userId, string role, IncomeQueryReqDto request)
         {
@@ -65,6 +67,14 @@ namespace ExpenseTracker.BLL.Services
 
             await incomeRepository.AddIncomeAsync(newIncome);
             var createdIncome = await incomeRepository.GetIncomeByIdAsync(newIncome.Id);
+            var user = await userRepository.GetUserByIdAsync(userId);
+
+            Log.ForContext("UserId", userId)
+               .ForContext("Username", user!.Username)
+               .ForContext("Action", "Create")
+               .ForContext("EntityName", "Income")
+               .ForContext("Activity", $"Created income '{newIncome.Description}'.")
+               .Information($"'{user.Username}' deleted expense '{newIncome.Description}'.");
 
             return mapper.Map<IncomeResDto>(createdIncome);
         }
@@ -84,6 +94,14 @@ namespace ExpenseTracker.BLL.Services
             existingIncome.UpdatedAt = DateTime.UtcNow;
 
             await incomeRepository.SaveChangesAsync();
+            var user = await userRepository.GetUserByIdAsync(userId);
+
+            Log.ForContext("UserId", userId)
+               .ForContext("Username", user!.Username)
+               .ForContext("Action", "Update")
+               .ForContext("EntityName", "Income")
+               .ForContext("Activity", $"Updated income '{existingIncome.Description}'.")
+               .Information($"'{user.Username}' updated income '{existingIncome.Description}'.");
 
             return mapper.Map<IncomeResDto>(existingIncome);
         }
@@ -97,6 +115,14 @@ namespace ExpenseTracker.BLL.Services
             existingIncome.IsDeleted = true;
 
             await incomeRepository.SaveChangesAsync();
+            var user = await userRepository.GetUserByIdAsync(userId);
+
+            Log.ForContext("UserId", userId)
+               .ForContext("Username", user!.Username)
+               .ForContext("Action", "Delete")
+               .ForContext("EntityName", "Income")
+               .ForContext("Activity", $"Deleted income '{existingIncome.Description}'.")
+               .Information($"'{user.Username}' deleted income '{existingIncome.Description}'.");
 
             return true;
         }

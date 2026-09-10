@@ -174,14 +174,10 @@ namespace ExpenseTracker.Tests.Integration.Repositories
         public async Task AddCategoryAsync_SavesCategoryToDatabase()
         {
             // Arrange
-            var userId = 1;
-
             using var context = CreateContext();
             var repository = CreateRepository(context);
 
             var user = CreateUser();
-            //var category = CreateCategory();
-
             var category = CreateCategory();
 
             // Act

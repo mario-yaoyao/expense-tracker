@@ -14,13 +14,14 @@ namespace ExpenseTracker.Tests.Unit.Services
         public async Task GetCategoriesAsync_ReturnsUserCategories_WhenRoleIsUser()
         {
             // Arrange
-            var firstCategoryId = 1;
+            var firstCategoryId = 1;    
             var secondCategoryId = 2;
             var userId = 1;
             var categoryType = CategoryType.Expense;
 
-            var mockRepo = new Mock<ICategoryRepository>();
-            var service = new CategoryService(mockRepo.Object, mockMapper.Object);
+            var mockCategoryRepo = new Mock<ICategoryRepository>();
+            var mockUserRepo = new Mock<IUserRepository>();
+            var service = new CategoryService(mockCategoryRepo.Object, mockUserRepo.Object, mockMapper.Object);
 
             var request = new List<Category>
             {
@@ -58,7 +59,7 @@ namespace ExpenseTracker.Tests.Unit.Services
                 HasNextPage: false
             );
 
-            mockRepo
+            mockCategoryRepo
                 .Setup(x => x.GetCategoriesByUserAsync(userId, queryRequest.Type, queryRequest.Page, queryRequest.Limit, queryRequest.Search))
                 .ReturnsAsync(expectedResponse);
 
@@ -73,7 +74,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             Assert.Equal(expectedResponseData[0].Name, result.data[0].Name);
             Assert.Equal(CategoryType.Expense, result.data[1].Type);
 
-            mockRepo.Verify(
+            mockCategoryRepo.Verify(
                 x => x.GetCategoriesByUserAsync(userId, categoryType, 1, 20, null),
                 Times.Once);
         }
@@ -89,8 +90,9 @@ namespace ExpenseTracker.Tests.Unit.Services
             var secondUserId = 2;
             var categoryType = CategoryType.Expense;
 
-            var mockRepo = new Mock<ICategoryRepository>();
-            var service = new CategoryService(mockRepo.Object, mockMapper.Object);
+            var mockCategoryRepo = new Mock<ICategoryRepository>();
+            var mockUserRepo = new Mock<IUserRepository>();
+            var service = new CategoryService(mockCategoryRepo.Object, mockUserRepo.Object, mockMapper.Object);
 
             var request = new List<Category>
             {
@@ -130,7 +132,7 @@ namespace ExpenseTracker.Tests.Unit.Services
                 HasNextPage: false
             );
 
-            mockRepo
+            mockCategoryRepo
                 .Setup(x => x.GetAllCategoriesAsync(queryRequest.Page, queryRequest.Limit, queryRequest.Search))
                 .ReturnsAsync(expectedResponse);
 
@@ -145,7 +147,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             Assert.Equal(expectedResponseData[0].Name, result.data[0].Name);
             Assert.Equal(expectedResponseData[1].Type, result.data[1].Type);
 
-            mockRepo.Verify(
+            mockCategoryRepo.Verify(
                 x => x.GetAllCategoriesAsync(1, 20, null),
                 Times.Once);
         }
@@ -157,8 +159,9 @@ namespace ExpenseTracker.Tests.Unit.Services
             var categoryId = 1;
             var userId = 1;
 
-            var mockRepo = new Mock<ICategoryRepository>();
-            var service = new CategoryService(mockRepo.Object, mockMapper.Object);
+            var mockCategoryRepo = new Mock<ICategoryRepository>();
+            var mockUserRepo = new Mock<IUserRepository>();
+            var service = new CategoryService(mockCategoryRepo.Object, mockUserRepo.Object, mockMapper.Object);
 
             var expectedResponse = new Category
             {
@@ -185,7 +188,7 @@ namespace ExpenseTracker.Tests.Unit.Services
                 .Setup(x => x.Map<CategoryResDto>(It.IsAny<Category>()))
                 .Returns(expectedResDto);
 
-            mockRepo.Setup(x => x.GetCategoryByUserAsync(userId, categoryId))
+            mockCategoryRepo.Setup(x => x.GetCategoryByUserAsync(userId, categoryId))
                 .ReturnsAsync(expectedResponse);
 
             // Act
@@ -197,7 +200,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             Assert.Equal(expectedResponse.Name, result.Name);
             Assert.Equal(expectedResponse.Type, result.Type);
 
-            mockRepo.Verify(
+            mockCategoryRepo.Verify(
                 x => x.GetCategoryByUserAsync(userId, categoryId),
                 Times.Once);
         }
@@ -209,10 +212,11 @@ namespace ExpenseTracker.Tests.Unit.Services
             var categoryId = 1;
             var userId = 1;
 
-            var mockRepo = new Mock<ICategoryRepository>();
-            var service = new CategoryService(mockRepo.Object, mockMapper.Object);
+            var mockCategoryRepo = new Mock<ICategoryRepository>();
+            var mockUserRepo = new Mock<IUserRepository>();
+            var service = new CategoryService(mockCategoryRepo.Object, mockUserRepo.Object, mockMapper.Object);
 
-            mockRepo.Setup(x => x.GetCategoryByUserAsync(userId, categoryId))
+            mockCategoryRepo.Setup(x => x.GetCategoryByUserAsync(userId, categoryId))
                 .ReturnsAsync((Category?)null);
 
             // Act
@@ -221,7 +225,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             // Assert
             Assert.Null(result);
 
-            mockRepo.Verify(
+            mockCategoryRepo.Verify(
                 x => x.GetCategoryByUserAsync(userId, categoryId),
                 Times.Once);
         }
@@ -233,8 +237,9 @@ namespace ExpenseTracker.Tests.Unit.Services
             var categoryId = 1;
             var userId = 1;
 
-            var mockRepo = new Mock<ICategoryRepository>();
-            var service = new CategoryService(mockRepo.Object, mockMapper.Object);
+            var mockCategoryRepo = new Mock<ICategoryRepository>();
+            var mockUserRepo = new Mock<IUserRepository>();
+            var service = new CategoryService(mockCategoryRepo.Object, mockUserRepo.Object, mockMapper.Object);
 
             var request = CreateCategoryRequest();
 
@@ -252,6 +257,14 @@ namespace ExpenseTracker.Tests.Unit.Services
                 .Setup(x => x.Map<CategoryResDto>(It.IsAny<Category>()))
                 .Returns(expectedResponseDto);
 
+            mockUserRepo
+                .Setup(x => x.GetUserByIdAsync(userId))
+                .ReturnsAsync(new User
+                {
+                    Id = userId,
+                    Username = "testuser"
+                });
+
             // Act
             var result = await service.CreateCategoryAsync(userId, request);
 
@@ -261,7 +274,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             Assert.Equal(request.Name, result.Name);
             Assert.Equal(request.Type, result.Type);
 
-            mockRepo.Verify(
+            mockCategoryRepo.Verify(
                 x => x.AddCategoryAsync(It.IsAny<Category>()),
                 Times.Once);
         }
@@ -273,7 +286,8 @@ namespace ExpenseTracker.Tests.Unit.Services
             var firstCategoryId = 1;
             var userId = 1;
 
-            var mockRepo = new Mock<ICategoryRepository>();
+            var mockCategoryRepo = new Mock<ICategoryRepository>();
+            var mockUserRepo = new Mock<IUserRepository>();
 
             var request = UpdateCategory();
 
@@ -302,10 +316,18 @@ namespace ExpenseTracker.Tests.Unit.Services
                 .Setup(x => x.Map<CategoryResDto>(It.IsAny<Category>()))
                 .Returns(expectedResponseDto);
 
-            mockRepo.Setup(x => x.GetCategoryByUserAsync(userId, existingCategory.Id))
+            mockCategoryRepo.Setup(x => x.GetCategoryByUserAsync(userId, existingCategory.Id))
                 .ReturnsAsync(existingCategory);
 
-            var service = new CategoryService(mockRepo.Object, mockMapper.Object);
+            mockUserRepo
+                .Setup(x => x.GetUserByIdAsync(userId))
+                .ReturnsAsync(new User
+                {
+                    Id = userId,
+                    Username = "testuser"
+                });
+
+            var service = new CategoryService(mockCategoryRepo.Object, mockUserRepo.Object, mockMapper.Object);
 
             // Act
             var result = await service.UpdateCategoryAsync(userId, existingCategory.Id, request);
@@ -318,11 +340,11 @@ namespace ExpenseTracker.Tests.Unit.Services
             Assert.Equal(expectedResponseDto.Name, result.Name);
             Assert.Equal(expectedResponseDto.Type, result.Type);
 
-            mockRepo.Verify(
+            mockCategoryRepo.Verify(
                 x => x.GetCategoryByUserAsync(userId, existingCategory.Id),
                 Times.Once);
 
-            mockRepo.Verify(
+            mockCategoryRepo.Verify(
                 x => x.SaveChangesAsync(),
                 Times.Once);
         }
@@ -334,12 +356,13 @@ namespace ExpenseTracker.Tests.Unit.Services
             var categoryId = 1;
             var userId = 1;
 
-            var mockRepo = new Mock<ICategoryRepository>();
-            var service = new CategoryService(mockRepo.Object, mockMapper.Object);
+            var mockCategoryRepo = new Mock<ICategoryRepository>();
+            var mockUserRepo = new Mock<IUserRepository>();
+            var service = new CategoryService(mockCategoryRepo.Object, mockUserRepo.Object, mockMapper.Object);
 
             var request = UpdateCategory();
 
-            mockRepo.Setup(x => x.GetCategoryByUserAsync(userId, categoryId))
+            mockCategoryRepo.Setup(x => x.GetCategoryByUserAsync(userId, categoryId))
                 .ReturnsAsync((Category?)null);
 
             // Act
@@ -356,8 +379,9 @@ namespace ExpenseTracker.Tests.Unit.Services
             var categoryId = 1;
             var userId = 1;
 
-            var mockRepo = new Mock<ICategoryRepository>();
-            var service = new CategoryService(mockRepo.Object, mockMapper.Object);
+            var mockCategoryRepo = new Mock<ICategoryRepository>();
+            var mockUserRepo = new Mock<IUserRepository>();
+            var service = new CategoryService(mockCategoryRepo.Object, mockUserRepo.Object, mockMapper.Object);
 
             var existingCategory = new Category
             {
@@ -368,8 +392,16 @@ namespace ExpenseTracker.Tests.Unit.Services
                 IsDeleted = false
             };
 
-            mockRepo.Setup(x => x.GetCategoryByUserAsync(userId, categoryId))
+            mockCategoryRepo.Setup(x => x.GetCategoryByUserAsync(userId, categoryId))
                 .ReturnsAsync(existingCategory);
+
+            mockUserRepo
+                .Setup(x => x.GetUserByIdAsync(userId))
+                .ReturnsAsync(new User
+                {
+                    Id = userId,
+                    Username = "testuser"
+                });
 
             // Act
             var result = await service.DeleteCategoryAsync(userId, categoryId);
@@ -385,10 +417,11 @@ namespace ExpenseTracker.Tests.Unit.Services
             var categoryId = 1;
             var userId = 1;
 
-            var mockRepo = new Mock<ICategoryRepository>();
-            var service = new CategoryService(mockRepo.Object, mockMapper.Object);
+            var mockCategoryRepo = new Mock<ICategoryRepository>();
+            var mockUserRepo = new Mock<IUserRepository>();
+            var service = new CategoryService(mockCategoryRepo.Object, mockUserRepo.Object, mockMapper.Object);
 
-            mockRepo.Setup(x => x.GetCategoryByUserAsync(userId, categoryId))
+            mockCategoryRepo.Setup(x => x.GetCategoryByUserAsync(userId, categoryId))
                 .ReturnsAsync((Category?)null);
 
             // Act

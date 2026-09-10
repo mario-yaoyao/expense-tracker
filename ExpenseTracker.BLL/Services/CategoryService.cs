@@ -4,10 +4,11 @@ using ExpenseTracker.DAL.Interfaces;
 using ExpenseTracker.Models.Dtos.Requests;
 using ExpenseTracker.Models.Dtos.Responses;
 using ExpenseTracker.Models.Models;
+using Serilog;
 
 namespace ExpenseTracker.BLL.Services
 {
-    public class CategoryService(ICategoryRepository categoryRepository, IMapper mapper) : ICategoryService
+    public class CategoryService(ICategoryRepository categoryRepository, IUserRepository userRepository, IMapper mapper) : ICategoryService
     {
         public async Task<(List<CategoryResDto> data, bool hasNextPage)> GetCategoriesAsync(int userId, string role, CategoryQueryReqDto request)
         {
@@ -64,6 +65,14 @@ namespace ExpenseTracker.BLL.Services
             };
 
             await categoryRepository.AddCategoryAsync(newCategory);
+            var user = await userRepository.GetUserByIdAsync(userId);
+
+            Log.ForContext("UserId", userId)
+               .ForContext("Username", user!.Username)
+               .ForContext("Action", "Create")
+               .ForContext("EntityName", "Category")
+               .ForContext("Activity", $"Created category '{newCategory.Name}'.")
+               .Information($"'{user.Username}' created category '{newCategory.Name}',");
 
             return mapper.Map<CategoryResDto>(newCategory);
         }
@@ -82,6 +91,14 @@ namespace ExpenseTracker.BLL.Services
             existingCategory.UpdatedAt = DateTime.UtcNow;
 
             await categoryRepository.SaveChangesAsync();
+            var user = await userRepository.GetUserByIdAsync(userId);
+
+            Log.ForContext("UserId", userId)
+               .ForContext("Username", user!.Username)
+               .ForContext("Action", "Update")
+               .ForContext("EntityName", "Category")
+               .ForContext("Activity", $"Updated category '{existingCategory.Name}'.")
+               .Information($"'{user.Username}' updated category '{existingCategory.Name}',");
 
             return mapper.Map<CategoryResDto>(existingCategory);
         }
@@ -95,6 +112,14 @@ namespace ExpenseTracker.BLL.Services
             existingCategory.IsDeleted = true;
 
             await categoryRepository.SaveChangesAsync();
+            var user = await userRepository.GetUserByIdAsync(userId);
+
+            Log.ForContext("UserId", userId)
+               .ForContext("Username", user!.Username)
+               .ForContext("Action", "Delete")
+               .ForContext("EntityName", "Category")
+               .ForContext("Activity", $"Deleted category '{existingCategory.Name}'.")
+               .Information($"'{user.Username}' deleted category '{existingCategory.Name}'.");
 
             return true;
         }

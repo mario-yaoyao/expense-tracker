@@ -9,6 +9,7 @@ namespace ExpenseTracker.DAL.Data
         public DbSet<Expense> Expenses { get; set; }
         public DbSet<Income> Incomes { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<TransactionLog> TransactionLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -39,6 +40,12 @@ namespace ExpenseTracker.DAL.Data
                 .WithMany(u => u.Incomes)
                 .HasForeignKey(i => i.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TransactionLog>(entity =>
+            {
+                entity.ToTable("TransactionLogs");
+                entity.HasKey(e => e.Id);
+            });
 
             modelBuilder.Entity<User>().HasData(new User
             {

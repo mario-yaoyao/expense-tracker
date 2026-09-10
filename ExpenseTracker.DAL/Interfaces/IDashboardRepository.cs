@@ -5,7 +5,7 @@ namespace ExpenseTracker.DAL.Interfaces
 {
     public interface IDashboardRepository
     {
-        Task<(SuperAdminDashboardMetricsResDto metrics, List<UserGrowthTrendResDto> userGrowthTrend, List<User> recentUsers)> GetSuperAdminDashboardAsync();
-        Task<(UserDashboardMetricsResDto metrics, List<SavingsTrendResDto> savingsTrend, List<IncomeExpenseTrendResDto> incomeExpenseTrend)> GetUserDashboardAsync(int userId);
+        Task<(SuperAdminDashboardMetricsResDto metrics, List<UserGrowthTrendResDto> userGrowthTrend, List<User> recentUsers, List<RecentTransactionsResDto> recentTransactions)> GetSuperAdminDashboardAsync();
+        Task<(UserDashboardMetricsResDto metrics, List<SavingsTrendResDto> savingsTrend, List<IncomeExpenseTrendResDto> incomeExpenseTrend, List<RecentTransactionsResDto> recentTransactions)> GetUserDashboardAsync(int userId);
     }
 }

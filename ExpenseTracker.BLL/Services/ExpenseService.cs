@@ -1,13 +1,15 @@
 ﻿using AutoMapper;
 using ExpenseTracker.BLL.Interfaces;
 using ExpenseTracker.DAL.Interfaces;
+using ExpenseTracker.DAL.Repositories;
 using ExpenseTracker.Models.Dtos.Requests;
 using ExpenseTracker.Models.Dtos.Responses;
 using ExpenseTracker.Models.Models;
+using Serilog;
 
 namespace ExpenseTracker.BLL.Services
 {
-    public class ExpenseService(IExpenseRepository expenseRepository, IMapper mapper) : IExpenseService
+    public class ExpenseService(IExpenseRepository expenseRepository, IUserRepository userRepository, IMapper mapper) : IExpenseService
     {
         public async Task<(List<ExpenseResDto> data, decimal totalExpense, HighestAmountResDto? highestExpense, int totalCount, bool hasNextPage)> GetExpensesAsync(int userId, string role, ExpenseQueryReqDto request)
         {
@@ -65,6 +67,14 @@ namespace ExpenseTracker.BLL.Services
 
             await expenseRepository.AddExpenseAsync(newExpense);
             var createdExpense = await expenseRepository.GetExpenseByIdAsync(newExpense.Id);
+            var user = await userRepository.GetUserByIdAsync(userId);
+
+            Log.ForContext("UserId", userId)
+               .ForContext("Username", user!.Username)
+               .ForContext("Action", "Create")
+               .ForContext("EntityName", "Expense")
+               .ForContext("Activity", $"Created expense '{newExpense.Description}'.")
+               .Information($"'{user.Username}' created expense '{newExpense.Description}'.");
 
             return mapper.Map<ExpenseResDto>(createdExpense);
         }
@@ -84,6 +94,14 @@ namespace ExpenseTracker.BLL.Services
             existingExpense.UpdatedAt = DateTime.UtcNow;
 
             await expenseRepository.SaveChangesAsync();
+            var user = await userRepository.GetUserByIdAsync(userId);
+
+            Log.ForContext("UserId", userId)
+               .ForContext("Username", user!.Username)
+               .ForContext("Action", "Update")
+               .ForContext("EntityName", "Expense")
+               .ForContext("Activity", $"Updated expense '{existingExpense.Description}'.")
+               .Information($"'{user.Username}' created expense '{existingExpense.Description}'.");
 
             return mapper.Map<ExpenseResDto>(existingExpense);
         }
@@ -97,6 +115,14 @@ namespace ExpenseTracker.BLL.Services
             existingExpense.IsDeleted = true;
 
             await expenseRepository.SaveChangesAsync();
+            var user = await userRepository.GetUserByIdAsync(userId);
+
+            Log.ForContext("UserId", userId)
+               .ForContext("Username", user!.Username)
+               .ForContext("Action", "Delete")
+               .ForContext("EntityName", "Expense")
+               .ForContext("Activity", $"Deleted expense '{existingExpense.Description}'.")
+               .Information($"'{user.Username}' deleted expense '{existingExpense.Description}'.");
 
             return true;
         }

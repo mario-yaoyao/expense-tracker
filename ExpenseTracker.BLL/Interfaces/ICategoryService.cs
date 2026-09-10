@@ -1,6 +1,5 @@
 ﻿using ExpenseTracker.Models.Dtos.Requests;
 using ExpenseTracker.Models.Dtos.Responses;
-using ExpenseTracker.Models.Models;
 
 namespace ExpenseTracker.BLL.Interfaces
 {

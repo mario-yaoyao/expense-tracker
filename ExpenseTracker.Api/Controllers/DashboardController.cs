@@ -19,7 +19,7 @@ namespace ExpenseTracker.Controllers
         {
             try
             {
-                var (metrics, usersGrowthTrend, recentUsers) = await dashboardService.GetSuperAdminDashboardAsync();
+                var (metrics, usersGrowthTrend, recentUsers, recentTransactions) = await dashboardService.GetSuperAdminDashboardAsync();
 
                 return Ok(new ApiResDto<SuperAdminDashboardResDto>
                 {
@@ -28,7 +28,8 @@ namespace ExpenseTracker.Controllers
                     {
                         Metrics = metrics,
                         UsersGrowthTrend = usersGrowthTrend,
-                        RecentUsers = recentUsers
+                        RecentUsers = recentUsers,
+                        RecentTransactions = recentTransactions
                     }
                 });
             }
@@ -49,7 +50,7 @@ namespace ExpenseTracker.Controllers
             try
             {
                 var userId = GetUserId();
-                var (metrics, savingsTrend, incomeExpenseTrend) = await dashboardService.GetUserDashboardAsync(userId);
+                var (metrics, savingsTrend, incomeExpenseTrend, recentTransactions) = await dashboardService.GetUserDashboardAsync(userId);
 
                 return Ok(new ApiResDto<UserDashboardResDto>
                 {
@@ -58,7 +59,8 @@ namespace ExpenseTracker.Controllers
                     {
                         Metrics = metrics,
                         SavingsTrend = savingsTrend,
-                        IncomeExpenseTrend = incomeExpenseTrend
+                        IncomeExpenseTrend = incomeExpenseTrend,
+                        RecentTransactions = recentTransactions
                     }
                 });
             }

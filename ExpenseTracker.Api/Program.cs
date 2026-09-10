@@ -1,6 +1,7 @@
 using ExpenseTracker.BLL.Interfaces;
 using ExpenseTracker.BLL.Mappings;
 using ExpenseTracker.BLL.Services;
+using ExpenseTracker.Configurations;
 using ExpenseTracker.DAL.Data;
 using ExpenseTracker.DAL.Interfaces;
 using ExpenseTracker.DAL.Repositories;
@@ -10,9 +11,18 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
+using Serilog;
+using System.Data;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+var dbConnectionString = builder.Configuration.GetConnectionString("ExpenseTrackerDatabase");
+
+// comment on Update-Database execution
+SerilogConfiguration.Configure(dbConnectionString!);
+builder.Host.UseSerilog();
+
+builder.Services.AddHttpContextAccessor();
 
 // Add services to the container.
 
@@ -40,8 +50,7 @@ builder.Services.AddControllers()
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("ExpenseTrackerDatabase")));
+builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(dbConnectionString));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => {
     options.TokenValidationParameters = new TokenValidationParameters
@@ -64,6 +73,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IIncomeService, IncomeService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddAutoMapper(cfg => { }, typeof(ExpenseProfile).Assembly);
 builder.Services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly);
@@ -77,6 +87,7 @@ builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IIncomeRepository, IncomeRepository>();
 builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddCors(options =>
 {

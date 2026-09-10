@@ -1,17 +1,23 @@
-﻿namespace ExpenseTracker.Models.Dtos.Responses
+﻿using System.Text.Json.Serialization;
+
+namespace ExpenseTracker.Models.Dtos.Responses
 {
     public class RecentTransactionsResDto
     {
-        //public int Id { get; set; }
+        public int Id { get; set; }
 
-        //public string Description { get; set; } = string.Empty;
+        public int? UserId { get; set; }
 
-        //public decimal Amount { get; set; }
+        public string? Username { get; set; } = string.Empty;
 
-        //public string CategoryName { get; set; } = string.Empty;
+        public string? Action { get; set; } = string.Empty;
 
-        //public string Type { get; set; } = string.Empty;
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? Activity { get; set; } = string.Empty;
 
-        //public DateTime CreatedAt { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? Message { get; set; } = string.Empty;
+
+        public DateTime CreatedAt { get; set; }
     }
 }

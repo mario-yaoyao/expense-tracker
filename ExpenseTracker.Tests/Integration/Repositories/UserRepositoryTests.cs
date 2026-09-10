@@ -1,5 +1,4 @@
-﻿
-using ExpenseTracker.DAL.Data;
+﻿using ExpenseTracker.DAL.Data;
 using ExpenseTracker.DAL.Repositories;
 using ExpenseTracker.Models.Models;
 using Microsoft.EntityFrameworkCore;
@@ -8,36 +7,46 @@ using Moq;
 
 namespace ExpenseTracker.Tests.Integration.Repositories
 {
-    public class ProfileRepositoryTests
+    public class UserRepositoryTests
     {
         [Fact]
-        public async Task UpdatePasswordAsync_UpdatesPasswordAndUpdatedAt()
+        public async Task GetUserByIdAsync_ReturnsOwnUserDetails()
         {
+            // Arrange
+            var userId = 1;
+
             using var context = CreateContext();
             var repository = CreateRepository(context);
 
-            var originalUpdatedAt = DateTime.UtcNow.AddDays(-1);
-
             var user = CreateUser();
-
-            user.HashedPassword = "oldpassword123";
-            user.UpdatedAt = originalUpdatedAt;
 
             context.Users.Add(user);
             await context.SaveChangesAsync();
 
-            user.HashedPassword = "newpassword123";
-            user.UpdatedAt = DateTime.UtcNow;
-
-            // Act
-            await repository.UpdatePasswordAsync(user);
+            //Act
+            var result = await repository.GetUserByIdAsync(userId);
 
             // Assert
-            var updatedUser = await context.Users.FindAsync(1);
+            Assert.NotNull(result);
+            Assert.Equal(userId, result.Id);
+            Assert.Equal(user.Username, result.Username);
+            Assert.Equal(user.FullName, result.FullName);
+        }
 
-            Assert.NotNull(updatedUser);
-            Assert.Equal("newpassword123", updatedUser!.HashedPassword);
-            Assert.True(updatedUser.UpdatedAt > originalUpdatedAt);
+        [Fact]
+        public async Task GetUserByIdAsync_ReturnsNull_WhenUserDoesNotExist()
+        {
+            // Arrange
+            var nonExistentUserId = 999;
+
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
+
+            // Act
+            var result = await repository.GetUserByIdAsync(nonExistentUserId);
+
+            // Assert
+            Assert.Null(result);
         }
 
         // Helper Functions
@@ -50,11 +59,11 @@ namespace ExpenseTracker.Tests.Integration.Repositories
             return new AppDbContext(options);
         }
 
-        private static ProfileRepository CreateRepository(AppDbContext context)
+        private static UserRepository CreateRepository(AppDbContext context)
         {
-            var mockLogger = new Mock<ILogger<ProfileRepository>>();
+            var mockLogger = new Mock<ILogger<UserRepository>>();
 
-            return new ProfileRepository(context, mockLogger.Object);
+            return new UserRepository(context, mockLogger.Object);
         }
 
         private static User CreateUser(

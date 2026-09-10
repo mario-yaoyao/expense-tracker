@@ -7,6 +7,7 @@ using ExpenseTracker.Models.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -46,6 +47,13 @@ namespace ExpenseTracker.BLL.Services
                     ErrorMessage = "Incorrect password."
                 };
             }
+
+            Log.ForContext("UserId", user.Id)
+               .ForContext("Username", user.Username)
+               .ForContext("Action", "Info")
+               .ForContext("EntityName", "Auth")
+               .ForContext("Activity", "Account logged in.")
+               .Information($"'{user.Username}' account logged in.");
 
             return new ServiceResult<TokenResDto>
             {
@@ -88,6 +96,13 @@ namespace ExpenseTracker.BLL.Services
             user.HashedPassword = new PasswordHasher<User>().HashPassword(user, request.Password);
 
             await authRepository.AddUserAsync(user);
+
+            Log.ForContext("UserId", user.Id)
+               .ForContext("Username", user.Username)
+               .ForContext("Action", "Create")
+               .ForContext("EntityName", "Auth")
+               .ForContext("Activity", "Account registered.")
+               .Information($"'{user.Username}' account registered.");
 
             return new ServiceResult<RegisterResDto>
             {
@@ -164,6 +179,13 @@ namespace ExpenseTracker.BLL.Services
             user.UpdatedAt = DateTime.UtcNow;
 
             await authRepository.UpdatePasswordAsync(user);
+
+            Log.ForContext("UserId", user.Id)
+               .ForContext("Username", user.Username)
+               .ForContext("Action", "Update")
+               .ForContext("EntityName", "Auth")
+               .ForContext("Activity", "Password reset'.")
+               .Information($"'{user.Username}' reset their password.");
 
             return new ServiceResult<bool>
             {

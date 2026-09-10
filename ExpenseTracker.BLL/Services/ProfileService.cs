@@ -6,14 +6,15 @@ using ExpenseTracker.Models.Dtos.Requests;
 using ExpenseTracker.Models.Dtos.Responses;
 using ExpenseTracker.Models.Models;
 using Microsoft.AspNetCore.Identity;
+using Serilog;
 
 namespace ExpenseTracker.BLL.Services
 {
-    public class ProfileService(IProfileRepository profileRepository, IMapper mapper) : IProfileService
+    public class ProfileService(IProfileRepository profileRepository, IUserRepository userRepository, IMapper mapper) : IProfileService
     {
         public async Task<UserResDto?> GetUserProfileAsync(int userId)
         {
-            var user = await profileRepository.GetUserByIdAsync(userId);
+            var user = await userRepository.GetUserByIdAsync(userId);
 
             if (user == null) return null;
 
@@ -22,7 +23,7 @@ namespace ExpenseTracker.BLL.Services
 
         public async Task<ServiceResult<bool>> ChangePasswordAsync(int userId, ChangePasswordReqDto request)
         {
-            var user = await profileRepository.GetUserByIdAsync(userId);
+            var user = await userRepository.GetUserByIdAsync(userId);
 
             if (user == null)
             {
@@ -55,6 +56,13 @@ namespace ExpenseTracker.BLL.Services
             user.UpdatedAt = DateTime.UtcNow;
 
             await profileRepository.UpdatePasswordAsync(user);
+
+            Log.ForContext("UserId", userId)
+               .ForContext("Username", user.Username)
+               .ForContext("Action", "Update")
+               .ForContext("EntityName", "Profile")
+               .ForContext("Activity", $"Password changed.'.")
+               .Information($"'{user.Username}' password changed.");
 
             return new ServiceResult<bool>
             {
