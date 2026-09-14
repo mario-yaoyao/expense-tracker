@@ -2,7 +2,7 @@
 
 namespace ExpenseTracker.Models.Dtos.Requests
 {
-    public class LoginUserReqDto
+    public class LoginReqDto
     {
         [Required]
         public string Username { get; set; } = string.Empty;

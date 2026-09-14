@@ -12,14 +12,18 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 
 namespace ExpenseTracker.BLL.Services
 {
     public class AuthService(IConfiguration configuration, IAuthRepository authRepository, IEmailService emailService) : IAuthService
     {
-        public async Task<ServiceResult<TokenResDto>> LoginAsync(LoginUserReqDto request)
+        public async Task<ServiceResult<TokenResDto>> LoginAsync(EncryptedReqDto request)
         {
-            var user = await authRepository.GetByUsernameAsync(request.Username);
+            var json = Decrypt(request.EncryptedData);
+            var loginRequest = JsonSerializer.Deserialize<LoginReqDto>(json);
+
+            var user = await authRepository.GetByUsernameAsync(loginRequest!.Username);
 
             if (user == null)
             {
@@ -39,7 +43,7 @@ namespace ExpenseTracker.BLL.Services
                 };
             }
 
-            if (!IsPasswordValid(user, request.Password))
+            if (!IsPasswordValid(user, loginRequest.Password))
             {
                 return new ServiceResult<TokenResDto>
                 {
@@ -62,20 +66,23 @@ namespace ExpenseTracker.BLL.Services
             };
         }
 
-        public async Task<ServiceResult<RegisterResDto>> RegisterAsync(RegisterReqDto request)
+        public async Task<ServiceResult<object>> RegisterAsync(EncryptedReqDto request)
         {
-            if (request.Password != request.ConfirmPassword)
+            var json = Decrypt(request.EncryptedData);
+            var registerRequest = JsonSerializer.Deserialize<RegisterReqDto>(json);
+
+            if (registerRequest!.Password != registerRequest.ConfirmPassword)
             {
-                return new ServiceResult<RegisterResDto>
+                return new ServiceResult<object>
                 {
                     Success = false,
                     ErrorMessage = "Passwords do not match."
                 };
             }
 
-            if (await IsUsernameTaken(request.Username))
+            if (await IsUsernameTaken(registerRequest.Username))
             {
-                return new ServiceResult<RegisterResDto>
+                return new ServiceResult<object>
                 {
                     Success = false,
                     ErrorMessage = "Username is already taken."
@@ -84,16 +91,16 @@ namespace ExpenseTracker.BLL.Services
 
             var user = new User
             {
-                FullName = request.FullName,
-                Username = request.Username,
-                Email = request.Email,
-                ContactNumber = request.ContactNumber,
+                FullName = registerRequest.FullName,
+                Username = registerRequest.Username,
+                Email = registerRequest.Email,
+                ContactNumber = registerRequest.ContactNumber,
                 Role = UserRole.User,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
 
-            user.HashedPassword = new PasswordHasher<User>().HashPassword(user, request.Password);
+            user.HashedPassword = new PasswordHasher<User>().HashPassword(user, registerRequest.Password);
 
             await authRepository.AddUserAsync(user);
 
@@ -104,26 +111,18 @@ namespace ExpenseTracker.BLL.Services
                .ForContext("Activity", "Account registered.")
                .Information($"'{user.Username}' account registered.");
 
-            return new ServiceResult<RegisterResDto>
+            return new ServiceResult<object>
             {
-                Success = true,
-                Data = new RegisterResDto
-                {
-                    UserId = user.Id,
-                    FullName = user.FullName,
-                    Username = user.Username,
-                    Email = user.Email,
-                    ContactNumber = user.ContactNumber,
-                    Role = user.Role,
-                    IsActive = user.IsActive,
-                    CreatedAt = user.CreatedAt
-                }
+                Success = true
             };
         }
 
-        public async Task<bool> ForgotPasswordAsync(ForgotPasswordReqDto request)
+        public async Task<bool> ForgotPasswordAsync(EncryptedReqDto request)
         {
-            var user = await authRepository.GetByEmailAsync(request.Email);
+            var json = Decrypt(request.EncryptedData);
+            var forgotPasswordRequest = JsonSerializer.Deserialize<ForgotPasswordReqDto>(json);
+
+            var user = await authRepository.GetByEmailAsync(forgotPasswordRequest!.Email);
 
             if (user == null) return false;
 
@@ -142,22 +141,25 @@ namespace ExpenseTracker.BLL.Services
             return emailSent;
         }
 
-        public async Task<ServiceResult<bool>> ResetPasswordAsync(ResetPasswordReqDto request)
+        public async Task<ServiceResult<object>> ResetPasswordAsync(EncryptedReqDto request)
         {
-            if (request.NewPassword != request.ConfirmNewPassword)
+            var json = Decrypt(request.EncryptedData);
+            var resetPasswordRequest = JsonSerializer.Deserialize<ResetPasswordReqDto>(json);
+
+            if (resetPasswordRequest!.NewPassword != resetPasswordRequest.ConfirmNewPassword)
             {
-                return new ServiceResult<bool>
+                return new ServiceResult<object>
                 {
                     Success = false,
                     ErrorMessage = "Passwords do not match."
                 };
             }
 
-            var user = await authRepository.GetUserByResetToken(request.Token);
+            var user = await authRepository.GetUserByResetToken(resetPasswordRequest.Token);
 
             if (user == null)
             {
-                return new ServiceResult<bool>
+                return new ServiceResult<object>
                 {
                     Success = false,
                     ErrorMessage = "Invalid reset token."
@@ -166,14 +168,14 @@ namespace ExpenseTracker.BLL.Services
 
             if (user.ResetTokenExpiryTime < DateTime.UtcNow)
             {
-                return new ServiceResult<bool>
+                return new ServiceResult<object>
                 {
                     Success = false,
                     ErrorMessage = "Reset token has expired. Please submit a new password reset request."
                 };
             }
 
-            user.HashedPassword = new PasswordHasher<User>().HashPassword(user, request.NewPassword);
+            user.HashedPassword = new PasswordHasher<User>().HashPassword(user, resetPasswordRequest.NewPassword);
             user.ResetToken = null;
             user.ResetTokenExpiryTime = null;
             user.UpdatedAt = DateTime.UtcNow;
@@ -187,10 +189,9 @@ namespace ExpenseTracker.BLL.Services
                .ForContext("Activity", "Password reset'.")
                .Information($"'{user.Username}' reset their password.");
 
-            return new ServiceResult<bool>
+            return new ServiceResult<object>
             {
-                Success = true,
-                Data = true
+                Success = true
             };
         }
 
@@ -209,9 +210,12 @@ namespace ExpenseTracker.BLL.Services
             };
         }
 
-        public async Task<TokenResDto?> RefreshTokensAsync(RefreshTokenReqDto request)
+        public async Task<TokenResDto?> RefreshTokensAsync(EncryptedReqDto request)
         {
-            var user = await ValidateRefreshTokenAsync(request.UserId, request.RefreshToken);
+            var json = Decrypt(request.EncryptedData);
+            var refreshRequest = JsonSerializer.Deserialize<RefreshTokenReqDto>(json);
+
+            var user = await ValidateRefreshTokenAsync(refreshRequest!.UserId, refreshRequest.RefreshToken);
 
             if (user is null) return null;
 
@@ -271,11 +275,26 @@ namespace ExpenseTracker.BLL.Services
                 issuer: configuration.GetValue<string>("AppSettings:Issuer"),
                 audience: configuration.GetValue<string>("AppSettings:Audience"),
                 claims: claims,
-                expires: DateTime.UtcNow.AddDays(1),
+                expires: DateTime.UtcNow.AddHours(1),
                 signingCredentials: creds
             );
 
             return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
+        }
+
+        public static string Decrypt(string encryptedData)
+        {
+            var encryptedBytes = Convert.FromBase64String(encryptedData);
+
+            using var rsa = RSA.Create();
+
+            rsa.ImportFromPem(System.IO.File.ReadAllText("Keys/private.pem"));
+
+            var decryptedBytes = rsa.Decrypt(
+                encryptedBytes,
+                RSAEncryptionPadding.OaepSHA256);
+
+            return Encoding.UTF8.GetString(decryptedBytes);
         }
     }
 }

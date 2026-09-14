@@ -6,10 +6,10 @@ namespace ExpenseTracker.BLL.Interfaces
 {
     public interface IAuthService
     {
-        Task<ServiceResult<RegisterResDto>> RegisterAsync(RegisterReqDto request);
-        Task<ServiceResult<TokenResDto>> LoginAsync(LoginUserReqDto request);
-        Task<TokenResDto?> RefreshTokensAsync(RefreshTokenReqDto request);
-        Task<bool> ForgotPasswordAsync(ForgotPasswordReqDto request);
-        Task<ServiceResult<bool>> ResetPasswordAsync(ResetPasswordReqDto request);
+        Task<ServiceResult<object>> RegisterAsync(EncryptedReqDto request);
+        Task<ServiceResult<TokenResDto>> LoginAsync(EncryptedReqDto request);
+        Task<TokenResDto?> RefreshTokensAsync(EncryptedReqDto request);
+        Task<bool> ForgotPasswordAsync(EncryptedReqDto request);
+        Task<ServiceResult<object>> ResetPasswordAsync(EncryptedReqDto request);
     }
 }

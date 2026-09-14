@@ -1,11 +1,13 @@
 ﻿using ExpenseTracker.BLL.Interfaces;
 using ExpenseTracker.Models.Dtos.Requests;
 using ExpenseTracker.Models.Dtos.Responses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace ExpenseTracker.Controllers
 {
+    [Authorize]
     [Route("api/profile")]
     [ApiController]
     public class ProfileController(IProfileService userService) : ControllerBase

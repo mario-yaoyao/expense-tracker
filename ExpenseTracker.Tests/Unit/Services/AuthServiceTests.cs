@@ -473,11 +473,11 @@ namespace ExpenseTracker.Tests.Unit.Services
             };
         }
 
-        private static LoginUserReqDto CreateLoginRequest(
+        private static LoginReqDto CreateLoginRequest(
             string username = "testuser",
             string password = "Password123!")
         {
-            return new LoginUserReqDto
+            return new LoginReqDto
             {
                 Username = username,
                 Password = password

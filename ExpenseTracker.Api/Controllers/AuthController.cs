@@ -10,19 +10,18 @@ namespace ExpenseTracker.Controllers
     public class AuthController(IAuthService authService) : ControllerBase
     {
         [HttpPost("register")]
-        public async Task<ActionResult<ApiResDto<RegisterResDto>>> Register(RegisterReqDto request)
+        public async Task<ActionResult<ApiResDto<object>>> Register(EncryptedReqDto request)
         {
             try
             {
                 var result = await authService.RegisterAsync(request);
 
                 return result.Success
-                    ? Ok(new ApiResDto<RegisterResDto>
+                    ? Ok(new ApiResDto<object>
                     {
                         Success = true,
-                        Data = result.Data
                     })
-                    : BadRequest(new ApiResDto<RegisterResDto>
+                    : BadRequest(new ApiResDto<object>
                     {
                         Success = false,
                         ErrorMessage = result.ErrorMessage
@@ -39,7 +38,7 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<ApiResDto<TokenResDto>>> Login(LoginUserReqDto request)
+        public async Task<ActionResult<ApiResDto<TokenResDto>>> Login(EncryptedReqDto request)
         {
             try
             {
@@ -68,7 +67,7 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPost("refresh")]
-        public async Task<ActionResult<ApiResDto<TokenResDto>>> RefreshToken(RefreshTokenReqDto request)
+        public async Task<ActionResult<ApiResDto<TokenResDto>>> RefreshToken(EncryptedReqDto request)
         {
             try
             {
@@ -97,7 +96,7 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPatch("forgot-password")]
-        public async Task<ActionResult<ApiResDto<bool>>> ForgotPassword(ForgotPasswordReqDto request)
+        public async Task<ActionResult<ApiResDto<bool>>> ForgotPassword(EncryptedReqDto request)
         {
             try
             {
@@ -125,19 +124,18 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPatch("reset-password")]
-        public async Task<ActionResult<ApiResDto<bool>>> ChangePassword([FromBody] ResetPasswordReqDto request)
+        public async Task<ActionResult<ApiResDto<object>>> ChangePassword(EncryptedReqDto request)
         {
             try
             {
                 var result = await authService.ResetPasswordAsync(request);
 
                 return result.Success
-                    ? Ok(new ApiResDto<bool?>
+                    ? Ok(new ApiResDto<object>
                     {
-                        Success = true,
-                        Data = result.Data
+                        Success = true
                     })
-                    : BadRequest(new ApiResDto<bool?>
+                    : BadRequest(new ApiResDto<object>
                     {
                         Success = false,
                         ErrorMessage = result.ErrorMessage
