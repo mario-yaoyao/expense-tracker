@@ -20,13 +20,13 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IExpenseService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             var paginationReq = CreatePaginationRequest();
             var expectedResponseData = new List<ExpenseResDto>
             {
-                CreateExpenseResponse(id: 1, userId: userId, description: "Breakfast", amount: 24.99m),
-                CreateExpenseResponse(id: 2,  userId: userId, description: "Lunch", amount: 29.50m)
+                CreateExpenseResponse(),
+                CreateExpenseResponse(id: 2, description: "Lunch", amount: 29.50m)
             };
 
             var expectedResponse = (
@@ -71,7 +71,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IExpenseService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             var paginationReq = CreatePaginationRequest();
 
@@ -99,7 +99,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IExpenseService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             var expectedResponse = CreateExpenseResponse();
 
@@ -125,7 +125,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IExpenseService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             mockService.Setup(x => x.GetExpenseByIdAsync(userId, "User", expenseId))
                 .ReturnsAsync((ExpenseResDto?)null);
@@ -146,13 +146,12 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         {
             // Arrange
             var userId = 1;
-            var categoryId = 1;
 
             var mockService = new Mock<IExpenseService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
-            var request = CreateExpenseRequest(categoryId: categoryId);
+            var request = CreateExpenseRequest();
             var expectedResponse = CreateExpenseResponse();
 
             mockService.Setup(x => x.CreateExpenseAsync(userId, request))
@@ -176,7 +175,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IExpenseService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             var request = CreateExpenseRequest();
 
@@ -205,7 +204,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IExpenseService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             var request = UpdateExpenseRequest();
             var expectedResponse = CreateExpenseResponse();
@@ -233,7 +232,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IExpenseService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             var request = UpdateExpenseRequest();
 
@@ -260,7 +259,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IExpenseService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             var request = UpdateExpenseRequest();
 
@@ -288,7 +287,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IExpenseService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             mockService.Setup(x => x.DeleteExpenseAsync(userId, expenseId))
                 .ReturnsAsync(true);
@@ -312,7 +311,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IExpenseService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             mockService.Setup(x => x.DeleteExpenseAsync(userId, expenseId))
                 .ReturnsAsync(false);
@@ -337,7 +336,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IExpenseService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             mockService.Setup(x => x.DeleteExpenseAsync(userId, expenseId))
                 .ThrowsAsync(new Exception("Database error"));
@@ -355,7 +354,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         }
 
         // Helper Functions
-        private static void SetUserClaims(ControllerBase controller, int userId, string role)
+        private static void SetUserClaims(ControllerBase controller, int userId = 1, string role= "User")
         {
             var claims = new[]
             {

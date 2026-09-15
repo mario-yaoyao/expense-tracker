@@ -96,7 +96,7 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPatch("forgot-password")]
-        public async Task<ActionResult<ApiResDto<bool>>> ForgotPassword(EncryptedReqDto request)
+        public async Task<ActionResult<ApiResDto<object>>> ForgotPassword(EncryptedReqDto request)
         {
             try
             {
@@ -110,7 +110,7 @@ namespace ExpenseTracker.Controllers
                     })
                     : Ok(new ApiResDto<object>
                     {
-                        Success = true,
+                        Success = true
                     });
             }
             catch (Exception)

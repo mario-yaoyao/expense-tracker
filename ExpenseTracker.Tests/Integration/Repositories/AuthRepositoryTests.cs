@@ -13,12 +13,9 @@ namespace ExpenseTracker.Tests.Integration.Repositories
         public async Task GetByUsernameAsync_ReturnsUser_WhenUserExists()
         {
             // Arrange
-            var userId = 1;
-
             using var context = CreateContext();
             var repository = CreateRepository(context);
-
-            var user = CreateUser(userId);
+            var user = CreateUser();
 
             context.Users.Add(user);
             await context.SaveChangesAsync();
@@ -53,8 +50,7 @@ namespace ExpenseTracker.Tests.Integration.Repositories
 
             using var context = CreateContext();
             var repository = CreateRepository(context);
-
-            var user = CreateUser(userId);
+            var user = CreateUser();
 
             context.Users.Add(user);
             await context.SaveChangesAsync();
@@ -72,12 +68,9 @@ namespace ExpenseTracker.Tests.Integration.Repositories
         public async Task GetByEmailAsync_ReturnsUser_WhenUserExists()
         {
             // Arrange
-            var userId = 1;
-
             using var context = CreateContext();
             var repository = CreateRepository(context);
-
-            var user = CreateUser(userId);
+            var user = CreateUser();
 
             context.Users.Add(user);
             await context.SaveChangesAsync();
@@ -107,17 +100,13 @@ namespace ExpenseTracker.Tests.Integration.Repositories
             Assert.Null(result);
         }
 
-        //
         [Fact]
         public async Task GetUserByResetToken_ReturnsUser_WhenUserExists()
         {
             // Arrange
-            var userId = 1;
-
             using var context = CreateContext();
             var repository = CreateRepository(context);
-
-            var user = CreateUser(userId);
+            var user = CreateUser();
 
             context.Users.Add(user);
             await context.SaveChangesAsync();
@@ -151,12 +140,9 @@ namespace ExpenseTracker.Tests.Integration.Repositories
         public async Task IsUsernameTakenAsync_ReturnsTrue_WhenUsernameExists()
         {
             // Arrange
-            var userId = 1;
-
             using var context = CreateContext();
             var repository = CreateRepository(context);
-
-            var user = CreateUser(userId);
+            var user = CreateUser();
 
             context.Users.Add(user);
             await context.SaveChangesAsync();
@@ -176,8 +162,7 @@ namespace ExpenseTracker.Tests.Integration.Repositories
 
             using var context = CreateContext();
             var repository = CreateRepository(context);
-
-            var user = CreateUser(userId);
+            var user = CreateUser();
 
             // Act
             await repository.AddUserAsync(user);

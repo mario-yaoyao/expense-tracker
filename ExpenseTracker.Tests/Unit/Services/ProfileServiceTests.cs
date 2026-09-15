@@ -2,7 +2,6 @@
 using ExpenseTracker.BLL.Services;
 using ExpenseTracker.DAL.Interfaces;
 using ExpenseTracker.Models.Dtos.Requests;
-using ExpenseTracker.Models.Dtos.Responses;
 using ExpenseTracker.Models.Models;
 using Microsoft.AspNetCore.Identity;
 using Moq;
@@ -21,7 +20,8 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var mockProfileRepo = new Mock<IProfileRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
-            var service = new ProfileService(mockProfileRepo.Object, mockUserRepo.Object, mockMapper.Object);
+            var mockMapper = new Mock<IMapper>();
+            var profileService = CreateProfileService(mockProfileRepo, mockUserRepo, mockMapper);
 
             var user = new User
             {
@@ -48,11 +48,10 @@ namespace ExpenseTracker.Tests.Unit.Services
                 .Returns(Task.CompletedTask);
 
             // Act
-            var result = await service.ChangePasswordAsync(userId, request);
+            var result = await profileService.ChangePasswordAsync(userId, request);
 
             // Assert
             Assert.True(result.Success);
-            Assert.True(result.Data);
 
             mockProfileRepo.Verify(
                 x => x.UpdatePasswordAsync(It.IsAny<User>()),
@@ -67,7 +66,8 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var mockProfileRepo = new Mock<IProfileRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
-            var service = new ProfileService(mockProfileRepo.Object, mockUserRepo.Object, mockMapper.Object);
+            var mockMapper = new Mock<IMapper>();
+            var profileService = CreateProfileService(mockProfileRepo, mockUserRepo, mockMapper);
 
             var request = ChangePassword();
 
@@ -80,11 +80,10 @@ namespace ExpenseTracker.Tests.Unit.Services
                 .Returns(Task.CompletedTask);
 
             // Act
-            var result = await service.ChangePasswordAsync(userId, request);
+            var result = await profileService.ChangePasswordAsync(userId, request);
 
             // Assert
             Assert.False(result.Success);
-            Assert.False(result.Data);
             Assert.Equal("User not found.", result.ErrorMessage);
 
             mockProfileRepo.Verify(
@@ -102,6 +101,8 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var mockProfileRepo = new Mock<IProfileRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
+            var mockMapper = new Mock<IMapper>();
+            var profileService = CreateProfileService(mockProfileRepo, mockUserRepo, mockMapper);
 
             var request = ChangePassword(currentPassword: "wrongpassword123");
 
@@ -122,14 +123,11 @@ namespace ExpenseTracker.Tests.Unit.Services
                 .Setup(x => x.UpdatePasswordAsync(It.IsAny<User>()))
                 .Returns(Task.CompletedTask);
 
-            var service = new ProfileService(mockProfileRepo.Object, mockUserRepo.Object, mockMapper.Object);
-
             // Act
-            var result = await service.ChangePasswordAsync(userId, request);
+            var result = await profileService.ChangePasswordAsync(userId, request);
 
             // Assert
             Assert.False(result.Success);
-            Assert.False(result.Data);
             Assert.Equal("Current password is incorrect.", result.ErrorMessage);
 
             mockProfileRepo.Verify(
@@ -146,7 +144,8 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var mockProfileRepo = new Mock<IProfileRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
-            var service = new ProfileService(mockProfileRepo.Object, mockUserRepo.Object, mockMapper.Object);
+            var mockMapper = new Mock<IMapper>();
+            var profileService = CreateProfileService(mockProfileRepo, mockUserRepo, mockMapper);
 
             var request = ChangePassword(newPassword: "oldpassword123");
 
@@ -168,11 +167,10 @@ namespace ExpenseTracker.Tests.Unit.Services
                 .Returns(Task.CompletedTask);
 
             // Act
-            var result = await service.ChangePasswordAsync(userId, request);
+            var result = await profileService.ChangePasswordAsync(userId, request);
 
             // Assert
             Assert.False(result.Success);
-            Assert.False(result.Data);
             Assert.Equal("New password must be different from your current password.", result.ErrorMessage);
 
             mockProfileRepo.Verify(
@@ -181,13 +179,16 @@ namespace ExpenseTracker.Tests.Unit.Services
         }
 
         // Helper Functions
-        private readonly Mock<IMapper> mockMapper;
-
-        public ProfileServiceTests()
+        private ProfileService CreateProfileService(
+            Mock<IProfileRepository>? mockProfileRepo = null,
+            Mock<IUserRepository>? mockUserRepo = null,
+            Mock<IMapper>? mockMapper = null)
         {
-            mockMapper = new Mock<IMapper>();
+            return new ProfileService(
+                mockProfileRepo!.Object,
+                mockUserRepo!.Object,
+                mockMapper!.Object);
         }
-
 
         private static ChangePasswordReqDto ChangePassword(
             string currentPassword = "oldpassword123",

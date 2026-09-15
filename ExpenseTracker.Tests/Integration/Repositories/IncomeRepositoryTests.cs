@@ -14,9 +14,7 @@ namespace ExpenseTracker.Tests.Integration.Repositories
         public async Task GetIncomesAsync_ReturnsAllNonDeletedIncomes()
         {
             // Arrange
-            var firstIncomeId = 1;
             var secondIncomeId = 2;
-            var userId = 1;
 
             using var context = CreateContext();
             var repository = CreateRepository(context);
@@ -24,15 +22,14 @@ namespace ExpenseTracker.Tests.Integration.Repositories
             var user = CreateUser();
             var category = CreateCategory();
 
-            context.Users.Add(user);
-            context.Categories.Add(category);
-
             var incomes = new List<Income>
             {
-                CreateIncome(firstIncomeId, userId, category.Id, true),
-                CreateIncome(secondIncomeId, userId, category.Id),
+                CreateIncome(isDeleted: true),
+                CreateIncome(id: secondIncomeId),
             };
 
+            context.Users.Add(user);
+            context.Categories.Add(category);
             context.Incomes.AddRange(incomes);
             await context.SaveChangesAsync();
 
@@ -52,7 +49,6 @@ namespace ExpenseTracker.Tests.Integration.Repositories
         public async Task GetIncomesByUserAsync_ReturnsOnlyIncomesForSpecifiedUser()
         {
             // Arrange
-            var firstIncomeId = 1;
             var secondIncomeId = 2;
             var thirdIncomeId = 3;
             var firstUserId = 1;
@@ -61,21 +57,23 @@ namespace ExpenseTracker.Tests.Integration.Repositories
             using var context = CreateContext();
             var repository = CreateRepository(context);
 
-            var firstUser = CreateUser(1, "user1");
-            var secondUser = CreateUser(2, "user2");
-            var category = CreateCategory();
+            var users = new List<User>
+            {
+                CreateUser(username: "user1"),
+                CreateUser(2, "user2")
+            };
 
-            context.Users.Add(firstUser);
-            context.Users.Add(secondUser);
-            context.Categories.Add(category);
+            var category = CreateCategory();
 
             var incomes = new List<Income>
             {
-                CreateIncome(firstIncomeId, firstUserId, category.Id, true),
+                CreateIncome(id: firstUserId, category.Id, isDeleted: true),
                 CreateIncome(secondIncomeId, firstUserId, category.Id),
                 CreateIncome(thirdIncomeId, secondUserId, category.Id),
             };
 
+            context.Users.AddRange(users);
+            context.Categories.Add(category);
             context.Incomes.AddRange(incomes);
             await context.SaveChangesAsync();
 
@@ -90,36 +88,33 @@ namespace ExpenseTracker.Tests.Integration.Repositories
             Assert.Equal(2, income.Id);
             Assert.Equal(firstUserId, income.UserId);
             Assert.False(income.IsDeleted);
-            Assert.Equal("Income 2", income.Description);
+            Assert.Equal(incomes[1].Description, income.Description);
         }
 
         [Fact]
         public async Task GetIncomeByUserAsync_ReturnsIncome_WhenIncomeExistsForUser()
         {
             // Arrange
-            var userId = 1;
-
             using var context = CreateContext();
             var repository = CreateRepository(context);
 
             var user = CreateUser();
             var category = CreateCategory();
+            var income = CreateIncome();
 
             context.Users.Add(user);
             context.Categories.Add(category);
-
-            var income = CreateIncome(userId, user.Id, category.Id);
 
             context.Incomes.Add(income);
             await context.SaveChangesAsync();
 
             // Act
-            var result = await repository.GetIncomeByUserAsync(userId, income.Id);
+            var result = await repository.GetIncomeByUserAsync(user.Id, income.Id);
 
             // Assert
             Assert.NotNull(result);
             Assert.Equal(income.Id, result.Id);
-            Assert.Equal(userId, result.UserId);
+            Assert.Equal(user.Id, result.UserId);
             Assert.Equal(income.Amount, result.Amount);
         }
 
@@ -149,12 +144,10 @@ namespace ExpenseTracker.Tests.Integration.Repositories
 
             var user = CreateUser();
             var category = CreateCategory();
+            var income = CreateIncome();
 
             context.Users.Add(user);
             context.Categories.Add(category);
-
-            var income = CreateIncome(1, user.Id, category.Id);
-
             context.Incomes.Add(income);
             await context.SaveChangesAsync();
 
@@ -187,15 +180,12 @@ namespace ExpenseTracker.Tests.Integration.Repositories
         public async Task AddIncomeAsync_SavesIncomeToDatabase()
         {
             // Arrange
-            var incomeId = 1;
-
             using var context = CreateContext();
             var repository = CreateRepository(context);
 
             var user = CreateUser();
             var category = CreateCategory();
-
-            var income = CreateIncome(incomeId, user.Id, category.Id);
+            var income = CreateIncome();
 
             // Act
             await repository.AddIncomeAsync(income);
@@ -254,9 +244,9 @@ namespace ExpenseTracker.Tests.Integration.Repositories
         }
 
         private static Income CreateIncome(
-            int id,
-            int userId,
-            int categoryId,
+            int id = 1,
+            int userId = 1,
+            int categoryId = 1,
             bool isDeleted = false)
         {
             return new Income

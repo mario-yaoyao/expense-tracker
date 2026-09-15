@@ -15,19 +15,17 @@ namespace ExpenseTracker.Tests.Integration.Repositories
             // Arrange
             var firstCategoryId = 1;
             var secondCategoryId = 2;
-            var userId = 1;
 
             using var context = CreateContext();
             var repository = CreateRepository(context);
-
             var user = CreateUser();
 
             context.Users.Add(user);
 
             var categories = new List<Category>
             {
-                CreateCategory(id: firstCategoryId, userId: userId, isDeleted: true),
-                CreateCategory(id: secondCategoryId, userId: userId),
+                CreateCategory(id: firstCategoryId, isDeleted: true),
+                CreateCategory(id: secondCategoryId),
             };
 
             context.Categories.AddRange(categories);
@@ -49,7 +47,6 @@ namespace ExpenseTracker.Tests.Integration.Repositories
         public async Task GetCategoriesByUserAsync_ReturnsOnlyCategoriesForSpecifiedUser()
         {
             // Arrange
-            var firstCategoryId = 1;
             var secondCategoryId = 2;
             var thirdCategoryId = 3;
             var firstUserId = 1;
@@ -58,19 +55,20 @@ namespace ExpenseTracker.Tests.Integration.Repositories
             using var context = CreateContext();
             var repository = CreateRepository(context);
 
-            var firstUser = CreateUser(1, "user1");
-            var secondUser = CreateUser(2, "user2");
-
-            context.Users.Add(firstUser);
-            context.Users.Add(secondUser);
+            var users = new List<User>
+            {
+                CreateUser(username: "user1"),
+                CreateUser(secondUserId, "user2")
+            };
 
             var categories = new List<Category>
             {
-                CreateCategory(id: firstCategoryId, userId: firstUserId, isDeleted: true),
-                CreateCategory(id: secondCategoryId, userId: firstUserId, name: "Grocery"),
-                CreateCategory(id: thirdCategoryId, userId: secondUserId, name: "Rent"),
+                CreateCategory(isDeleted: true),
+                CreateCategory(id: secondCategoryId, name: "Grocery"),
+                CreateCategory(id: thirdCategoryId, userId: users[1].Id, name: "Rent"),
             };
 
+            context.Users.AddRange(users);
             context.Categories.AddRange(categories);
             await context.SaveChangesAsync();
 

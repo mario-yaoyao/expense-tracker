@@ -21,19 +21,9 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IProfileService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
-            var expectedResponse = new UserResDto
-            {
-                Id = userId,
-                FullName = "Test User",
-                Username = "testuser",
-                ContactNumber = "09876543210",
-                Role = UserRole.User,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = null
-            };
+            var expectedResponse = CreateUserResponse();
 
             mockService
                 .Setup(x => x.GetUserProfileAsync(userId))
@@ -87,7 +77,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IProfileService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             mockService.Setup(x => x.GetUserProfileAsync(userId))
                 .ThrowsAsync(new Exception("Database error"));
@@ -112,14 +102,13 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IProfileService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             var request = ChangePasswordRequest();
 
-            var expectedResponse = new ServiceResult<bool>
+            var expectedResponse = new ServiceResult<object>
             {
-                Success = true,
-                Data = true
+                Success = true
             };
 
             mockService
@@ -131,11 +120,9 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<bool?>>(okResult.Value);
+            var response = Assert.IsType<ApiResDto<object>>(okResult.Value);
 
             Assert.True(response.Success);
-            Assert.NotNull(response.Data);
-            Assert.True(response.Data);
         }
 
         [Fact]
@@ -146,11 +133,11 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IProfileService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             var request = ChangePasswordRequest();
 
-            var expectedResponse = new ServiceResult<bool>
+            var expectedResponse = new ServiceResult<object>
             {
                 Success = false,
                 ErrorMessage = "Current password is incorrect."
@@ -165,7 +152,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<bool?>>(badRequestResult.Value);
+            var response = Assert.IsType<ApiResDto<object>>(badRequestResult.Value);
 
             Assert.False(response.Success);
             Assert.Equal(expectedResponse.ErrorMessage, response.ErrorMessage);
@@ -179,7 +166,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IProfileService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             var request = ChangePasswordRequest();
 
@@ -200,7 +187,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         }
 
         // Helper Functions
-        private static void SetUserClaims(ControllerBase controller, int userId, string role)
+        private static void SetUserClaims(ControllerBase controller, int userId = 1, string role = "User")
         {
             var claims = new[]
             {
@@ -230,6 +217,23 @@ namespace ExpenseTracker.Tests.Unit.Controllers
                 CurrentPassword = "oldpassword123",
                 NewPassword = "newpassword123",
                 ConfirmNewPassword = "newpassword123"
+            };
+        }
+
+        private static UserResDto CreateUserResponse(
+            int userId = 1,
+            DateTime? createdAt = null)
+        {
+            return new UserResDto
+            {
+                Id = userId,
+                FullName = "Test User",
+                Username = "testuser",
+                ContactNumber = "09876543210",
+                Role = UserRole.User,
+                IsActive = true,
+                CreatedAt = createdAt ?? new DateTime(2026, 1, 1),
+                UpdatedAt = null
             };
         }
     }

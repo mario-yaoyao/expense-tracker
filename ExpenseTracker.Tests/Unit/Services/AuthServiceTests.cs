@@ -1,6 +1,6 @@
-﻿using ExpenseTracker.Controllers;
-using ExpenseTracker.BLL.Interfaces;
+﻿using ExpenseTracker.BLL.Interfaces;
 using ExpenseTracker.BLL.Services;
+using ExpenseTracker.Controllers;
 using ExpenseTracker.DAL.Interfaces;
 using ExpenseTracker.Models.Dtos.Requests;
 using ExpenseTracker.Models.Dtos.Responses;
@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Moq;
+using System.Text.Json;
 
 namespace ExpenseTracker.Tests.Unit.Services
 {
@@ -19,21 +20,24 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var mockRepo = new Mock<IAuthRepository>();
-            var mockEmailService = new Mock<IEmailService>();
-            var service = CreateAuthService(mockRepo, mockEmailService);
+            var mockCryptoService = new Mock<ICryptoService>();
+            var authService = CreateAuthService(mockRepo, mockCryptoService: mockCryptoService);
 
-            var request = CreateRegisterRequest();
+            var encryptedReq = CreatedEncryptedRequest();
+            var registerReq = CreateRegisterRequest();
 
             mockRepo.Setup(x => x.IsUsernameTakenAsync("testuser"))
                 .ReturnsAsync(false);
 
+            mockCryptoService
+                .Setup(x => x.Decrypt(It.IsAny<string>()))
+                .Returns(JsonSerializer.Serialize(registerReq));
+
             // Act
-            var result = await service.RegisterAsync(request);
+            var result = await authService.RegisterAsync(encryptedReq);
 
             // Assert
             Assert.True(result.Success);
-            Assert.NotNull(result.Data);
-            Assert.Equal(request.Username, result.Data.Username);
 
             mockRepo.Verify(
                 x => x.AddUserAsync(It.IsAny<User>()),
@@ -45,16 +49,21 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var mockRepo = new Mock<IAuthRepository>();
-            var mockEmailService = new Mock<IEmailService>();
-            var service = CreateAuthService(mockRepo, mockEmailService);
+            var mockCryptoService = new Mock<ICryptoService>();
+            var authService = CreateAuthService(mockRepo, mockCryptoService: mockCryptoService);
 
-            var request = CreateRegisterRequest(confirmPassword: "Password456!");
+            var encryptedReq = CreatedEncryptedRequest();
+            var registerReq = CreateRegisterRequest(confirmPassword: "Password456!");
 
             mockRepo.Setup(x => x.IsUsernameTakenAsync("testuser"))
                 .ReturnsAsync(true);
 
+            mockCryptoService
+                .Setup(x => x.Decrypt(It.IsAny<string>()))
+                .Returns(JsonSerializer.Serialize(registerReq));
+
             // Act
-            var result = await service.RegisterAsync(request);
+            var result = await authService.RegisterAsync(encryptedReq);
 
             // Assert
             Assert.False(result.Success);
@@ -66,16 +75,21 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var mockRepo = new Mock<IAuthRepository>();
-            var mockEmailService = new Mock<IEmailService>();
-            var service = CreateAuthService(mockRepo, mockEmailService);
+            var mockCryptoService = new Mock<ICryptoService>();
+            var authService = CreateAuthService(mockRepo, mockCryptoService: mockCryptoService);
 
-            var request = CreateRegisterRequest();
+            var encryptedReq = CreatedEncryptedRequest();
+            var registerReq = CreateRegisterRequest();
 
             mockRepo.Setup(x => x.IsUsernameTakenAsync("testuser"))
                 .ReturnsAsync(true);
 
+            mockCryptoService
+                .Setup(x => x.Decrypt(It.IsAny<string>()))
+                .Returns(JsonSerializer.Serialize(registerReq));
+
             // Act
-            var result = await service.RegisterAsync(request);
+            var result = await authService.RegisterAsync(encryptedReq);
 
             // Assert
             Assert.False(result.Success);
@@ -87,27 +101,24 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var mockRepo = new Mock<IAuthRepository>();
-            var mockEmailService = new Mock<IEmailService>();
-            var service = CreateAuthService(mockRepo, mockEmailService);
+            var mockCryptoService = new Mock<ICryptoService>();
+            var authService = CreateAuthService(mockRepo, mockCryptoService: mockCryptoService);
 
-            var request = CreateLoginRequest();
-
-            var user = new User
-            {
-                Id = 1,
-                FullName = "Test User",
-                Username = "testuser",
-                ContactNumber = "09876543210",
-                IsActive = true
-            };
+            var encryptedReq = CreatedEncryptedRequest();
+            var loginRequest = CreateLoginRequest();
+            var user = CreateUser();
 
             user.HashedPassword = new PasswordHasher<User>().HashPassword(user, "Password123!");
 
             mockRepo.Setup(x => x.GetByUsernameAsync("testuser"))
                 .ReturnsAsync(user);
 
+            mockCryptoService
+                .Setup(x => x.Decrypt(It.IsAny<string>()))
+                .Returns(JsonSerializer.Serialize(loginRequest));
+
             // Act
-            var result = await service.LoginAsync(request);
+            var result = await authService.LoginAsync(encryptedReq);
 
             // Assert
             Assert.True(result.Success);
@@ -122,27 +133,34 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var mockRepo = new Mock<IAuthRepository>();
-            var mockEmailService = new Mock<IEmailService>();
-            var service = CreateAuthService(mockRepo, mockEmailService);
+            var mockCryptoService = new Mock<ICryptoService>();
+            var authService = CreateAuthService(mockRepo, mockCryptoService: mockCryptoService);
 
-            var request = CreateLoginRequest();
+            var encryptedReq = CreatedEncryptedRequest();
+            var loginReq = CreateLoginRequest();
+            var user = CreateUser(isActive: false);
 
             var expectedResponse = new User
             {
-                Id = 1,
-                Username = "testuser",
-                HashedPassword = "hashed-password",
-                IsActive = false
+                Id = user.Id,
+                Username = user.Username,
+                HashedPassword = user.HashedPassword,
+                IsActive = user.IsActive
             };
 
             mockRepo.Setup(x => x.GetByUsernameAsync("testuser"))
                 .ReturnsAsync(expectedResponse);
 
+            mockCryptoService
+                .Setup(x => x.Decrypt(It.IsAny<string>()))
+                .Returns(JsonSerializer.Serialize(loginReq));
+
             // Act
-            var result = await service.LoginAsync(request);
+            var result = await authService.LoginAsync(encryptedReq);
 
             // Assert
             Assert.False(result.Success);
+            Assert.False(expectedResponse.IsActive);
             Assert.Equal("Your account has been deactivated.", result.ErrorMessage);
         }
 
@@ -151,27 +169,22 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var mockRepo = new Mock<IAuthRepository>();
-            var mockEmailService = new Mock<IEmailService>();
-            var service = CreateAuthService(mockRepo, mockEmailService);
+            var mockCryptoService = new Mock<ICryptoService>();
+            var authService = CreateAuthService(mockRepo, mockCryptoService: mockCryptoService);
 
-            var request = CreateLoginRequest(password: "DifferentPassword123!");
-
-            var user = new User
-            {
-                Id = 1,
-                FullName = "Test User",
-                Username = "testuser",
-                ContactNumber = "09876543210",
-                IsActive = true
-            };
-
-            user.HashedPassword = new PasswordHasher<User>().HashPassword(user, "Password123!");
+            var encryptedReq = CreatedEncryptedRequest();
+            var loginReq = CreateLoginRequest(password: "DifferentPassword123!");
+            var user = CreateUser();
 
             mockRepo.Setup(x => x.GetByUsernameAsync("testuser"))
                 .ReturnsAsync(user);
 
+            mockCryptoService
+                .Setup(x => x.Decrypt(It.IsAny<string>()))
+                .Returns(JsonSerializer.Serialize(loginReq));
+
             // Act
-            var result = await service.LoginAsync(request);
+            var result = await authService.LoginAsync(encryptedReq);
 
             // Assert
             Assert.False(result.Success);
@@ -187,16 +200,21 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var mockRepo = new Mock<IAuthRepository>();
-            var mockEmailService = new Mock<IEmailService>();
-            var service = CreateAuthService(mockRepo, mockEmailService);
+            var mockCryptoService = new Mock<ICryptoService>();
+            var authService = CreateAuthService(mockRepo, mockCryptoService: mockCryptoService);
 
-            var request = CreateLoginRequest();
+            var encryptedReq = CreatedEncryptedRequest();
+            var loginReq = CreateLoginRequest();
 
             mockRepo.Setup(x => x.GetByUsernameAsync("testuser"))
                 .ReturnsAsync((User?)null);
 
+            mockCryptoService
+                .Setup(x => x.Decrypt(It.IsAny<string>()))
+                .Returns(JsonSerializer.Serialize(loginReq));
+
             // Act
-            var result = await service.LoginAsync(request);
+            var result = await authService.LoginAsync(encryptedReq);
 
             // Assert
             Assert.False(result.Success);
@@ -207,17 +225,23 @@ namespace ExpenseTracker.Tests.Unit.Services
         public async Task RefreshTokensAsync_ReturnsToken_WhenRefreshTokenValid()
         {
             // Arrange
-            var mockService = new Mock<IAuthService>();
-            var controller = CreateController(mockService);
+            var mockAuthService = new Mock<IAuthService>();
+            var mockCryptoService = new Mock<ICryptoService>();
+            var controller = CreateController(mockAuthService);
 
-            var request = CreateRefreshTokenRequest();
-            var tokenResponse = CreateTokenResponse();
+            var encryptedReq = CreatedEncryptedRequest();
+            var refreshReq = CreateRefreshTokenRequest();
+            var tokenRes = CreateTokenResponse();
 
-            mockService.Setup(x => x.RefreshTokensAsync(request))
-                .ReturnsAsync(tokenResponse);
+            mockAuthService.Setup(x => x.RefreshTokensAsync(encryptedReq))
+                .ReturnsAsync(tokenRes);
+
+            mockCryptoService
+                .Setup(x => x.Decrypt(It.IsAny<string>()))
+                .Returns(JsonSerializer.Serialize(refreshReq));
 
             // Act
-            var result = await controller.RefreshToken(request);
+            var result = await controller.RefreshToken(encryptedReq);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -225,48 +249,61 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             Assert.True(response.Success);
             Assert.NotNull(response.Data);
-            Assert.Equal(request.RefreshToken, response.Data.RefreshToken);
+            Assert.Equal(refreshReq.RefreshToken, response.Data.RefreshToken);
         }
+
         [Fact]
         public async Task RefreshTokensAsync_ReturnsNull_WhenUserNotFound()
         {
             // Arrange
-            var mockService = new Mock<IAuthService>();
-            var controller = CreateController(mockService);
+            var mockAuthService = new Mock<IAuthService>();
+            var mockCryptoService = new Mock<ICryptoService>();
+            var controller = CreateController(mockAuthService);
 
-            var request = CreateRefreshTokenRequest();
-            var tokenResponse = CreateTokenResponse();
+            var encryptedReq = CreatedEncryptedRequest();
+            var refreshReq = CreateRefreshTokenRequest();
+            var tokenRes = CreateTokenResponse();
 
-            mockService.Setup(x => x.RefreshTokensAsync(request))
-                .ReturnsAsync((tokenResponse));
+            mockAuthService.Setup(x => x.RefreshTokensAsync(encryptedReq))
+                .ReturnsAsync((tokenRes));
+
+            mockCryptoService
+                .Setup(x => x.Decrypt(It.IsAny<string>()))
+                .Returns(JsonSerializer.Serialize(refreshReq));
 
             // Act
-            var result = await controller.RefreshToken(request);
+            var result = await controller.RefreshToken(encryptedReq);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<TokenResDto>>(okResult.Value);
 
             Assert.True(response.Success);
-            Assert.Equal(tokenResponse.AccessToken, response.Data!.AccessToken);
-            Assert.Equal(tokenResponse.RefreshToken, response.Data.RefreshToken);
+            Assert.Equal(tokenRes.AccessToken, response.Data!.AccessToken);
+            Assert.Equal(tokenRes.RefreshToken, response.Data.RefreshToken);
         }
 
         [Fact]
         public async Task RefreshTokensAsync_ReturnsNull_WhenRefreshTokenDoesNotMatch()
         {
             // Arrange
-            var mockService = new Mock<IAuthService>();
-            var controller = CreateController(mockService);
+            var mockAuthService = new Mock<IAuthService>();
+            var mockCryptoService = new Mock<ICryptoService>();
+            var controller = CreateController(mockAuthService);
 
-            var request = CreateRefreshTokenRequest();
-            var tokenResponse = CreateTokenResponse();
+            var encryptedReq = CreatedEncryptedRequest();
+            var refreshReq = CreateRefreshTokenRequest();
+            var tokenRes = CreateTokenResponse();
 
-            mockService.Setup(x => x.RefreshTokensAsync(request))
+            mockAuthService.Setup(x => x.RefreshTokensAsync(encryptedReq))
                 .ReturnsAsync((TokenResDto?)null);
 
+            mockCryptoService
+                .Setup(x => x.Decrypt(It.IsAny<string>()))
+                .Returns(JsonSerializer.Serialize(refreshReq));
+
             // Act
-            var result = await controller.RefreshToken(request);
+            var result = await controller.RefreshToken(encryptedReq);
 
             // Assert
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result.Result);
@@ -281,28 +318,22 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var mockRepo = new Mock<IAuthRepository>();
-            var mockConfig = new Mock<IConfiguration>();
-            var mockEmailService = new Mock<IEmailService>();
+            var mockCryptoService = new Mock<ICryptoService>();
+            var authService = CreateAuthService(mockRepo, mockCryptoService: mockCryptoService);
 
-            var request = CreateRefreshTokenRequest();
-
-            var user = new User
-            {
-                Id = 1,
-                RefreshToken = "test-refresh-token",
-                RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(-1)
-            };
+            var encryptedReq = CreatedEncryptedRequest();
+            var refreshReq = CreateRefreshTokenRequest();
+            var user = CreateUser(refreshToken: "test-refresh-token", refreshTokenExpiryTime: DateTime.UtcNow.AddDays(-1));
 
             mockRepo.Setup(x => x.GetByIdAsync(user.Id))
                 .ReturnsAsync(user);
 
-            var authService = new AuthService(
-                mockConfig.Object,
-                mockRepo.Object,
-                mockEmailService.Object);
+            mockCryptoService
+                .Setup(x => x.Decrypt(It.IsAny<string>()))
+                .Returns(JsonSerializer.Serialize(refreshReq));
 
             // Act
-            var result = await authService.RefreshTokensAsync(request);
+            var result = await authService.RefreshTokensAsync(encryptedReq);
 
             // Assert
             Assert.Null(result);
@@ -314,37 +345,28 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var mockRepo = new Mock<IAuthRepository>();
-            var mockEmailService = new Mock<IEmailService>();
-            var service = CreateAuthService(mockRepo, mockEmailService);
+            var mockCryptoService = new Mock<ICryptoService>();
+            var authService = CreateAuthService(mockRepo, mockCryptoService: mockCryptoService);
 
-            var request = CreateResetPasswordRequest();
+            var encryptedReq = CreatedEncryptedRequest();
+            var resetReq = CreateResetPasswordRequest();
+            var user = CreateUser(resetToken: resetReq.Token, resetTokenExpiryTime: DateTime.UtcNow.AddMinutes(5));
 
-            var user = new User
-            {
-                Id = 1,
-                FullName = "Test User",
-                Username = "testuser",
-                ContactNumber = "09876543210",
-                IsActive = true,
-                ResetToken = request.Token,
-                ResetTokenExpiryTime = DateTime.UtcNow.AddMinutes(5),
-                HashedPassword = "old-password"
-            };
-
-            user.HashedPassword = new PasswordHasher<User>().HashPassword(user, "Password123!");
-
-            mockRepo.Setup(x => x.GetUserByResetToken(request.Token))
+            mockRepo.Setup(x => x.GetUserByResetToken(resetReq.Token))
                 .ReturnsAsync(user);
 
+            mockCryptoService
+                .Setup(x => x.Decrypt(It.IsAny<string>()))
+                .Returns(JsonSerializer.Serialize(resetReq));
+
             // Act
-            var result = await service.ResetPasswordAsync(request);
+            var result = await authService.ResetPasswordAsync(encryptedReq);
 
             // Assert
             Assert.True(result.Success);
-            Assert.True(result.Data);
 
             mockRepo.Verify(
-                x => x.GetUserByResetToken(request.Token),
+                x => x.GetUserByResetToken(resetReq.Token),
                 Times.Once);
         }
 
@@ -353,24 +375,22 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var mockRepo = new Mock<IAuthRepository>();
-            var mockEmailService = new Mock<IEmailService>();
-            var service = CreateAuthService(mockRepo, mockEmailService);
+            var mockCryptoService = new Mock<ICryptoService>();
+            var authService = CreateAuthService(mockRepo, mockCryptoService: mockCryptoService);
 
-            var request = CreateResetPasswordRequest(confirmNewPassword: "password789");
+            var encryptedReq = CreatedEncryptedRequest();
+            var resetReq = CreateResetPasswordRequest(confirmNewPassword: "password789");
+            var user = CreateUser();
 
-            var expectedResponse = new User
-            {
-                Id = 1,
-                Username = "testuser",
-                HashedPassword = "hashed-password",
-                IsActive = false
-            };
+            mockRepo.Setup(x => x.GetUserByResetToken(resetReq.Token))
+                .ReturnsAsync(user);
 
-            mockRepo.Setup(x => x.GetUserByResetToken(request.Token))
-                .ReturnsAsync(expectedResponse);
+            mockCryptoService
+                .Setup(x => x.Decrypt(It.IsAny<string>()))
+                .Returns(JsonSerializer.Serialize(resetReq));
 
             // Act
-            var result = await service.ResetPasswordAsync(request);
+            var result = await authService.ResetPasswordAsync(encryptedReq);
 
             // Assert
             Assert.False(result.Success);
@@ -382,16 +402,21 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var mockRepo = new Mock<IAuthRepository>();
-            var mockEmailService = new Mock<IEmailService>();
-            var service = CreateAuthService(mockRepo, mockEmailService);
+            var mockCryptoService = new Mock<ICryptoService>();
+            var authService = CreateAuthService(mockRepo, mockCryptoService: mockCryptoService);
 
-            var request = CreateResetPasswordRequest();
+            var encryptedReq = CreatedEncryptedRequest();
+            var resetReq = CreateResetPasswordRequest();
 
-            mockRepo.Setup(x => x.GetUserByResetToken(request.Token))
+            mockRepo.Setup(x => x.GetUserByResetToken(resetReq.Token))
                 .ReturnsAsync((User?)null);
 
+            mockCryptoService
+                .Setup(x => x.Decrypt(It.IsAny<string>()))
+                .Returns(JsonSerializer.Serialize(resetReq));
+
             // Act
-            var result = await service.ResetPasswordAsync(request);
+            var result = await authService.ResetPasswordAsync(encryptedReq);
 
             // Assert
             Assert.False(result.Success);
@@ -403,31 +428,29 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var mockRepo = new Mock<IAuthRepository>();
-            var mockEmailService = new Mock<IEmailService>();
-            var service = CreateAuthService(mockRepo, mockEmailService);
+            var mockCryptoService = new Mock<ICryptoService>();
+            var authService = CreateAuthService(mockRepo, mockCryptoService: mockCryptoService);
 
-            var request = CreateResetPasswordRequest();
+            var encryptedReq = CreatedEncryptedRequest();
+            var resetReq = CreateResetPasswordRequest();
+            var user = CreateUser(resetToken: resetReq.Token, resetTokenExpiryTime: DateTime.UtcNow.AddMinutes(-1));
 
-            var user = new User
-            {
-                Id = 1,
-                Username = "testuser",
-                ResetToken = request.Token,
-                ResetTokenExpiryTime = DateTime.UtcNow.AddMinutes(-1)
-            };
-
-            mockRepo.Setup(x => x.GetUserByResetToken(request.Token))
+            mockRepo.Setup(x => x.GetUserByResetToken(resetReq.Token))
                 .ReturnsAsync(user);
 
+            mockCryptoService
+                .Setup(x => x.Decrypt(It.IsAny<string>()))
+                .Returns(JsonSerializer.Serialize(resetReq));
+
             // Act
-            var result = await service.ResetPasswordAsync(request);
+            var result = await authService.ResetPasswordAsync(encryptedReq);
 
             // Assert
             Assert.False(result.Success);
             Assert.Equal("Reset token has expired. Please submit a new password reset request.", result.ErrorMessage);
         }
 
-        // Helper Functions
+        //Helper Functions
         private static IConfiguration CreateConfiguration()
         {
             return new ConfigurationBuilder()
@@ -441,18 +464,63 @@ namespace ExpenseTracker.Tests.Unit.Services
         }
 
         private static AuthService CreateAuthService(
-            Mock<IAuthRepository> mockRepo,
-            Mock<IEmailService> mockEmailService)
+            Mock<IAuthRepository>? mockRepo = null,
+            Mock<IEmailService>? mockEmailService = null,
+            Mock<ICryptoService>? mockCryptoService = null)
         {
+            mockRepo ??= new Mock<IAuthRepository>();
+            mockEmailService ??= new Mock<IEmailService>();
+            mockCryptoService ??= new Mock<ICryptoService>();
+
             return new AuthService(
                 CreateConfiguration(),
                 mockRepo.Object,
-                mockEmailService.Object);
+                mockEmailService.Object,
+                mockCryptoService.Object);
         }
 
         private static AuthController CreateController(Mock<IAuthService> mockService)
         {
             return new AuthController(mockService.Object);
+        }
+
+        private static User CreateUser(
+            int id = 1,
+            string username = "testuser",
+            string refreshToken = "test-refresh-token",
+            DateTime? refreshTokenExpiryTime = null,
+            string resetToken = "test-reset-token",
+            DateTime? resetTokenExpiryTime = null,
+            bool isActive = true,
+            DateTime? createdAt = null)
+        {
+            var user = new User
+            {
+                Id = id,
+                FullName = "Test User",
+                Username = username,
+                ContactNumber = "09123456789",
+                Role = UserRole.User,
+                RefreshToken = refreshToken,
+                RefreshTokenExpiryTime = refreshTokenExpiryTime,
+                ResetToken = resetToken,
+                ResetTokenExpiryTime = resetTokenExpiryTime,
+                IsActive = isActive,
+                CreatedAt = createdAt ?? DateTime.Now,
+            };
+
+            user.HashedPassword = new PasswordHasher<User>()
+                .HashPassword(user, "Password123!");
+
+            return user;
+        }
+
+        private static EncryptedReqDto CreatedEncryptedRequest()
+        {
+            return new EncryptedReqDto
+            {
+                EncryptedData = "randomEncryptedString"
+            };
         }
 
         private static RegisterReqDto CreateRegisterRequest(

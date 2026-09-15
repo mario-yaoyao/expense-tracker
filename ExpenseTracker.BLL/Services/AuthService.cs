@@ -16,11 +16,11 @@ using System.Text.Json;
 
 namespace ExpenseTracker.BLL.Services
 {
-    public class AuthService(IConfiguration configuration, IAuthRepository authRepository, IEmailService emailService) : IAuthService
+    public class AuthService(IConfiguration configuration, IAuthRepository authRepository, IEmailService emailService, ICryptoService cryptoService) : IAuthService
     {
         public async Task<ServiceResult<TokenResDto>> LoginAsync(EncryptedReqDto request)
         {
-            var json = Decrypt(request.EncryptedData);
+            var json = cryptoService.Decrypt(request.EncryptedData);
             var loginRequest = JsonSerializer.Deserialize<LoginReqDto>(json);
 
             var user = await authRepository.GetByUsernameAsync(loginRequest!.Username);
@@ -68,7 +68,7 @@ namespace ExpenseTracker.BLL.Services
 
         public async Task<ServiceResult<object>> RegisterAsync(EncryptedReqDto request)
         {
-            var json = Decrypt(request.EncryptedData);
+            var json = cryptoService.Decrypt(request.EncryptedData);
             var registerRequest = JsonSerializer.Deserialize<RegisterReqDto>(json);
 
             if (registerRequest!.Password != registerRequest.ConfirmPassword)
@@ -119,7 +119,7 @@ namespace ExpenseTracker.BLL.Services
 
         public async Task<bool> ForgotPasswordAsync(EncryptedReqDto request)
         {
-            var json = Decrypt(request.EncryptedData);
+            var json = cryptoService.Decrypt(request.EncryptedData);
             var forgotPasswordRequest = JsonSerializer.Deserialize<ForgotPasswordReqDto>(json);
 
             var user = await authRepository.GetByEmailAsync(forgotPasswordRequest!.Email);
@@ -143,7 +143,7 @@ namespace ExpenseTracker.BLL.Services
 
         public async Task<ServiceResult<object>> ResetPasswordAsync(EncryptedReqDto request)
         {
-            var json = Decrypt(request.EncryptedData);
+            var json = cryptoService.Decrypt(request.EncryptedData);
             var resetPasswordRequest = JsonSerializer.Deserialize<ResetPasswordReqDto>(json);
 
             if (resetPasswordRequest!.NewPassword != resetPasswordRequest.ConfirmNewPassword)
@@ -195,6 +195,18 @@ namespace ExpenseTracker.BLL.Services
             };
         }
 
+        public async Task<TokenResDto?> RefreshTokensAsync(EncryptedReqDto request)
+        {
+            var json = cryptoService.Decrypt(request.EncryptedData);
+            var refreshRequest = JsonSerializer.Deserialize<RefreshTokenReqDto>(json);
+
+            var user = await ValidateRefreshTokenAsync(refreshRequest!.UserId, refreshRequest.RefreshToken);
+
+            if (user is null) return null;
+
+            return await CreateTokenResponse(user);
+        }
+
         private static bool IsPasswordValid(User user, string password) =>
             new PasswordHasher<User>().VerifyHashedPassword(user, user.HashedPassword, password) != PasswordVerificationResult.Failed;
 
@@ -208,18 +220,6 @@ namespace ExpenseTracker.BLL.Services
                 AccessToken = CreateToken(user),
                 RefreshToken = await GenerateAndSaveRefreshTokenAsync(user)
             };
-        }
-
-        public async Task<TokenResDto?> RefreshTokensAsync(EncryptedReqDto request)
-        {
-            var json = Decrypt(request.EncryptedData);
-            var refreshRequest = JsonSerializer.Deserialize<RefreshTokenReqDto>(json);
-
-            var user = await ValidateRefreshTokenAsync(refreshRequest!.UserId, refreshRequest.RefreshToken);
-
-            if (user is null) return null;
-
-            return await CreateTokenResponse(user);
         }
 
         private async Task<User?> ValidateRefreshTokenAsync(int userId, string refreshToken)
@@ -280,21 +280,6 @@ namespace ExpenseTracker.BLL.Services
             );
 
             return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
-        }
-
-        public static string Decrypt(string encryptedData)
-        {
-            var encryptedBytes = Convert.FromBase64String(encryptedData);
-
-            using var rsa = RSA.Create();
-
-            rsa.ImportFromPem(System.IO.File.ReadAllText("Keys/private.pem"));
-
-            var decryptedBytes = rsa.Decrypt(
-                encryptedBytes,
-                RSAEncryptionPadding.OaepSHA256);
-
-            return Encoding.UTF8.GetString(decryptedBytes);
         }
     }
 }

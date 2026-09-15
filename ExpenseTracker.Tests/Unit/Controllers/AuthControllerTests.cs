@@ -3,7 +3,6 @@ using ExpenseTracker.BLL.Interfaces;
 using ExpenseTracker.Models.Common;
 using ExpenseTracker.Models.Dtos.Requests;
 using ExpenseTracker.Models.Dtos.Responses;
-using ExpenseTracker.Models.Models;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
@@ -18,21 +17,11 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var mockService = new Mock<IAuthService>();
             var controller = CreateController(mockService);
 
-            var request = CreateRegisterRequest();
+            var request = CreatedEncryptedRequest();
 
-            var expectedResponse = new ServiceResult<RegisterResDto>
+            var expectedResponse = new ServiceResult<object>
             {
-                Success = true,
-                Data = new RegisterResDto
-                {
-                    UserId = 1,
-                    FullName = "Test User",
-                    Username = "testuser",
-                    ContactNumber = "09876543210",
-                    Role = UserRole.User,
-                    IsActive = true,
-                    CreatedAt = DateTime.UtcNow
-                }
+                Success = true
             };
 
             mockService.Setup(x => x.RegisterAsync(request))
@@ -43,10 +32,9 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<RegisterResDto>>(okResult.Value);
+            var response = Assert.IsType<ApiResDto<object>>(okResult.Value);
 
             Assert.True(response.Success);
-            Assert.Equal(expectedResponse.Data.Username, response.Data!.Username);
         }
 
         [Fact]
@@ -56,9 +44,9 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var mockService = new Mock<IAuthService>();
             var controller = CreateController(mockService);
 
-            var request = CreateRegisterRequest();
+            var request = CreatedEncryptedRequest();
 
-            var expectedResponse = new ServiceResult<RegisterResDto>
+            var expectedResponse = new ServiceResult<object>
             {
                 Success = false,
                 ErrorMessage = "Passwords do not match.",
@@ -73,7 +61,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<RegisterResDto>>(badRequestResult.Value);
+            var response = Assert.IsType<ApiResDto<object>>(badRequestResult.Value);
 
             Assert.False(response.Success);
             Assert.Equal(expectedResponse.ErrorMessage, response.ErrorMessage);
@@ -86,9 +74,9 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var mockService = new Mock<IAuthService>();
             var controller = CreateController(mockService);
 
-            var request = CreateRegisterRequest();
+            var request = CreatedEncryptedRequest();
 
-            var expectedResponse = new ServiceResult<RegisterResDto>
+            var expectedResponse = new ServiceResult<object>
             {
                 Success = false,
                 ErrorMessage = "Username is already taken.",
@@ -103,7 +91,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<RegisterResDto>>(badRequestResult.Value);
+            var response = Assert.IsType<ApiResDto<object>>(badRequestResult.Value);
 
             Assert.False(response.Success);
             Assert.Equal(expectedResponse.ErrorMessage, response.ErrorMessage);
@@ -116,7 +104,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var mockService = new Mock<IAuthService>();
             var controller = CreateController(mockService);
 
-            var request = CreateRegisterRequest();
+            var request = CreatedEncryptedRequest();
 
             var expectedResponse = new ServiceResult<TokenResDto>
             {
@@ -147,7 +135,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var mockService = new Mock<IAuthService>();
             var controller = CreateController(mockService);
 
-            var request = CreateLoginRequest();
+            var request = CreatedEncryptedRequest();
             var tokenResponse = CreateTokenResponse();
 
             var expectedResponse = new ServiceResult<TokenResDto>
@@ -188,7 +176,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var mockService = new Mock<IAuthService>();
             var controller = CreateController(mockService);
 
-            var request = CreateLoginRequest();
+            var request = CreatedEncryptedRequest();
             var tokenResponse = CreateTokenResponse();
 
             mockService
@@ -217,7 +205,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var mockService = new Mock<IAuthService>();
             var controller = CreateController(mockService);
 
-            var request = CreateLoginRequest();
+            var request = CreatedEncryptedRequest();
 
             var expectedResponse = new ServiceResult<TokenResDto>
             {
@@ -248,7 +236,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var mockService = new Mock<IAuthService>();
             var controller = CreateController(mockService);
 
-            var request = CreateRefreshTokenRequest();
+            var request = CreatedEncryptedRequest();
             var tokenResponse = CreateTokenResponse();
 
             mockService.Setup(x => x.RefreshTokensAsync(request))
@@ -273,7 +261,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var mockService = new Mock<IAuthService>();
             var controller = CreateController(mockService);
 
-            var request = CreateRefreshTokenRequest();
+            var request = CreatedEncryptedRequest();
             var tokenResponse = CreateTokenResponse();
 
             mockService.Setup(x => x.RefreshTokensAsync(request))
@@ -297,7 +285,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var mockService = new Mock<IAuthService>();
             var controller = CreateController(mockService);
 
-            var request = CreateRefreshTokenRequest();
+            var request = CreatedEncryptedRequest();
 
             mockService.Setup(x => x.RefreshTokensAsync(request))
                 .ThrowsAsync(new Exception("Database error"));
@@ -321,7 +309,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var mockService = new Mock<IAuthService>();
             var controller = CreateController(mockService);
 
-            var request = CreateForgotPasswordRequest();
+            var request = CreatedEncryptedRequest();
 
             mockService.Setup(x => x.ForgotPasswordAsync(request))
                 .ReturnsAsync(true);
@@ -343,7 +331,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var mockService = new Mock<IAuthService>();
             var controller = CreateController(mockService);
 
-            var request = CreateForgotPasswordRequest();
+            var request = CreatedEncryptedRequest();
 
             var expectedResponse = new ApiResDto<object>
             {
@@ -373,7 +361,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var mockService = new Mock<IAuthService>();
             var controller = CreateController(mockService);
 
-            var request = CreateForgotPasswordRequest();
+            var request = CreatedEncryptedRequest();
 
             var expectedResponse = new ServiceResult<TokenResDto>
             {
@@ -404,9 +392,9 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var mockService = new Mock<IAuthService>();
             var controller = CreateController(mockService);
 
-            var request = CreateResetPasswordRequest();
+            var request = CreatedEncryptedRequest();
 
-            var expectedResponse = new ServiceResult<bool>
+            var expectedResponse = new ServiceResult<object>
             {
                 Success = true,
                 Data = true
@@ -420,10 +408,9 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<bool?>>(okResult.Value);
+            var response = Assert.IsType<ApiResDto<object>>(okResult.Value);
 
             Assert.True(response.Success);
-            Assert.True(response.Data);
         }
 
         [Fact]
@@ -433,9 +420,9 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var mockService = new Mock<IAuthService>();
             var controller = CreateController(mockService);
 
-            var request = CreateResetPasswordRequest();
+            var request = CreatedEncryptedRequest();
 
-            var expectedResponse = new ServiceResult<bool>
+            var expectedResponse = new ServiceResult<object>
             {
                 Success = false,
                 ErrorMessage = "Passwords do not match.",
@@ -450,7 +437,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<bool?>>(badRequestResult.Value);
+            var response = Assert.IsType<ApiResDto<object>>(badRequestResult.Value);
 
             Assert.False(response.Success);
             Assert.Equal(expectedResponse.ErrorMessage, response.ErrorMessage);
@@ -463,9 +450,9 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var mockService = new Mock<IAuthService>();
             var controller = CreateController(mockService);
 
-            var request = CreateResetPasswordRequest();
+            var request = CreatedEncryptedRequest();
 
-            var expectedResponse = new ServiceResult<bool>
+            var expectedResponse = new ServiceResult<object>
             {
                 Success = false,
                 ErrorMessage = "An error occurred while resetting password."
@@ -493,35 +480,11 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             return new AuthController(mockService.Object);
         }
 
-        private static RegisterReqDto CreateRegisterRequest()
+        private static EncryptedReqDto CreatedEncryptedRequest()
         {
-            return new RegisterReqDto
+            return new EncryptedReqDto
             {
-                FullName = "Test User",
-                Username = "testuser",
-                ContactNumber = "09876543210",
-                Password = "Password123!",
-                ConfirmPassword = "Password123!"
-            };
-        }
-
-        private static LoginReqDto CreateLoginRequest(
-            string username = "testuser",
-            string password = "Password123!")
-        {
-            return new LoginReqDto
-            {
-                Username = username,
-                Password = password
-            };
-        }
-
-        private static RefreshTokenReqDto CreateRefreshTokenRequest()
-        {
-            return new RefreshTokenReqDto
-            {
-                UserId = 1,
-                RefreshToken = "test-refresh-token"
+                EncryptedData = "randomEncryptedString"
             };
         }
 
@@ -531,28 +494,6 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             {
                 AccessToken = "test-access-token",
                 RefreshToken = "test-refresh-token"
-            };
-        }
-
-        private static ForgotPasswordReqDto CreateForgotPasswordRequest(
-            string email = "testuser@email.com")
-        {
-            return new ForgotPasswordReqDto
-            {
-                Email = email
-            };
-        }
-
-        private static ResetPasswordReqDto CreateResetPasswordRequest(
-            string token = "testuser@email.com",
-            string newPassword = "password456",
-            string confirmNewPassword = "password456")
-        {
-            return new ResetPasswordReqDto
-            {
-                Token = token,
-                NewPassword = newPassword,
-                ConfirmNewPassword = confirmNewPassword
             };
         }
     }

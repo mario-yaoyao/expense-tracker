@@ -45,7 +45,7 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPatch("change-password")]
-        public async Task<ActionResult<bool?>> ChangePassword([FromBody] ChangePasswordReqDto request)
+        public async Task<ActionResult<object>> ChangePassword([FromBody] ChangePasswordReqDto request)
         {
             try
             {
@@ -53,13 +53,12 @@ namespace ExpenseTracker.Controllers
                 var result = await userService.ChangePasswordAsync(userId, request);
 
                 return result.Success
-                    ? Ok(new ApiResDto<bool?>
+                    ? Ok(new ApiResDto<object>
                     {
-                        Success = true,
-                        Data = result.Data
+                        Success = true
                         
                     })
-                    : BadRequest(new ApiResDto<bool?>
+                    : BadRequest(new ApiResDto<object>
                     {
                         Success = false,
                         ErrorMessage = result.ErrorMessage

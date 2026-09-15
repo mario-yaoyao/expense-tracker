@@ -14,64 +14,47 @@ namespace ExpenseTracker.Tests.Unit.Services
         public async Task GetCategoriesAsync_ReturnsUserCategories_WhenRoleIsUser()
         {
             // Arrange
-            var firstCategoryId = 1;    
             var secondCategoryId = 2;
             var userId = 1;
             var categoryType = CategoryType.Expense;
 
             var mockCategoryRepo = new Mock<ICategoryRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
-            var service = new CategoryService(mockCategoryRepo.Object, mockUserRepo.Object, mockMapper.Object);
+            var mockMapper = new Mock<IMapper>();
+            var categoryService = CreateCategoryService(mockCategoryRepo, mockUserRepo, mockMapper);
 
-            var request = new List<Category>
+            var queryReq= CreateQueryRequest();
+
+            var categories = new List<Category>
             {
-                CreateCategory(firstCategoryId, userId, "Grocery", categoryType),
-                CreateCategory(secondCategoryId, userId, "Transportation", categoryType),
+                CreateCategory(),
+                CreateCategory(id: secondCategoryId, name: "Transportation"),
             };
-            var queryRequest = CreateQueryRequest();
 
-            var expectedResponseData = new List<CategoryResDto>
+            var mappedCategories = new List<CategoryResDto>
             {
-                new()
-                {
-                    Id = request[0].Id,
-                    UserId = request[0].UserId,
-                    Name = request[0].Name,
-                    Type = request[0].Type,
-                    IsDeleted = request[0].IsDeleted,
-                    CreatedAt = request[0].CreatedAt,
-                    UpdatedAt = request[0].UpdatedAt,
-                },
-                new()
-                {
-                    Id = request[1].Id,
-                    UserId = request[1].UserId,
-                    Name = request[1].Name,
-                    Type = request[1].Type,
-                    IsDeleted = request[1].IsDeleted,
-                    CreatedAt = request[1].CreatedAt,
-                    UpdatedAt = request[1].UpdatedAt,
-                }
+                CreateMappedCategoryResponse(categories[0].Id, categories[0].UserId, categories[0].Name, categories[0].Type, categories[0].IsDeleted),
+                CreateMappedCategoryResponse(categories[1].Id, categories[1].UserId, categories[1].Name, categories[1].Type, categories[1].IsDeleted)
             };
 
             var expectedResponse = (
-                Data: request,
+                Data: categories,
                 HasNextPage: false
             );
 
             mockCategoryRepo
-                .Setup(x => x.GetCategoriesByUserAsync(userId, queryRequest.Type, queryRequest.Page, queryRequest.Limit, queryRequest.Search))
+                .Setup(x => x.GetCategoriesByUserAsync(userId, queryReq.Type, queryReq.Page, queryReq.Limit, queryReq.Search))
                 .ReturnsAsync(expectedResponse);
 
             mockMapper
                 .Setup(x => x.Map<List<CategoryResDto>>(It.IsAny<List<Category>>()))
-                .Returns(expectedResponseData);
+                .Returns(mappedCategories);
 
             // Act
-            var result = await service.GetCategoriesAsync(userId, "User", queryRequest);
+            var result = await categoryService.GetCategoriesAsync(userId, "User", queryReq);
 
             // Assert
-            Assert.Equal(expectedResponseData[0].Name, result.data[0].Name);
+            Assert.Equal(mappedCategories[0].Name, result.data[0].Name);
             Assert.Equal(CategoryType.Expense, result.data[1].Type);
 
             mockCategoryRepo.Verify(
@@ -83,7 +66,6 @@ namespace ExpenseTracker.Tests.Unit.Services
         public async Task GetCategoriesAsync_ReturnsAllCategories_WhenRoleIsNotUser()
         {
             // Arrange
-            var firstCategoryId = 1;
             var secondCategoryId = 2;
             var thirdCategoryId = 3;
             var firstUserId = 1;
@@ -92,60 +74,44 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var mockCategoryRepo = new Mock<ICategoryRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
-            var service = new CategoryService(mockCategoryRepo.Object, mockUserRepo.Object, mockMapper.Object);
+            var mockMapper = new Mock<IMapper>();
+            var categoryService = CreateCategoryService(mockCategoryRepo, mockUserRepo, mockMapper);
 
-            var request = new List<Category>
+            var queryReq = CreateQueryRequest();
+
+            var categories = new List<Category>
             {
-                CreateCategory(firstCategoryId, firstUserId, "Grocery", categoryType),
-                CreateCategory(secondCategoryId, firstUserId, "Transportation", categoryType),
+                CreateCategory(),
+                CreateCategory(id: secondCategoryId, name: "Transportation", type: categoryType),
                 CreateCategory(thirdCategoryId, secondUserId, "Internet", categoryType),
             };
-            var queryRequest = CreateQueryRequest();
 
-            var expectedResponseData = new List<CategoryResDto>
+            var mappedCategories = new List<CategoryResDto>
             {
-                new()
-                {
-                    Id = request[0].Id,
-                    UserId = request[0].UserId,
-                    Name = request[0].Name,
-                    Type = request[0].Type,
-                },
-                new()
-                {
-                    Id = request[1].Id,
-                    UserId = request[1].UserId,
-                    Name = request[1].Name,
-                    Type = request[1].Type,
-                },
-                new()
-                {
-                    Id = request[2].Id,
-                    UserId = request[2].UserId,
-                    Name = request[2].Name,
-                    Type = request[2].Type,
-                }
+                CreateMappedCategoryResponse(categories[0].Id, categories[0].UserId, categories[0].Name, categories[0].Type, categories[0].IsDeleted),
+                CreateMappedCategoryResponse(categories[1].Id, categories[1].UserId, categories[1].Name, categories[1].Type, categories[1].IsDeleted),
+                CreateMappedCategoryResponse(categories[2].Id, categories[2].UserId, categories[2].Name, categories[2].Type, categories[2].IsDeleted)
             };
 
             var expectedResponse = (
-                Data: request,
+                Data: categories,
                 HasNextPage: false
             );
 
             mockCategoryRepo
-                .Setup(x => x.GetAllCategoriesAsync(queryRequest.Page, queryRequest.Limit, queryRequest.Search))
+                .Setup(x => x.GetAllCategoriesAsync(queryReq.Page, queryReq.Limit, queryReq.Search))
                 .ReturnsAsync(expectedResponse);
 
             mockMapper
                 .Setup(x => x.Map<List<CategoryResDto>>(It.IsAny<List<Category>>()))
-                .Returns(expectedResponseData);
+                .Returns(mappedCategories);
 
             // Act
-            var result = await service.GetCategoriesAsync(firstUserId, "SuperAdmin", queryRequest);
+            var result = await categoryService.GetCategoriesAsync(firstUserId, "SuperAdmin", queryReq);
 
             // Assert
-            Assert.Equal(expectedResponseData[0].Name, result.data[0].Name);
-            Assert.Equal(expectedResponseData[1].Type, result.data[1].Type);
+            Assert.Equal(mappedCategories[0].Name, result.data[0].Name);
+            Assert.Equal(mappedCategories[1].Type, result.data[1].Type);
 
             mockCategoryRepo.Verify(
                 x => x.GetAllCategoriesAsync(1, 20, null),
@@ -161,44 +127,27 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var mockCategoryRepo = new Mock<ICategoryRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
-            var service = new CategoryService(mockCategoryRepo.Object, mockUserRepo.Object, mockMapper.Object);
+            var mockMapper = new Mock<IMapper>();
+            var categoryService = CreateCategoryService(mockCategoryRepo, mockUserRepo, mockMapper);
 
-            var expectedResponse = new Category
-            {
-                Id = categoryId,
-                UserId = userId,
-                Name = "Grocery",
-                Type = CategoryType.Expense,
-                IsDeleted = false,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = null
-            };
-
-            var expectedResDto = new CategoryResDto
-            {
-                Id = expectedResponse.Id,
-                UserId = expectedResponse.UserId,
-                Name = expectedResponse.Name,
-                Type = expectedResponse.Type,
-                CreatedAt = expectedResponse.CreatedAt,
-                UpdatedAt = expectedResponse.UpdatedAt
-            };
+            var category = CreateCategory();
+            var mappedCategory = CreateMappedCategoryResponse();
 
             mockMapper
                 .Setup(x => x.Map<CategoryResDto>(It.IsAny<Category>()))
-                .Returns(expectedResDto);
+                .Returns(mappedCategory);
 
             mockCategoryRepo.Setup(x => x.GetCategoryByUserAsync(userId, categoryId))
-                .ReturnsAsync(expectedResponse);
+                .ReturnsAsync(category);
 
             // Act
-            var result = await service.GetCategoryByIdAsync(userId, "User", categoryId);
+            var result = await categoryService.GetCategoryByIdAsync(userId, "User", categoryId);
 
             // Assert
             Assert.NotNull(result);
             Assert.Equal(categoryId, result.Id);
-            Assert.Equal(expectedResponse.Name, result.Name);
-            Assert.Equal(expectedResponse.Type, result.Type);
+            Assert.Equal(category.Name, result.Name);
+            Assert.Equal(category.Type, result.Type);
 
             mockCategoryRepo.Verify(
                 x => x.GetCategoryByUserAsync(userId, categoryId),
@@ -214,13 +163,14 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var mockCategoryRepo = new Mock<ICategoryRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
-            var service = new CategoryService(mockCategoryRepo.Object, mockUserRepo.Object, mockMapper.Object);
+            var mockMapper = new Mock<IMapper>();
+            var categoryService = CreateCategoryService(mockCategoryRepo, mockUserRepo, mockMapper);
 
             mockCategoryRepo.Setup(x => x.GetCategoryByUserAsync(userId, categoryId))
                 .ReturnsAsync((Category?)null);
 
             // Act
-            var result = await service.GetCategoryByIdAsync(userId, "User", categoryId);
+            var result = await categoryService.GetCategoryByIdAsync(userId, "User", categoryId);
 
             // Assert
             Assert.Null(result);
@@ -234,28 +184,19 @@ namespace ExpenseTracker.Tests.Unit.Services
         public async Task CreateCategoryAsync_ReturnsCreatedCategory_WhenRequestIsValid()
         {
             // Arrange
-            var categoryId = 1;
             var userId = 1;
 
             var mockCategoryRepo = new Mock<ICategoryRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
-            var service = new CategoryService(mockCategoryRepo.Object, mockUserRepo.Object, mockMapper.Object);
+            var mockMapper = new Mock<IMapper>();
+            var categoryService = CreateCategoryService(mockCategoryRepo, mockUserRepo, mockMapper);
 
             var request = CreateCategoryRequest();
-
-            var expectedResponseDto = new CategoryResDto
-            {
-                Id = categoryId,
-                UserId = userId,
-                Name = request.Name,
-                Type = request.Type,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = null
-            };
+            var mappedCategory = CreateMappedCategoryResponse();
 
             mockMapper
                 .Setup(x => x.Map<CategoryResDto>(It.IsAny<Category>()))
-                .Returns(expectedResponseDto);
+                .Returns(mappedCategory);
 
             mockUserRepo
                 .Setup(x => x.GetUserByIdAsync(userId))
@@ -266,7 +207,7 @@ namespace ExpenseTracker.Tests.Unit.Services
                 });
 
             // Act
-            var result = await service.CreateCategoryAsync(userId, request);
+            var result = await categoryService.CreateCategoryAsync(userId, request);
 
             // Assert
             Assert.NotNull(result);
@@ -283,38 +224,20 @@ namespace ExpenseTracker.Tests.Unit.Services
         public async Task UpdateCategoryAsync_ReturnsUpdatedCategory_WhenCategoryExists()
         {
             // Arrange
-            var firstCategoryId = 1;
             var userId = 1;
 
             var mockCategoryRepo = new Mock<ICategoryRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
+            var mockMapper = new Mock<IMapper>();
+            var categoryService = CreateCategoryService(mockCategoryRepo, mockUserRepo, mockMapper);
 
             var request = UpdateCategory();
-
-            var existingCategory = new Category
-            {
-                Id = firstCategoryId,
-                UserId = userId,
-                Name = request.Name,
-                Type = request.Type!.Value,
-                IsDeleted = false,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = null
-            };
-
-            var expectedResponseDto = new CategoryResDto
-            {
-                Id = firstCategoryId,
-                UserId = userId,
-                Name = existingCategory.Name,
-                Type = existingCategory.Type,
-                CreatedAt = existingCategory.CreatedAt,
-                UpdatedAt = DateTime.UtcNow
-            };
+            var existingCategory = CreateCategory(name: request.Name, type: request.Type!.Value);
+            var mappedCategory = CreateMappedCategoryResponse();
 
             mockMapper
                 .Setup(x => x.Map<CategoryResDto>(It.IsAny<Category>()))
-                .Returns(expectedResponseDto);
+                .Returns(mappedCategory);
 
             mockCategoryRepo.Setup(x => x.GetCategoryByUserAsync(userId, existingCategory.Id))
                 .ReturnsAsync(existingCategory);
@@ -337,8 +260,8 @@ namespace ExpenseTracker.Tests.Unit.Services
             Assert.NotNull(result.UpdatedAt);
             Assert.True(result.UpdatedAt > result.CreatedAt);
             Assert.Equal(userId, result.UserId);
-            Assert.Equal(expectedResponseDto.Name, result.Name);
-            Assert.Equal(expectedResponseDto.Type, result.Type);
+            Assert.Equal(mappedCategory.Name, result.Name);
+            Assert.Equal(mappedCategory.Type, result.Type);
 
             mockCategoryRepo.Verify(
                 x => x.GetCategoryByUserAsync(userId, existingCategory.Id),
@@ -358,7 +281,8 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var mockCategoryRepo = new Mock<ICategoryRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
-            var service = new CategoryService(mockCategoryRepo.Object, mockUserRepo.Object, mockMapper.Object);
+            var mockMapper = new Mock<IMapper>();
+            var categoryService = CreateCategoryService(mockCategoryRepo, mockUserRepo, mockMapper);
 
             var request = UpdateCategory();
 
@@ -366,7 +290,7 @@ namespace ExpenseTracker.Tests.Unit.Services
                 .ReturnsAsync((Category?)null);
 
             // Act
-            var result = await service.UpdateCategoryAsync(userId, categoryId, request);
+            var result = await categoryService.UpdateCategoryAsync(userId, categoryId, request);
 
             // Assert
             Assert.Null(result);
@@ -381,16 +305,10 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var mockCategoryRepo = new Mock<ICategoryRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
-            var service = new CategoryService(mockCategoryRepo.Object, mockUserRepo.Object, mockMapper.Object);
+            var mockMapper = new Mock<IMapper>();
+            var categoryService = CreateCategoryService(mockCategoryRepo, mockUserRepo, mockMapper);
 
-            var existingCategory = new Category
-            {
-                Id = categoryId,
-                UserId = userId,
-                Name = "Grocery",
-                Type = CategoryType.Expense,
-                IsDeleted = false
-            };
+            var existingCategory = CreateCategory();
 
             mockCategoryRepo.Setup(x => x.GetCategoryByUserAsync(userId, categoryId))
                 .ReturnsAsync(existingCategory);
@@ -404,7 +322,7 @@ namespace ExpenseTracker.Tests.Unit.Services
                 });
 
             // Act
-            var result = await service.DeleteCategoryAsync(userId, categoryId);
+            var result = await categoryService.DeleteCategoryAsync(userId, categoryId);
 
             // Assert
             Assert.True(result);
@@ -419,31 +337,36 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var mockCategoryRepo = new Mock<ICategoryRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
-            var service = new CategoryService(mockCategoryRepo.Object, mockUserRepo.Object, mockMapper.Object);
+            var mockMapper = new Mock<IMapper>();
+            var categoryService = CreateCategoryService(mockCategoryRepo, mockUserRepo, mockMapper);
 
             mockCategoryRepo.Setup(x => x.GetCategoryByUserAsync(userId, categoryId))
                 .ReturnsAsync((Category?)null);
 
             // Act
-            var result = await service.DeleteCategoryAsync(userId, categoryId);
+            var result = await categoryService.DeleteCategoryAsync(userId, categoryId);
 
             // Assert
             Assert.False(result);
         }
 
         // Helper Functions
-        private readonly Mock<IMapper> mockMapper;
-
-        public CategoryServiceTests()
+        private CategoryService CreateCategoryService(
+            Mock<ICategoryRepository>? mockCategoryRepo = null,
+            Mock<IUserRepository>? mockUserRepo = null,
+            Mock<IMapper>? mockMapper = null)
         {
-            mockMapper = new Mock<IMapper>();
+            return new CategoryService(
+                mockCategoryRepo!.Object,
+                mockUserRepo!.Object,
+                mockMapper!.Object);
         }
 
         private static Category CreateCategory(
-            int id,
-            int userId,
-            string name,
-            CategoryType type,
+            int id = 1,
+            int userId = 1,
+            string name = "Rent",
+            CategoryType type = CategoryType.Expense,
             bool isDeleted = false)
         {
             return new Category
@@ -455,6 +378,25 @@ namespace ExpenseTracker.Tests.Unit.Services
                 IsDeleted = isDeleted,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null
+            };
+        }
+
+        private static CategoryResDto CreateMappedCategoryResponse(
+            int id = 1,
+            int userId = 1,
+            string name = "Rent",
+            CategoryType type = CategoryType.Expense,
+            bool isDeleted = false)
+        {
+            return new CategoryResDto
+            {
+                Id = id,
+                UserId = userId,
+                Name = name,
+                Type = type,
+                IsDeleted = isDeleted,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
         }
 

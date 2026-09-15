@@ -6,7 +6,6 @@ using ExpenseTracker.Models.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using System.Diagnostics;
 using System.Security.Claims;
 
 namespace ExpenseTracker.Tests.Unit.Controllers
@@ -17,13 +16,12 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         public async Task GetSuperAdminDashboard_ReturnsOk_WhenDataExists()
         {
             // Arrange
-            var firstUserId = 1;
             var secondUserId = 2;
             var thirdUserId = 3;
 
             var mockService = new Mock<IDashboardService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, firstUserId, "SuperAdmin");
+            SetUserClaims(controller);
 
             var users = new List<User>
             {
@@ -132,11 +130,9 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         public async Task GetSuperAdminDashboard_Returns500_WhenExceptionOccurs()
         {
             // Arrange
-            var userId = 1;
-
             var mockService = new Mock<IDashboardService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "SuperAdmin");
+            SetUserClaims(controller);
 
             mockService
                 .Setup(x => x.GetSuperAdminDashboardAsync())
@@ -162,7 +158,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IDashboardService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, firstUserId, "User");
+            SetUserClaims(controller: controller, role: "User");
 
             var user = CreateUser();
 
@@ -287,7 +283,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IDashboardService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller: controller, role: "User");
 
             mockService
                 .Setup(x => x.GetUserDashboardAsync(userId))
@@ -306,7 +302,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         }
 
         // Helper Functions
-        private static void SetUserClaims(ControllerBase controller, int userId, string role)
+        private static void SetUserClaims(ControllerBase controller, int userId = 1, string role = "SuperAdmin")
         {
             var claims = new[]
             {

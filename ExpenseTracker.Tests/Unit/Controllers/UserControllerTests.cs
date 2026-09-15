@@ -16,22 +16,21 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         public async Task GetUsers_ReturnsOk_WhenUsersExist()
         {
             // Arrange
-            var userId = 1;
             var secondUserId = 2;
 
             var mockService = new Mock<IUserService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "testuser", "SuperAdmin");
+            SetUserClaims(controller);
 
             var paginationReq = CreatePaginationRequest();
-            var expectedResponseData = new List<UserResDto>
+            var mappedUsers = new List<UserResDto>
             {
                 CreateUserResponse(),
                 CreateUserResponse(id: secondUserId, username: "testusertwo"),
             };
 
             var expectedResponse = (
-                Data: expectedResponseData,
+                Data: mappedUsers,
                 TotalCount: 2,
                 HasNextPage: false
             );
@@ -48,9 +47,9 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var response = Assert.IsType<ApiResDto<UsersResDto>>(okResult.Value);
 
             Assert.True(response.Success);
-            Assert.Equal(expectedResponseData[0].Username, response.Data!.Items[0].Username);
-            Assert.Equal(expectedResponseData[1].Email, response.Data!.Items[1].Email);
-            Assert.Equal(expectedResponseData[1].ContactNumber, response.Data.Items[1].ContactNumber);
+            Assert.Equal(mappedUsers[0].Username, response.Data!.Items[0].Username);
+            Assert.Equal(mappedUsers[1].Email, response.Data!.Items[1].Email);
+            Assert.Equal(mappedUsers[1].ContactNumber, response.Data.Items[1].ContactNumber);
 
             mockService.Verify(
                 x => x.GetUsersAsync(paginationReq),
@@ -61,11 +60,9 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         public async Task GetUsers_Returns500_WhenExceptionOccurs()
         {
             // Arrange
-            var userId = 1;
-
             var mockService = new Mock<IUserService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "testuser", "SuperAdmin");
+            SetUserClaims(controller);
 
             var paginationReq = CreatePaginationRequest();
 
@@ -92,7 +89,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IUserService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "testuser", "SuperAdmin");
+            SetUserClaims(controller);
 
             var expectedResponse = CreateUserResponse();
 
@@ -117,7 +114,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IUserService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "testuser", "SuperAdmin");
+            SetUserClaims(controller);
 
             mockService.Setup(x => x.GetUserByIdAsync(userId))
                 .ReturnsAsync((UserResDto?)null);
@@ -142,7 +139,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IUserService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "testuser",  "SuperAdmin");
+            SetUserClaims(controller);
 
             var expectedResponse = CreateUserResponse();
 
@@ -170,7 +167,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IUserService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "testuser", "SuperAdmin");
+            SetUserClaims(controller);
 
             mockService.Setup(x => x.ToggleUserStatusAsync(username, userId))
                 .ReturnsAsync((UserResDto?)null);
@@ -195,7 +192,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<IUserService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "testuser", "SuperAdmin");
+            SetUserClaims(controller);
 
             mockService.Setup(x => x.ToggleUserStatusAsync(username, userId))
                 .ThrowsAsync(new Exception("Database error"));
@@ -213,7 +210,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         }
 
         // Helper Functions
-        private static void SetUserClaims(ControllerBase controller, int userId, string username, string role)
+        private static void SetUserClaims(ControllerBase controller, int userId = 1, string username = "testuser", string role = "SuperAdmin")
         {
             var claims = new[]
             {

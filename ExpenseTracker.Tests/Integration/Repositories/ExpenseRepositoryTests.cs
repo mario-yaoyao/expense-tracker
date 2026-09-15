@@ -13,7 +13,6 @@ namespace ExpenseTracker.Tests.Integration.Repositories
         public async Task GetAllExpensesAsync_ReturnsAllNonDeletedExpenses()
         {
             // Arrange
-            var firstExpenseId = 1;
             var secondExpenseId = 2;
             var userId = 1;
 
@@ -23,15 +22,14 @@ namespace ExpenseTracker.Tests.Integration.Repositories
             var user = CreateUser();
             var category = CreateCategory();
 
-            context.Users.Add(user);
-            context.Categories.Add(category);
-
             var expenses = new List<Expense>
             {
-                CreateExpense(firstExpenseId, userId, category.Id, true),
+                CreateExpense(isDeleted: true),
                 CreateExpense(secondExpenseId, userId, category.Id),
             };
 
+            context.Users.Add(user);
+            context.Categories.Add(category);
             context.Expenses.AddRange(expenses);
             await context.SaveChangesAsync();
 
@@ -60,13 +58,13 @@ namespace ExpenseTracker.Tests.Integration.Repositories
             using var context = CreateContext();
             var repository = CreateRepository(context);
 
-            var firstUser = CreateUser(1, "user1");
-            var secondUser = CreateUser(2, "user2");
-            var category = CreateCategory();
+            var users = new List<User>
+            {
+                CreateUser(username: "user1"),
+                CreateUser(2, "user2")
+            };
 
-            context.Users.Add(firstUser);
-            context.Users.Add(secondUser);
-            context.Categories.Add(category);
+            var category = CreateCategory();
 
             var expenses = new List<Expense>
             {
@@ -75,6 +73,8 @@ namespace ExpenseTracker.Tests.Integration.Repositories
                 CreateExpense(thirdExpenseId, secondUserId, category.Id),
             };
 
+            context.Users.AddRange(users);
+            context.Categories.Add(category);
             context.Expenses.AddRange(expenses);
             await context.SaveChangesAsync();
 
@@ -96,29 +96,25 @@ namespace ExpenseTracker.Tests.Integration.Repositories
         public async Task GetExpenseByUserAsync_ReturnsExpense_WhenExpenseExistsForUser()
         {
             // Arrange
-            var userId = 1;
-
             using var context = CreateContext();
             var repository = CreateRepository(context);
 
             var user = CreateUser();
             var category = CreateCategory();
+            var expense = CreateExpense();
 
             context.Users.Add(user);
             context.Categories.Add(category);
-
-            var expense = CreateExpense(userId, user.Id, category.Id);
-
             context.Expenses.Add(expense);
             await context.SaveChangesAsync();
 
             // Act
-            var result = await repository.GetExpenseByUserAsync(userId, expense.Id);
+            var result = await repository.GetExpenseByUserAsync(user.Id, expense.Id);
 
             // Assert
             Assert.NotNull(result);
             Assert.Equal(expense.Id, result.Id);
-            Assert.Equal(userId, result.UserId);
+            Assert.Equal(user.Id, result.UserId);
             Assert.Equal(expense.Amount, result.Amount);
         }
 
@@ -148,12 +144,10 @@ namespace ExpenseTracker.Tests.Integration.Repositories
 
             var user = CreateUser();
             var category = CreateCategory();
+            var expense = CreateExpense();
 
             context.Users.Add(user);
             context.Categories.Add(category);
-
-            var expense = CreateExpense(1, user.Id, category.Id);
-
             context.Expenses.Add(expense);
             await context.SaveChangesAsync();
 
@@ -186,15 +180,12 @@ namespace ExpenseTracker.Tests.Integration.Repositories
         public async Task AddExpenseAsync_SavesExpenseToDatabase()
         {
             // Arrange
-            var expenseId = 1;
-
             using var context = CreateContext();
             var repository = CreateRepository(context);
 
             var user = CreateUser();
             var category = CreateCategory();
-
-            var expense = CreateExpense(expenseId, user.Id, category.Id);
+            var expense = CreateExpense();
 
             // Act
             await repository.AddExpenseAsync(expense);
@@ -253,9 +244,9 @@ namespace ExpenseTracker.Tests.Integration.Repositories
         }
 
         private static Expense CreateExpense(
-            int id,
-            int userId,
-            int categoryId,
+            int id = 1,
+            int userId = 1,
+            int categoryId = 1,
             bool isDeleted = false)
         {
             return new Expense

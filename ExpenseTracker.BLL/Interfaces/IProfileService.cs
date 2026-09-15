@@ -7,6 +7,6 @@ namespace ExpenseTracker.BLL.Interfaces
     public interface IProfileService
     {
         Task<UserResDto?> GetUserProfileAsync(int userId);
-        Task<ServiceResult<bool>> ChangePasswordAsync(int userId, ChangePasswordReqDto request);
+        Task<ServiceResult<object>> ChangePasswordAsync(int userId, ChangePasswordReqDto request);
     }
 }

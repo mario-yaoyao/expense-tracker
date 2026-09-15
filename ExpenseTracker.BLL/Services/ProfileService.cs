@@ -21,13 +21,13 @@ namespace ExpenseTracker.BLL.Services
             return mapper.Map<UserResDto>(user);
         }
 
-        public async Task<ServiceResult<bool>> ChangePasswordAsync(int userId, ChangePasswordReqDto request)
+        public async Task<ServiceResult<object>> ChangePasswordAsync(int userId, ChangePasswordReqDto request)
         {
             var user = await userRepository.GetUserByIdAsync(userId);
 
             if (user == null)
             {
-                return new ServiceResult<bool>
+                return new ServiceResult<object>
                 {
                     Success = false,
                     ErrorMessage = "User not found."
@@ -36,7 +36,7 @@ namespace ExpenseTracker.BLL.Services
 
             if (!IsPasswordValid(user, request.CurrentPassword))
             {
-                return new ServiceResult<bool>
+                return new ServiceResult<object>
                 {
                     Success = false,
                     ErrorMessage = "Current password is incorrect."
@@ -45,7 +45,7 @@ namespace ExpenseTracker.BLL.Services
 
             if (IsPasswordValid(user, request.NewPassword))
             {
-                return new ServiceResult<bool>
+                return new ServiceResult<object>
                 {
                     Success = false,
                     ErrorMessage = "New password must be different from your current password."
@@ -64,10 +64,9 @@ namespace ExpenseTracker.BLL.Services
                .ForContext("Activity", $"Password changed.'.")
                .Information($"'{user.Username}' password changed.");
 
-            return new ServiceResult<bool>
+            return new ServiceResult<object>
             {
-                Success = true,
-                Data = true
+                Success = true
             };
         }
 

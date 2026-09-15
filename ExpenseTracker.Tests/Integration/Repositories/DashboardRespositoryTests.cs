@@ -18,7 +18,7 @@ public class DashboardRepositoryTests
 
         var users = new List<User>
         {
-            CreateUser(id: 1),
+            CreateUser(),
             CreateUser(id: 2),
             CreateUser(id: 3, createdAt: new DateTime(2026, 7, 15)),
             CreateUser(id: 4, isActive: false),
@@ -46,7 +46,7 @@ public class DashboardRepositoryTests
 
         var users = new List<User>
         {
-            CreateUser(id: 1, createdAt: new DateTime(2026, 8, 10)),
+            CreateUser(createdAt: new DateTime(2026, 8, 10)),
             CreateUser(id: 2, createdAt: new DateTime(2026, 8, 15)),
             CreateUser(id: 3, isActive: false, createdAt: new DateTime(2026, 8, 20)),
             CreateUser(id: 4, createdAt: new DateTime(2026, 9, 1))
@@ -133,7 +133,7 @@ public class DashboardRepositoryTests
 
         var users = new List<User>
         {
-            CreateUser(id: 1, createdAt: DateTime.UtcNow.AddDays(-3)),
+            CreateUser(createdAt: DateTime.UtcNow.AddDays(-3)),
             CreateUser(id: 2, createdAt: DateTime.UtcNow.AddDays(-2)),
             CreateUser(id: 3, createdAt: DateTime.UtcNow.AddDays(-1))
         };
@@ -291,7 +291,6 @@ public class DashboardRepositoryTests
         var repository = CreateRepository(context);
 
         var user = CreateUser();
-        context.Users.Add(user);
 
         var transactionLogs = Enumerable.Range(1, 11)
             .Select(i => new TransactionLog
@@ -307,6 +306,7 @@ public class DashboardRepositoryTests
             })
             .ToList();
 
+        context.Users.Add(user);
         context.TransactionLogs.AddRange(transactionLogs);
         await context.SaveChangesAsync();
 
@@ -326,10 +326,7 @@ public class DashboardRepositoryTests
             t => t.Activity == "Created transaction 11");
     }
 
-
-
     // Helper Functions
-
     private static AppDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()

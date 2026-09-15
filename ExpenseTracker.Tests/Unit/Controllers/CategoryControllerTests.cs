@@ -20,36 +20,38 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
-            var queryRequest = CreateQueryRequest();
-            var expectedResponseData = new List<CategoryResDto>
+            var queryReq = CreateQueryRequest();
+
+            var mappedCategories = new List<CategoryResDto>
             {
                 CreateCategoryResponse(),
                 CreateCategoryResponse(name: "Rent")
             };
+
             var expectedResponse = (
-                Data: expectedResponseData,
+                Data: mappedCategories,
                 HasNextPage: false
             );
 
             mockService
-                .Setup(x => x.GetCategoriesAsync(userId, "User", queryRequest))
+                .Setup(x => x.GetCategoriesAsync(userId, "User", queryReq))
                 .ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.GetCategories(queryRequest);
+            var result = await controller.GetCategories(queryReq);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
             var response = Assert.IsType<ApiResDto<CategoriesResDto>>(okResult.Value);
 
             Assert.True(response.Success);
-            Assert.Equal(expectedResponseData[0].Name, response.Data!.Items[0].Name);
-            Assert.Equal(expectedResponseData[1].Type, response.Data!.Items[1].Type);
+            Assert.Equal(mappedCategories[0].Name, response.Data!.Items[0].Name);
+            Assert.Equal(mappedCategories[1].Type, response.Data!.Items[1].Type);
 
             mockService.Verify(
-                x => x.GetCategoriesAsync(userId, "User", queryRequest),
+                x => x.GetCategoriesAsync(userId, "User", queryReq),
                 Times.Once);
         }
 
@@ -61,15 +63,15 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
-            var queryRequest = CreateQueryRequest();
+            var queryReq = CreateQueryRequest();
 
-            mockService.Setup(x => x.GetCategoriesAsync(userId, "User", queryRequest))
+            mockService.Setup(x => x.GetCategoriesAsync(userId, "User", queryReq))
                 .ThrowsAsync(new Exception("Database error"));
 
             // Act
-            var result = await controller.GetCategories(queryRequest);
+            var result = await controller.GetCategories(queryReq);
 
             // Assert
             var statusCodeResult = Assert.IsType<ObjectResult>(result.Result);
@@ -89,18 +91,9 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
-            var expectedResponse = new CategoryResDto
-            {
-                Id = categoryId,
-                UserId = userId,
-                Name = "Rent",
-                Type = 0,
-                IsDeleted = false,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = null
-            };
+            var expectedResponse = CreateCategoryResponse();
 
             mockService.Setup(x => x.GetCategoryByIdAsync(userId, "User", categoryId))
                 .ReturnsAsync(expectedResponse);
@@ -124,7 +117,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             mockService.Setup(x => x.GetCategoryByIdAsync(userId, "User", categoryId))
                 .ReturnsAsync((CategoryResDto?)null);
@@ -150,22 +143,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            var request = new CreateCategoryReqDto
-            {
-                Name = "Rent",
-                Type = 0,
-            };
-
-            var expectedResponse = new CategoryResDto
-            {
-                Id = 1,
-                UserId = userId,
-                Name = "Rent",
-                Type = 0,
-                IsDeleted = false,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = null
-            };
+            var request = CreateCategory();
+            var expectedResponse = CreateCategoryResponse();
 
             mockService.Setup(x => x.CreateCategoryAsync(userId, request))
                 .ReturnsAsync(expectedResponse);
@@ -190,11 +169,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            var request = new CreateCategoryReqDto
-            {
-                Name = "Rent",
-                Type = 0,
-            };
+            var request = CreateCategory();
 
             mockService
                 .Setup(x => x.CreateCategoryAsync(userId, request))
@@ -223,22 +198,8 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            var request = new UpdateCategoryReqDto
-            {
-                Name = "Rent",
-                Type = 0,
-            };
-
-            var expectedResponse = new CategoryResDto
-            {
-                Id = categoryId,
-                UserId = userId,
-                Name = "Rent",
-                Type = 0,
-                IsDeleted = false,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
+            var request = UpdateCategory();
+            var expectedResponse = CreateCategoryResponse();
 
             mockService.Setup(x => x.UpdateCategoryAsync(userId, categoryId, request))
                 .ReturnsAsync(expectedResponse);
@@ -266,11 +227,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            var request = new UpdateCategoryReqDto
-            {
-                Name = "Rent",
-                Type = 0,
-            };
+            var request = UpdateCategory();
 
             mockService.Setup(x => x.UpdateCategoryAsync(userId, categoryId, request))
                 .ReturnsAsync((CategoryResDto?)null);
@@ -297,11 +254,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var controller = CreateController(mockService);
             SetUserClaims(controller, userId, "User");
 
-            var request = new UpdateCategoryReqDto
-            {
-                Name = "Rent",
-                Type = 0,
-            };
+            var request = UpdateCategory();
 
             mockService.Setup(x => x.UpdateCategoryAsync(userId, categoryId, request))
                 .ThrowsAsync(new Exception("Database error"));
@@ -394,7 +347,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         }
 
         // Helper Functions
-        private static void SetUserClaims(ControllerBase controller, int userId, string role)
+        private static void SetUserClaims(ControllerBase controller, int userId = 1, string role = "User")
         {
             var claims = new[]
             {
@@ -415,6 +368,28 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         private static CategoryController CreateController(Mock<ICategoryService> mockService)
         {
             return new CategoryController(mockService.Object);
+        }
+
+        private static CreateCategoryReqDto CreateCategory(
+            string name = "Rent",
+            CategoryType type = CategoryType.Expense)
+        {
+            return new CreateCategoryReqDto
+            {
+                Name = name,
+                Type = type
+            };
+        }
+
+        private static UpdateCategoryReqDto UpdateCategory(
+            string name = "Rent",
+            CategoryType type = CategoryType.Expense)
+        {
+            return new UpdateCategoryReqDto
+            {
+                Name = name,
+                Type = type
+            };
         }
 
         private static CategoryResDto CreateCategoryResponse(

@@ -58,7 +58,7 @@ namespace ExpenseTracker.Tests.Integration.Repositories
 
             var users = new List<User>
             {
-                CreateUser(id: 1),
+                CreateUser(),
                 CreateUser(id: 2),
                 CreateUser(id: 3, createdAt: new DateTime(2026, 7, 15)),
                 CreateUser(id: 4, isActive: false),

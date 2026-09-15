@@ -14,43 +14,39 @@ namespace ExpenseTracker.Tests.Unit.Services
         public async Task GetIncomesAsync_ReturnsUserIncomes_WhenRoleIsUser()
         {
             // Arrange
-            var firstIncomeId = 1;
             var secondIncomeId = 2;
             var userId = 1;
 
             var mockIncomeRepo = new Mock<IIncomeRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
-            var service = new IncomeService(mockIncomeRepo.Object, mockUserRepo.Object, mockMapper.Object);
+            var mockMapper = new Mock<IMapper>();
+            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockMapper);
 
+            var paginationReq = CreatePaginationRequest();
             var category = CreateCategory();
 
             var request = new List<Income>
             {
-                CreateIncome(firstIncomeId, userId, category),
-                CreateIncome(secondIncomeId, userId, category),
+                CreateIncome(category),
+                CreateIncome(category, id: secondIncomeId),
             };
-            var paginationReq = CreatePaginationRequest();
 
-            var expectedResponseData = new List<IncomeResDto>
+            var mappedIncomes = new List<IncomeResDto>
             {
-                new()
-                {
-                    Id = request[0].Id,
-                    UserId = request[0].UserId,
-                    Description = request[0].Description,
-                    Amount = request[0].Amount,
-                    CategoryName = request[0].Category.Name,
-                    CategoryType = request[0].Category.Type
-                },
-                new()
-                {
-                    Id = request[1].Id,
-                    UserId = request[1].UserId,
-                    Description = request[1].Description,
-                    Amount = request[1].Amount,
-                    CategoryName = request[1].Category.Name,
-                    CategoryType = request[1].Category.Type
-                }
+                CreateIncomeResponse(
+                    id: request[0].Id,
+                    userId: request[0].UserId,
+                    description: request[0].Description,
+                    amount: request[0].Amount,
+                    categoryName: request[0].Category.Name,
+                    categoryType: request[0].Category.Type),
+                CreateIncomeResponse(
+                    id: request[1].Id,
+                    userId: request[1].UserId,
+                    description: request[1].Description,
+                    amount: request[1].Amount,
+                    categoryName: request[1].Category.Name,
+                    categoryType: request[1].Category.Type)
             };
 
             var expectedResponse = (
@@ -71,10 +67,10 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             mockMapper
                 .Setup(x => x.Map<List<IncomeResDto>>(It.IsAny<List<Income>>()))
-                .Returns(expectedResponseData);
+                .Returns(mappedIncomes);
 
             // Act
-            var result = await service.GetIncomesAsync(userId, "User", paginationReq);
+            var result = await incomeService.GetIncomesAsync(userId, "User", paginationReq);
 
             // Assert
             Assert.Equal(2, result.totalCount);
@@ -90,7 +86,6 @@ namespace ExpenseTracker.Tests.Unit.Services
         public async Task GetIncomesAsync_ReturnsAllIncomes_WhenRoleIsNotUser()
         {
             // Arrange
-            var firstIncomeId = 1;
             var secondIncomeId = 2;
             var thirdIncomeId = 3;
             var firstUserId = 1;
@@ -98,45 +93,40 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var mockIncomeRepo = new Mock<IIncomeRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
-            var service = new IncomeService(mockIncomeRepo.Object, mockUserRepo.Object, mockMapper.Object);
+            var mockMapper = new Mock<IMapper>();
+            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockMapper);
 
-            var category = CreateCategory();
             var paginationReq = CreatePaginationRequest();
+            var category = CreateCategory();
 
             var request = new List<Income>
             {
-                CreateIncome(firstIncomeId, firstUserId, category),
-                CreateIncome(secondIncomeId, firstUserId, category),
-                CreateIncome(thirdIncomeId, secondUserId, category),
+                CreateIncome(category),
+                CreateIncome(category, secondIncomeId),
+                CreateIncome(category, thirdIncomeId, secondUserId),
             };
 
-            var expectedResponseData = new List<IncomeResDto>
+            var mappedIncomes = new List<IncomeResDto>
             {
-                new()
-                {
-                    Id = request[0].Id,
-                    UserId = request[0].UserId,
-                    Description = request[0].Description,
-                    Amount = request[0].Amount,
-                    CategoryName = request[0].Category.Name,
-                    CategoryType = request[0].Category.Type
-                },
-                new()
-                {
-                    Id = request[1].Id,
-                    UserId = request[1].UserId,
-                    Description = request[1].Description,
-                    Amount = request[1].Amount,
-                    CategoryName = request[1].Category.Name,
-                    CategoryType = request[1].Category.Type
-                },
-                new()
-                {
-                    Id = request[2].Id,
-                    UserId = request[2].UserId,
-                    Description = request[2].Description,
-                    Amount = request[2].Amount,
-                }
+                CreateIncomeResponse(
+                    id: request[0].Id,
+                    userId: request[0].UserId,
+                    description: request[0].Description,
+                    amount: request[0].Amount,
+                    categoryName: request[0].Category.Name,
+                    categoryType: request[0].Category.Type),
+                CreateIncomeResponse(
+                    id: request[1].Id,
+                    userId: request[1].UserId,
+                    description: request[1].Description,
+                    amount: request[1].Amount,
+                    categoryName: request[1].Category.Name,
+                    categoryType: request[1].Category.Type),
+                CreateIncomeResponse(
+                    id: request[2].Id,
+                    userId: request[2].UserId,
+                    description: request[2].Description,
+                    amount: request[2].Amount)
             };
 
             var expectedResponse = (
@@ -151,16 +141,16 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             mockMapper
                 .Setup(x => x.Map<List<IncomeResDto>>(It.IsAny<List<Income>>()))
-                .Returns(expectedResponseData);
+                .Returns(mappedIncomes);
 
             // Act
-            var result = await service.GetIncomesAsync(firstUserId, "SuperAdmin", paginationReq);
+            var result = await incomeService.GetIncomesAsync(firstUserId, "SuperAdmin", paginationReq);
 
             // Assert
             Assert.Equal(expectedResponse.TotalCount, result.totalCount);
-            Assert.Equal(expectedResponseData[0].Description, result.data[0].Description);
-            Assert.Equal(expectedResponseData[1].Description, result.data[1].Description);
-            Assert.Equal(expectedResponseData[2].Description, result.data[2].Description);
+            Assert.Equal(mappedIncomes[0].Description, result.data[0].Description);
+            Assert.Equal(mappedIncomes[1].Description, result.data[1].Description);
+            Assert.Equal(mappedIncomes[2].Description, result.data[2].Description);
 
             mockIncomeRepo.Verify(
                 x => x.GetAllIncomesAsync(1, 20, null),
@@ -176,50 +166,34 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var mockIncomeRepo = new Mock<IIncomeRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
-            var service = new IncomeService(mockIncomeRepo.Object, mockUserRepo.Object, mockMapper.Object);
+            var mockMapper = new Mock<IMapper>();
+            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockMapper);
 
             var category = CreateCategory();
-
-            var expectedResponse = new Income
-            {
-                Id = incomeId,
-                UserId = userId,
-                Description = "Income 1",
-                Amount = 100,
-                CategoryId = category.Id,
-                Category = category,
-                IsDeleted = false,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = null
-            };
-
-            var expectedResDto = new IncomeResDto
-            {
-                Id = expectedResponse.Id,
-                UserId = expectedResponse.UserId,
-                Description = expectedResponse.Description,
-                Amount = expectedResponse.Amount,
-                CategoryName = expectedResponse.Category.Name,
-                CategoryType = expectedResponse.Category.Type,
-                CreatedAt = expectedResponse.CreatedAt,
-                UpdatedAt = expectedResponse.UpdatedAt
-            };
+            var request = CreateIncome(category, id: incomeId, userId: userId);
+            var mappedIncome = CreateIncomeResponse(
+                description: request.Description!,
+                amount: request.Amount,
+                categoryName: category.Name,
+                categoryType: category.Type,
+                createdAt: DateTime.UtcNow,
+                updatedAt: DateTime.UtcNow);
 
             mockMapper
                 .Setup(x => x.Map<IncomeResDto>(It.IsAny<Income>()))
-                .Returns(expectedResDto);
+                .Returns(mappedIncome);
 
             mockIncomeRepo.Setup(x => x.GetIncomeByUserAsync(userId, incomeId))
-                .ReturnsAsync(expectedResponse);
+                .ReturnsAsync(request);
 
             // Act
-            var result = await service.GetIncomeByIdAsync(userId, "User", incomeId);
+            var result = await incomeService.GetIncomeByIdAsync(userId, "User", incomeId);
 
             // Assert
             Assert.NotNull(result);
             Assert.Equal(incomeId, result.Id);
-            Assert.Equal(expectedResponse.Description, result.Description);
-            Assert.Equal(expectedResponse.Amount, result.Amount);
+            Assert.Equal(request.Description, result.Description);
+            Assert.Equal(request.Amount, result.Amount);
 
             mockIncomeRepo.Verify(
                 x => x.GetIncomeByUserAsync(userId, incomeId),
@@ -235,13 +209,14 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var mockIncomeRepo = new Mock<IIncomeRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
-            var service = new IncomeService(mockIncomeRepo.Object, mockUserRepo.Object, mockMapper.Object);
+            var mockMapper = new Mock<IMapper>();
+            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockMapper);
 
             mockIncomeRepo.Setup(x => x.GetIncomeByUserAsync(userId, incomeId))
                 .ReturnsAsync((Income?)null);
 
             // Act
-            var result = await service.GetIncomeByIdAsync(userId, "User", incomeId);
+            var result = await incomeService.GetIncomeByIdAsync(userId, "User", incomeId);
 
             // Assert
             Assert.Null(result);
@@ -256,30 +231,25 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var userId = 1;
-            var incomeId = 1;
 
             var mockIncomeRepo = new Mock<IIncomeRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
-            var service = new IncomeService(mockIncomeRepo.Object, mockUserRepo.Object, mockMapper.Object);
+            var mockMapper = new Mock<IMapper>();
+            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockMapper);
 
             var category = CreateCategory();
             var request = CreateIncomeRequest();
-
-            var expectedResponseDto = new IncomeResDto
-            {
-                Id = incomeId,
-                UserId = userId,
-                Description = request.Description,
-                Amount = request.Amount,
-                CategoryName = category.Name,
-                CategoryType = category.Type,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = null
-            };
+            var mappedIncome = CreateIncomeResponse(
+                description: request.Description!,
+                amount: request.Amount,
+                categoryName: category.Name,
+                categoryType: category.Type,
+                createdAt: DateTime.UtcNow,
+                updatedAt: DateTime.UtcNow);
 
             mockMapper
                 .Setup(x => x.Map<IncomeResDto>(It.IsAny<Income>()))
-                .Returns(expectedResponseDto);
+                .Returns(mappedIncome);
 
             mockUserRepo
                 .Setup(x => x.GetUserByIdAsync(userId))
@@ -290,7 +260,7 @@ namespace ExpenseTracker.Tests.Unit.Services
                 });
 
             // Act
-            var result = await service.CreateIncomeAsync(userId, request);
+            var result = await incomeService.CreateIncomeAsync(userId, request);
 
             // Assert
             Assert.NotNull(result);
@@ -309,43 +279,32 @@ namespace ExpenseTracker.Tests.Unit.Services
         public async Task UpdateIncomeAsync_ReturnsUpdatedIncome_WhenIncomeExists()
         {
             // Arrange
-            var firstIncomeId = 1;
             var userId = 1;
 
             var mockIncomeRepo = new Mock<IIncomeRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
+            var mockMapper = new Mock<IMapper>();
+            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockMapper);
 
-            var firstCategory = CreateCategory();
-            var secondCategory = CreateCategory(id: 2, name: "Bonus");
+            var categories = new List<Category>
+            {
+                CreateCategory(),
+                CreateCategory(id: 2, name: "Bonus")
+            };
+
             var request = UpdateIncome();
-
-            var existingIncome = new Income
-            {
-                Id = firstIncomeId,
-                UserId = userId,
-                Description = "Income 4",
-                Amount = 400,
-                CategoryId = firstCategory.Id,
-                IsDeleted = false,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = null
-            };
-
-            var expectedResDto = new IncomeResDto
-            {
-                Id = firstIncomeId,
-                UserId = userId,
-                Description = request.Description,
-                Amount = (decimal)request.Amount!,
-                CategoryName = secondCategory.Name,
-                CategoryType = secondCategory.Type,
-                CreatedAt = existingIncome.CreatedAt,
-                UpdatedAt = DateTime.UtcNow
-            };
+            var existingIncome = CreateIncome(categories[0]);
+            var mappedIncome = CreateIncomeResponse(
+                description: request.Description!,
+                amount: request.Amount!.Value,
+                categoryName: categories[1].Name,
+                categoryType: categories[1].Type,
+                createdAt: existingIncome.CreatedAt,
+                updatedAt: DateTime.UtcNow);
 
             mockMapper
                 .Setup(x => x.Map<IncomeResDto>(It.IsAny<Income>()))
-                .Returns(expectedResDto);
+                .Returns(mappedIncome);
 
             mockIncomeRepo.Setup(x => x.GetIncomeByUserAsync(userId, existingIncome.Id))
                 .ReturnsAsync(existingIncome);
@@ -370,8 +329,8 @@ namespace ExpenseTracker.Tests.Unit.Services
             Assert.Equal(userId, result.UserId);
             Assert.Equal(request.Description, result.Description);
             Assert.Equal(request.Amount, result.Amount);
-            Assert.Equal(secondCategory.Name, result.CategoryName);
-            Assert.Equal(secondCategory.Type, result.CategoryType);
+            Assert.Equal(categories[1].Name, result.CategoryName);
+            Assert.Equal(categories[1].Type, result.CategoryType);
 
             mockIncomeRepo.Verify(
                 x => x.GetIncomeByUserAsync(userId, existingIncome.Id),
@@ -391,7 +350,8 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var mockIncomeRepo = new Mock<IIncomeRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
-            var service = new IncomeService(mockIncomeRepo.Object, mockUserRepo.Object, mockMapper.Object);
+            var mockMapper = new Mock<IMapper>();
+            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockMapper);
 
             var request = UpdateIncome();
 
@@ -399,7 +359,7 @@ namespace ExpenseTracker.Tests.Unit.Services
                 .ReturnsAsync((Income?)null);
 
             // Act
-            var result = await service.UpdateIncomeAsync(userId, incomeId, request);
+            var result = await incomeService.UpdateIncomeAsync(userId, incomeId, request);
 
             // Assert
             Assert.Null(result);
@@ -414,19 +374,11 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var mockIncomeRepo = new Mock<IIncomeRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
-            var service = new IncomeService(mockIncomeRepo.Object, mockUserRepo.Object, mockMapper.Object);
+            var mockMapper = new Mock<IMapper>();
+            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockMapper);
 
             var category = CreateCategory();
-
-            var existingIncome = new Income
-            {
-                Id = incomeId,
-                UserId = userId,
-                Description = "Income 1",
-                Amount = 100,
-                CategoryId = category.Id,
-                IsDeleted = false
-            };
+            var existingIncome = CreateIncome(category);
 
             mockIncomeRepo.Setup(x => x.GetIncomeByUserAsync(userId, incomeId))
                 .ReturnsAsync(existingIncome);
@@ -440,7 +392,7 @@ namespace ExpenseTracker.Tests.Unit.Services
                 });
 
             // Act
-            var result = await service.DeleteIncomeAsync(userId, incomeId);
+            var result = await incomeService.DeleteIncomeAsync(userId, incomeId);
 
             // Assert
             Assert.True(result);
@@ -455,24 +407,29 @@ namespace ExpenseTracker.Tests.Unit.Services
 
             var mockIncomeRepo = new Mock<IIncomeRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
-            var service = new IncomeService(mockIncomeRepo.Object, mockUserRepo.Object, mockMapper.Object);
+            var mockMapper = new Mock<IMapper>();
+            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockMapper);
 
             mockIncomeRepo.Setup(x => x.GetIncomeByUserAsync(userId, incomeId))
                 .ReturnsAsync((Income?)null);
 
             // Act
-            var result = await service.DeleteIncomeAsync(userId, incomeId);
+            var result = await incomeService.DeleteIncomeAsync(userId, incomeId);
 
             // Assert
             Assert.False(result);
         }
 
         // Helper Functions
-        private readonly Mock<IMapper> mockMapper;
-
-        public IncomeServiceTests()
+        private IncomeService CreateIncomeService(
+            Mock<IIncomeRepository>? mockIncomeRepo = null,
+            Mock<IUserRepository>? mockUserRepo = null,
+            Mock<IMapper>? mockMapper = null)
         {
-            mockMapper = new Mock<IMapper>();
+            return new IncomeService(
+                mockIncomeRepo!.Object,
+                mockUserRepo!.Object,
+                mockMapper!.Object);
         }
 
         private static Category CreateCategory(
@@ -487,9 +444,10 @@ namespace ExpenseTracker.Tests.Unit.Services
         }
 
         private static Income CreateIncome(
-            int id,
-            int userId,
             Category category,
+            int categoryId = 1,
+            int id = 1,
+            int userId = 1,
             bool isDeleted = false)
         {
             return new Income
@@ -529,6 +487,29 @@ namespace ExpenseTracker.Tests.Unit.Services
                 Description = description,
                 Amount = amount,
                 CategoryId = categoryId
+            };
+        }
+
+        private static IncomeResDto CreateIncomeResponse(
+            int id = 1,
+            int userId = 1,
+            string description = "Updated Income",
+            decimal amount = 450m,
+            string categoryName = "Salary",
+            CategoryType categoryType = CategoryType.Income,
+            DateTime? createdAt = null,
+            DateTime? updatedAt = null)
+        {
+            return new IncomeResDto
+            {
+                Id = id,
+                UserId = userId,
+                Description = description,
+                Amount = amount,
+                CategoryName = categoryName,
+                CategoryType = categoryType,
+                CreatedAt = createdAt ?? new DateTime(2026, 1, 1),
+                UpdatedAt = updatedAt
             };
         }
 
