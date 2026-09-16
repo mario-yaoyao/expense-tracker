@@ -1,0 +1,15 @@
+﻿using BudgetWise.Models.Dtos.Responses;
+using BudgetWise.Models.Models;
+
+namespace BudgetWise.DAL.Interfaces
+{
+    public interface IExpenseRepository
+    {
+        Task<(List<Expense> data, int totalCount, bool hasNextPage)> GetAllExpensesAsync(int page = 1, int limit = 20, string? search = null, DateOnly? startDate = null, DateOnly? endDate = null);
+        Task<(List<Expense> data, decimal totalExpense, HighestAmountResDto? highestExpense, int totalCount, bool hasNextPage)> GetExpensesByUserAsync(int userId, int page = 1, int limit = 20, string? search = null, DateOnly? startDate = null, DateOnly? endDate = null);
+        Task<Expense?> GetExpenseByUserAsync(int userId, int expenseId);
+        Task<Expense?> GetExpenseByIdAsync(int expenseId);
+        Task AddExpenseAsync(Expense expense);
+        Task SaveChangesAsync();
+    }
+}

@@ -1,0 +1,14 @@
+﻿using BudgetWise.Models.Models;
+using System.ComponentModel.DataAnnotations;
+
+namespace BudgetWise.Models.Dtos.Requests
+{
+    public class CreateCategoryReqDto
+    {
+        [Required]
+        public string Name { get; set; } = string.Empty;
+
+        [Required]
+        public CategoryType Type { get; set; }
+    }
+}
