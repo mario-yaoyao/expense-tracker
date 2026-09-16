@@ -6,7 +6,7 @@ namespace ExpenseTracker.BLL.Interfaces
     {
         Task<(List<UserResDto> data, int totalCount, bool hasNextPage)> GetUsersAsync(UserQueryReqDto request);
         Task<UserResDto?> GetUserByIdAsync(int userId);
-        Task<UserResDto?> ToggleUserStatusAsync(string username, int userId);
+        Task<bool> ToggleUserStatusAsync(string username, int userId);
 
     }
 }

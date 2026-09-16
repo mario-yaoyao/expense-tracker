@@ -48,14 +48,14 @@ namespace ExpenseTracker.BLL.Services
             return mapper.Map<CategoryResDto>(category);
         }
 
-        public async Task<CategoryResDto?> CreateCategoryAsync(int userId, CreateCategoryReqDto category)
+        public async Task<bool> CreateCategoryAsync(int userId, CreateCategoryReqDto category)
         {
             var exists = await categoryRepository.CategoryExistsAsync(
                 userId,
                 category.Name,
                 category.Type);
 
-            if (exists) return null;
+            if (exists) return false;
 
             var newCategory = new Category
             {
@@ -74,14 +74,14 @@ namespace ExpenseTracker.BLL.Services
                .ForContext("Activity", $"Created category '{newCategory.Name}'.")
                .Information($"'{user.Username}' created category '{newCategory.Name}',");
 
-            return mapper.Map<CategoryResDto>(newCategory);
+            return true;
         }
 
-        public async Task<CategoryResDto?> UpdateCategoryAsync(int userId, int categoryId, UpdateCategoryReqDto category)
+        public async Task<bool> UpdateCategoryAsync(int userId, int categoryId, UpdateCategoryReqDto category)
         {
             var existingCategory = await categoryRepository.GetCategoryByUserAsync(userId, categoryId);
 
-            if (existingCategory == null) return null;
+            if (existingCategory == null) return false;
 
             existingCategory.Name = string.IsNullOrWhiteSpace(category.Name)
                 ? existingCategory.Name
@@ -100,7 +100,7 @@ namespace ExpenseTracker.BLL.Services
                .ForContext("Activity", $"Updated category '{existingCategory.Name}'.")
                .Information($"'{user.Username}' updated category '{existingCategory.Name}',");
 
-            return mapper.Map<CategoryResDto>(existingCategory);
+            return true;
         }
 
         public async Task<bool> DeleteCategoryAsync(int userId, int categoryId)

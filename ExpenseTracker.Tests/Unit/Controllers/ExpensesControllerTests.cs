@@ -152,17 +152,16 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             SetUserClaims(controller);
 
             var request = CreateExpenseRequest();
-            var expectedResponse = CreateExpenseResponse();
 
             mockService.Setup(x => x.CreateExpenseAsync(userId, request))
-                .ReturnsAsync(expectedResponse);
+                .ReturnsAsync(true);
 
             // Act
             var result = await controller.CreateExpense(request);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
+            var response = Assert.IsType<ApiResDto<object>>(okResult.Value);
 
             Assert.True(response.Success);
         }
@@ -207,20 +206,18 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             SetUserClaims(controller);
 
             var request = UpdateExpenseRequest();
-            var expectedResponse = CreateExpenseResponse();
 
             mockService.Setup(x => x.UpdateExpenseAsync(userId, expenseId, request))
-                .ReturnsAsync(expectedResponse);
+                .ReturnsAsync(true);
 
             // Act
             var result = await controller.UpdateExpense(expenseId, request);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<ExpenseResDto>>(okResult.Value);
+            var response = Assert.IsType<ApiResDto<object>>(okResult.Value);
 
             Assert.True(response.Success);
-            Assert.Equal(expectedResponse.Description, response.Data!.Description);
         }
 
         [Fact]
@@ -237,7 +234,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var request = UpdateExpenseRequest();
 
             mockService.Setup(x => x.UpdateExpenseAsync(userId, expenseId, request))
-                .ReturnsAsync((ExpenseResDto?)null);
+                .ReturnsAsync(false);
 
             // Act
             var result = await controller.UpdateExpense(expenseId, request);
@@ -354,7 +351,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
         }
 
         // Helper Functions
-        private static void SetUserClaims(ControllerBase controller, int userId = 1, string role= "User")
+        private static void SetUserClaims(ControllerBase controller, int userId = 1, string role = "User")
         {
             var claims = new[]
             {

@@ -81,14 +81,14 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ApiResDto<CategoryResDto>>> CreateCategory([FromBody] CreateCategoryReqDto request)
+        public async Task<ActionResult<ApiResDto<object>>> CreateCategory([FromBody] CreateCategoryReqDto request)
         {
             try
             {
                 var userId = GetUserId();
-                var data = await categoryService.CreateCategoryAsync(userId, request);
+                var success = await categoryService.CreateCategoryAsync(userId, request);
 
-                if (data == null)
+                if (!success)
                 {
                     return BadRequest(new ApiResDto<object>
                     {
@@ -97,10 +97,9 @@ namespace ExpenseTracker.Controllers
                     });
                 }
 
-                return Ok(new ApiResDto<CategoryResDto>
+                return Ok(new ApiResDto<object>
                 {
-                    Success = true,
-                    Data = data,
+                    Success = true
                 });
             }
             catch (Exception)
@@ -114,23 +113,22 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPatch("{categoryId}")]
-        public async Task<ActionResult<CategoryResDto>> UpdateCategory(int categoryId, [FromBody] UpdateCategoryReqDto request)
+        public async Task<ActionResult<ApiResDto<object>>> UpdateCategory(int categoryId, [FromBody] UpdateCategoryReqDto request)
         {
             try
             {
                 var userId = GetUserId();
-                var data = await categoryService.UpdateCategoryAsync(userId, categoryId, request);
+                var success = await categoryService.UpdateCategoryAsync(userId, categoryId, request);
 
-                if (data == null) return NotFound(new ApiResDto<object>
+                if (!success) return NotFound(new ApiResDto<object>
                 {
                     Success = false,
                     ErrorMessage = "Category not found."
                 });
 
-                return Ok(new ApiResDto<CategoryResDto>
+                return Ok(new ApiResDto<object>
                 {
-                    Success = true,
-                    Data = data,
+                    Success = true
                 });
             }
             catch (Exception)
@@ -144,7 +142,7 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpDelete("{categoryId}")]
-        public async Task<ActionResult<CategoryResDto?>> DeleteCategory(int categoryId)
+        public async Task<ActionResult<ApiResDto<object>>> DeleteCategory(int categoryId)
         {
             try
             {
@@ -158,9 +156,9 @@ namespace ExpenseTracker.Controllers
                     ErrorMessage = "Category not found."
                 });
 
-                return Ok(new ApiResDto<CategoryResDto>
+                return Ok(new ApiResDto<object>
                 {
-                    Success = true,
+                    Success = true
                 });
             }
             catch (Exception)

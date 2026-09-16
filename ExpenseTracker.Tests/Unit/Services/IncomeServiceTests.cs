@@ -227,7 +227,7 @@ namespace ExpenseTracker.Tests.Unit.Services
         }
 
         [Fact]
-        public async Task CreateIncomeAsync_ReturnsCreatedIncome_WhenRequestIsValid()
+        public async Task CreateIncomeAsync_ReturnsTrue_WhenRequestIsValid()
         {
             // Arrange
             var userId = 1;
@@ -263,12 +263,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             var result = await incomeService.CreateIncomeAsync(userId, request);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Equal(userId, result.UserId);
-            Assert.Equal(request.Description, result.Description);
-            Assert.Equal(request.Amount, result.Amount);
-            Assert.Equal(category.Name, result.CategoryName);
-            Assert.Equal(category.Type, result.CategoryType);
+            Assert.True(result);
 
             mockIncomeRepo.Verify(
                 x => x.AddIncomeAsync(It.IsAny<Income>()),
@@ -276,7 +271,7 @@ namespace ExpenseTracker.Tests.Unit.Services
         }
 
         [Fact]
-        public async Task UpdateIncomeAsync_ReturnsUpdatedIncome_WhenIncomeExists()
+        public async Task UpdateIncomeAsync_ReturnsTrue_WhenIncomeExists()
         {
             // Arrange
             var userId = 1;
@@ -323,14 +318,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             var result = await service.UpdateIncomeAsync(userId, existingIncome.Id, request);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.NotNull(result.UpdatedAt);
-            Assert.True(result.UpdatedAt > result.CreatedAt);
-            Assert.Equal(userId, result.UserId);
-            Assert.Equal(request.Description, result.Description);
-            Assert.Equal(request.Amount, result.Amount);
-            Assert.Equal(categories[1].Name, result.CategoryName);
-            Assert.Equal(categories[1].Type, result.CategoryType);
+            Assert.True(result);
 
             mockIncomeRepo.Verify(
                 x => x.GetIncomeByUserAsync(userId, existingIncome.Id),
@@ -342,7 +330,7 @@ namespace ExpenseTracker.Tests.Unit.Services
         }
 
         [Fact]
-        public async Task UpdateIncomeAsync_ReturnsNull_WhenIncomeDoesNotExist()
+        public async Task UpdateIncomeAsync_ReturnsFalse_WhenIncomeDoesNotExist()
         {
             // Arrange
             var userId = 1;
@@ -362,7 +350,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             var result = await incomeService.UpdateIncomeAsync(userId, incomeId, request);
 
             // Assert
-            Assert.Null(result);
+            Assert.False(result);
         }
 
         [Fact]

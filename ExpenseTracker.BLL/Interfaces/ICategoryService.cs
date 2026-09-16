@@ -7,8 +7,8 @@ namespace ExpenseTracker.BLL.Interfaces
     {
         Task<(List<CategoryResDto> data, bool hasNextPage)> GetCategoriesAsync(int userId, string role, CategoryQueryReqDto request);
         Task<CategoryResDto?> GetCategoryByIdAsync(int userId, string role, int categoryId);
-        Task<CategoryResDto?> CreateCategoryAsync(int userId, CreateCategoryReqDto category);
-        Task<CategoryResDto?> UpdateCategoryAsync(int userId, int categoryId, UpdateCategoryReqDto category);
+        Task<bool> CreateCategoryAsync(int userId, CreateCategoryReqDto category);
+        Task<bool> UpdateCategoryAsync(int userId, int categoryId, UpdateCategoryReqDto category);
         Task<bool> DeleteCategoryAsync(int userId, int categoryId);
     }
 }

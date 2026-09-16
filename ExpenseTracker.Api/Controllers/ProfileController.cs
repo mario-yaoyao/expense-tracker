@@ -15,7 +15,7 @@ namespace ExpenseTracker.Controllers
         private int GetUserId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         [HttpGet]
-        public async Task<ActionResult<UserResDto>> GetUserProfile()
+        public async Task<ActionResult<ApiResDto<UserResDto>>> GetUserProfile()
         {
             try
             {
@@ -45,7 +45,7 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPatch("change-password")]
-        public async Task<ActionResult<object>> ChangePassword([FromBody] ChangePasswordReqDto request)
+        public async Task<ActionResult<ApiResDto<object>>> ChangePassword([FromBody] ChangePasswordReqDto request)
         {
             try
             {

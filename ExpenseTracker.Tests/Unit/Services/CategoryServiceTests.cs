@@ -23,7 +23,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             var mockMapper = new Mock<IMapper>();
             var categoryService = CreateCategoryService(mockCategoryRepo, mockUserRepo, mockMapper);
 
-            var queryReq= CreateQueryRequest();
+            var queryReq = CreateQueryRequest();
 
             var categories = new List<Category>
             {
@@ -181,7 +181,7 @@ namespace ExpenseTracker.Tests.Unit.Services
         }
 
         [Fact]
-        public async Task CreateCategoryAsync_ReturnsCreatedCategory_WhenRequestIsValid()
+        public async Task CreateCategoryAsync_ReturnsTrue_WhenRequestIsValid()
         {
             // Arrange
             var userId = 1;
@@ -210,10 +210,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             var result = await categoryService.CreateCategoryAsync(userId, request);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Equal(userId, result.UserId);
-            Assert.Equal(request.Name, result.Name);
-            Assert.Equal(request.Type, result.Type);
+            Assert.True(result);
 
             mockCategoryRepo.Verify(
                 x => x.AddCategoryAsync(It.IsAny<Category>()),
@@ -221,7 +218,7 @@ namespace ExpenseTracker.Tests.Unit.Services
         }
 
         [Fact]
-        public async Task UpdateCategoryAsync_ReturnsUpdatedCategory_WhenCategoryExists()
+        public async Task UpdateCategoryAsync_ReturnsUpdatedTrue_WhenCategoryExists()
         {
             // Arrange
             var userId = 1;
@@ -256,12 +253,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             var result = await service.UpdateCategoryAsync(userId, existingCategory.Id, request);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.NotNull(result.UpdatedAt);
-            Assert.True(result.UpdatedAt > result.CreatedAt);
-            Assert.Equal(userId, result.UserId);
-            Assert.Equal(mappedCategory.Name, result.Name);
-            Assert.Equal(mappedCategory.Type, result.Type);
+            Assert.True(result);
 
             mockCategoryRepo.Verify(
                 x => x.GetCategoryByUserAsync(userId, existingCategory.Id),
@@ -273,7 +265,7 @@ namespace ExpenseTracker.Tests.Unit.Services
         }
 
         [Fact]
-        public async Task UpdateCategoryAsync_ReturnsNull_WhenCategoryDoesNotExist()
+        public async Task UpdateCategoryAsync_ReturnsFalse_WhenCategoryDoesNotExist()
         {
             // Arrange
             var categoryId = 1;
@@ -293,7 +285,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             var result = await categoryService.UpdateCategoryAsync(userId, categoryId, request);
 
             // Assert
-            Assert.Null(result);
+            Assert.False(result);
         }
 
         [Fact]

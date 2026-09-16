@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using ExpenseTracker.BLL.Interfaces;
 using ExpenseTracker.DAL.Interfaces;
-using ExpenseTracker.DAL.Repositories;
 using ExpenseTracker.Models.Dtos.Requests;
 using ExpenseTracker.Models.Dtos.Responses;
 using ExpenseTracker.Models.Models;
@@ -55,7 +54,7 @@ namespace ExpenseTracker.BLL.Services
             return mapper.Map<IncomeResDto>(income);
         }
 
-        public async Task<IncomeResDto?> CreateIncomeAsync(int userId, CreateIncomeReqDto income)
+        public async Task<bool> CreateIncomeAsync(int userId, CreateIncomeReqDto income)
         {
             var newIncome = new Income
             {
@@ -76,14 +75,14 @@ namespace ExpenseTracker.BLL.Services
                .ForContext("Activity", $"Created income '{newIncome.Description}'.")
                .Information($"'{user.Username}' deleted expense '{newIncome.Description}'.");
 
-            return mapper.Map<IncomeResDto>(createdIncome);
+            return true;
         }
 
-        public async Task<IncomeResDto?> UpdateIncomeAsync(int userId, int incomeId, UpdateIncomeReqDto income)
+        public async Task<bool> UpdateIncomeAsync(int userId, int incomeId, UpdateIncomeReqDto income)
         {
             var existingIncome = await incomeRepository.GetIncomeByUserAsync(userId, incomeId);
 
-            if (existingIncome == null) return null;
+            if (existingIncome == null) return false;
 
             existingIncome.Description = string.IsNullOrWhiteSpace(income.Description)
                 ? existingIncome.Description
@@ -103,7 +102,7 @@ namespace ExpenseTracker.BLL.Services
                .ForContext("Activity", $"Updated income '{existingIncome.Description}'.")
                .Information($"'{user.Username}' updated income '{existingIncome.Description}'.");
 
-            return mapper.Map<IncomeResDto>(existingIncome);
+            return true;
         }
 
         public async Task<bool> DeleteIncomeAsync(int userId, int incomeId)

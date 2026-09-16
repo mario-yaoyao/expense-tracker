@@ -363,6 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 
 **/appsettings.Development.json
-appsettings.json
-ExpenseTracker.Api/Keys/
-KeyGenerator
+CryptoGenerator

@@ -153,17 +153,16 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             SetUserClaims(controller);
 
             var request = CreateIncomeRequest(categoryId: categoryId);
-            var expectedResponse = CreateIncomeResponse();
 
             mockService.Setup(x => x.CreateIncomeAsync(userId, request))
-                .ReturnsAsync(expectedResponse);
+                .ReturnsAsync(true);
 
             // Act
             var result = await controller.CreateIncome(request);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<IncomeResDto>>(okResult.Value);
+            var response = Assert.IsType<ApiResDto<object>>(okResult.Value);
 
             Assert.True(response.Success);
         }
@@ -208,20 +207,18 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             SetUserClaims(controller);
 
             var request = UpdateIncomeRequest();
-            var expectedResponse = CreateIncomeResponse();
 
             mockService.Setup(x => x.UpdateIncomeAsync(userId, incomeId, request))
-                .ReturnsAsync(expectedResponse);
+                .ReturnsAsync(true);
 
             // Act
             var result = await controller.UpdateIncome(incomeId, request);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<IncomeResDto>>(okResult.Value);
+            var response = Assert.IsType<ApiResDto<object>>(okResult.Value);
 
             Assert.True(response.Success);
-            Assert.Equal(expectedResponse.Description, response.Data!.Description);
         }
 
         [Fact]
@@ -238,7 +235,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var request = UpdateIncomeRequest();
 
             mockService.Setup(x => x.UpdateIncomeAsync(userId, incomeId, request))
-                .ReturnsAsync((IncomeResDto?)null);
+                .ReturnsAsync(false);
 
             // Act
             var result = await controller.UpdateIncome(incomeId, request);

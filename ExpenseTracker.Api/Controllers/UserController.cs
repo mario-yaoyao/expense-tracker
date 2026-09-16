@@ -76,23 +76,22 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPatch("{userId}")]
-        public async Task<ActionResult<ApiResDto<UserResDto>>> ToggleUserStatus(int userId)
+        public async Task<ActionResult<ApiResDto<object>>> ToggleUserStatus(int userId)
         {
             try
             {
                 var username = GetUsername();
-                var data = await userService.ToggleUserStatusAsync(username, userId);
+                var success = await userService.ToggleUserStatusAsync(username, userId);
 
-                return data == null
+                return !success
                     ? NotFound(new ApiResDto<object>
                     {
                         Success = false,
                         ErrorMessage = "User not found."
                     })
-                    : Ok(new ApiResDto<UserResDto>
+                    : Ok(new ApiResDto<object>
                     {
-                        Success = true,
-                        Data = data
+                        Success = true
                     });
             }
             catch (Exception)

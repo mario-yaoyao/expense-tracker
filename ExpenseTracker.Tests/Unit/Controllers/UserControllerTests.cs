@@ -141,21 +141,17 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             var controller = CreateController(mockService);
             SetUserClaims(controller);
 
-            var expectedResponse = CreateUserResponse();
-
             mockService.Setup(x => x.ToggleUserStatusAsync(username, userId))
-                .ReturnsAsync(expectedResponse);
+                .ReturnsAsync(true);
 
             // Act
             var result = await controller.ToggleUserStatus(userId);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<UserResDto>>(okResult.Value);
+            var response = Assert.IsType<ApiResDto<object>>(okResult.Value);
 
             Assert.True(response.Success);
-            Assert.Equal(expectedResponse.FullName, response.Data!.FullName);
-            Assert.Equal(expectedResponse.ContactNumber, response.Data!.ContactNumber);
         }
 
         [Fact]
@@ -170,7 +166,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
             SetUserClaims(controller);
 
             mockService.Setup(x => x.ToggleUserStatusAsync(username, userId))
-                .ReturnsAsync((UserResDto?)null);
+                .ReturnsAsync(false);
 
             // Act
             var result = await controller.ToggleUserStatus(userId);

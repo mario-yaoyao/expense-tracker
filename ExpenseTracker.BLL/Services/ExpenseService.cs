@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using ExpenseTracker.BLL.Interfaces;
 using ExpenseTracker.DAL.Interfaces;
-using ExpenseTracker.DAL.Repositories;
 using ExpenseTracker.Models.Dtos.Requests;
 using ExpenseTracker.Models.Dtos.Responses;
 using ExpenseTracker.Models.Models;
@@ -55,7 +54,7 @@ namespace ExpenseTracker.BLL.Services
             return mapper.Map<ExpenseResDto>(expense);
         }
 
-        public async Task<ExpenseResDto?> CreateExpenseAsync(int userId, CreateExpenseReqDto expense)
+        public async Task<bool> CreateExpenseAsync(int userId, CreateExpenseReqDto expense)
         {
             var newExpense = new Expense
             {
@@ -76,14 +75,14 @@ namespace ExpenseTracker.BLL.Services
                .ForContext("Activity", $"Created expense '{newExpense.Description}'.")
                .Information($"'{user.Username}' created expense '{newExpense.Description}'.");
 
-            return mapper.Map<ExpenseResDto>(createdExpense);
+            return true;
         }
 
-        public async Task<ExpenseResDto?> UpdateExpenseAsync(int userId, int expenseId, UpdateExpenseReqDto expense)
+        public async Task<bool> UpdateExpenseAsync(int userId, int expenseId, UpdateExpenseReqDto expense)
         {
             var existingExpense = await expenseRepository.GetExpenseByUserAsync(userId, expenseId);
 
-            if (existingExpense == null) return null;
+            if (existingExpense == null) return false;
 
             existingExpense.Description = string.IsNullOrWhiteSpace(expense.Description)
                 ? existingExpense.Description
@@ -103,7 +102,7 @@ namespace ExpenseTracker.BLL.Services
                .ForContext("Activity", $"Updated expense '{existingExpense.Description}'.")
                .Information($"'{user.Username}' created expense '{existingExpense.Description}'.");
 
-            return mapper.Map<ExpenseResDto>(existingExpense);
+            return true;
         }
 
         public async Task<bool> DeleteExpenseAsync(int userId, int expenseId)

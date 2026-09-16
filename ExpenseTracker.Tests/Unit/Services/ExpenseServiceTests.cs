@@ -195,7 +195,7 @@ namespace ExpenseTracker.Tests.Unit.Services
         }
 
         [Fact]
-        public async Task CreateExpenseAsync_ReturnsCreatedExpense_WhenRequestIsValid()
+        public async Task CreateExpenseAsync_ReturnsTrue_WhenRequestIsValid()
         {
             // Arrange
             var userId = 1;
@@ -225,12 +225,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             var result = await expenseService.CreateExpenseAsync(userId, expense);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Equal(userId, result.UserId);
-            Assert.Equal(expense.Description, result.Description);
-            Assert.Equal(expense.Amount, result.Amount);
-            Assert.Equal(category.Name, result.CategoryName);
-            Assert.Equal(category.Type, result.CategoryType);
+            Assert.True(result);
 
             mockExpenseRepo.Verify(
                 x => x.AddExpenseAsync(It.IsAny<Expense>()),
@@ -238,7 +233,7 @@ namespace ExpenseTracker.Tests.Unit.Services
         }
 
         [Fact]
-        public async Task UpdateExpenseAsync_ReturnsUpdatedExpense_WhenExpenseExists()
+        public async Task UpdateExpenseAsync_ReturnsTrue_WhenExpenseExists()
         {
             // Arrange
             var secondExpenseId = 2;
@@ -283,14 +278,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             var result = await expenseService.UpdateExpenseAsync(userId, existingExpense.Id, request);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.NotNull(result.UpdatedAt);
-            Assert.True(result.UpdatedAt > result.CreatedAt);
-            Assert.Equal(userId, result.UserId);
-            Assert.Equal(request.Description, result.Description);
-            Assert.Equal(request.Amount, result.Amount);
-            Assert.Equal(categories[1].Name, result.CategoryName);
-            Assert.Equal(categories[1].Type, result.CategoryType);
+            Assert.True(result);
 
             mockExpenseRepo.Verify(
                 x => x.GetExpenseByUserAsync(userId, existingExpense.Id),
@@ -302,7 +290,7 @@ namespace ExpenseTracker.Tests.Unit.Services
         }
 
         [Fact]
-        public async Task UpdateExpenseAsync_ReturnsNull_WhenExpenseDoesNotExist()
+        public async Task UpdateExpenseAsync_ReturnsFalse_WhenExpenseDoesNotExist()
         {
             // Arrange
             var userId = 1;
@@ -322,7 +310,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             var result = await expenseService.UpdateExpenseAsync(userId, expenseId, request);
 
             // Assert
-            Assert.Null(result);
+            Assert.False(result);
         }
 
         [Fact]

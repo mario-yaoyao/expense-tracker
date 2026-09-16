@@ -27,11 +27,11 @@ namespace ExpenseTracker.BLL.Services
             return mapper.Map<UserResDto>(user);
         }
 
-        public async Task<UserResDto?> ToggleUserStatusAsync(string username, int userId)
+        public async Task<bool> ToggleUserStatusAsync(string username, int userId)
         {
             var existingUser = await userRepository.GetUserByIdAsync(userId);
 
-            if (existingUser == null) return null;
+            if (existingUser == null) return false;
 
             existingUser.IsActive = !existingUser.IsActive;
             existingUser.UpdatedAt = DateTime.UtcNow;
@@ -57,7 +57,7 @@ namespace ExpenseTracker.BLL.Services
                .ForContext("Activity", activity)
                .Information(message);
 
-            return mapper.Map<UserResDto>(existingUser);
+            return true;
         }
     }
 }

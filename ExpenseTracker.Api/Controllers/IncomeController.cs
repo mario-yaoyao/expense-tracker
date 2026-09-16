@@ -87,18 +87,17 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ApiResDto<IncomeResDto>>> CreateIncome([FromBody] CreateIncomeReqDto request)
+        public async Task<ActionResult<ApiResDto<object>>> CreateIncome([FromBody] CreateIncomeReqDto request)
         {
             try
             {
                 var userId = GetUserId();
                 var role = GetRole();
-                var data = await incomeService.CreateIncomeAsync(userId, request);
+                await incomeService.CreateIncomeAsync(userId, request);
 
-                return Ok(new ApiResDto<IncomeResDto>
+                return Ok(new ApiResDto<object>
                 {
-                    Success = true,
-                    Data = data,
+                    Success = true
                 });
             }
             catch (Exception)
@@ -112,23 +111,22 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPatch("{incomeId}")]
-        public async Task<ActionResult<ApiResDto<IncomeResDto>>> UpdateIncome(int incomeId, [FromBody] UpdateIncomeReqDto request)
+        public async Task<ActionResult<ApiResDto<object>>> UpdateIncome(int incomeId, [FromBody] UpdateIncomeReqDto request)
         {
             try
             {
                 var userId = GetUserId();
-                var data = await incomeService.UpdateIncomeAsync(userId, incomeId, request);
+                var success = await incomeService.UpdateIncomeAsync(userId, incomeId, request);
 
-                return data == null
+                return !success
                     ? NotFound(new ApiResDto<object>
                     {
                         Success = false,
                         ErrorMessage = "Income not found."
                     })
-                    : Ok(new ApiResDto<IncomeResDto>
+                    : Ok(new ApiResDto<object>
                     {
-                        Success = true,
-                        Data = data
+                        Success = true
                     });
             }
             catch (Exception)
@@ -147,9 +145,9 @@ namespace ExpenseTracker.Controllers
             try
             {
                 var userId = GetUserId();
-                var data = await incomeService.DeleteIncomeAsync(userId, incomeId);
+                var success = await incomeService.DeleteIncomeAsync(userId, incomeId);
 
-                return !data
+                return !success
                     ? NotFound(new ApiResDto<object>
                     {
                         Success = false,
@@ -157,7 +155,7 @@ namespace ExpenseTracker.Controllers
                     })
                     : Ok(new ApiResDto<object>
                     {
-                        Success = true,
+                        Success = true
                     });
             }
             catch (Exception)

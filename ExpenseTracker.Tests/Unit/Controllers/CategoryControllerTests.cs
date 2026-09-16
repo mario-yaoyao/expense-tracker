@@ -141,20 +141,19 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             var request = CreateCategory();
-            var expectedResponse = CreateCategoryResponse();
 
             mockService.Setup(x => x.CreateCategoryAsync(userId, request))
-                .ReturnsAsync(expectedResponse);
+                .ReturnsAsync(true);
 
             // Act
             var result = await controller.CreateCategory(request);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<CategoryResDto>>(okResult.Value);
+            var response = Assert.IsType<ApiResDto<object>>(okResult.Value);
 
             Assert.True(response.Success);
         }
@@ -167,7 +166,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             var request = CreateCategory();
 
@@ -196,24 +195,21 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             var request = UpdateCategory();
-            var expectedResponse = CreateCategoryResponse();
 
             mockService.Setup(x => x.UpdateCategoryAsync(userId, categoryId, request))
-                .ReturnsAsync(expectedResponse);
+                .ReturnsAsync(true);
 
             // Act
             var result = await controller.UpdateCategory(categoryId, request);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<CategoryResDto>>(okResult.Value);
+            var response = Assert.IsType<ApiResDto<object>>(okResult.Value);
 
             Assert.True(response.Success);
-            Assert.Equal(expectedResponse.Name, response.Data!.Name);
-            Assert.Equal(expectedResponse.Type, response.Data!.Type);
         }
 
         [Fact]
@@ -225,12 +221,12 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             var request = UpdateCategory();
 
             mockService.Setup(x => x.UpdateCategoryAsync(userId, categoryId, request))
-                .ReturnsAsync((CategoryResDto?)null);
+                .ReturnsAsync(false);
 
             // Act
             var result = await controller.UpdateCategory(categoryId, request);
@@ -252,7 +248,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             var request = UpdateCategory();
 
@@ -280,7 +276,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             mockService.Setup(x => x.DeleteCategoryAsync(userId, categoryId))
                 .ReturnsAsync(true);
@@ -290,7 +286,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var response = Assert.IsType<ApiResDto<CategoryResDto>>(okResult.Value);
+            var response = Assert.IsType<ApiResDto<object>>(okResult.Value);
 
             Assert.True(response.Success);
         }
@@ -304,7 +300,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             mockService.Setup(x => x.DeleteCategoryAsync(userId, categoryId))
                 .ReturnsAsync(false);
@@ -329,7 +325,7 @@ namespace ExpenseTracker.Tests.Unit.Controllers
 
             var mockService = new Mock<ICategoryService>();
             var controller = CreateController(mockService);
-            SetUserClaims(controller, userId, "User");
+            SetUserClaims(controller);
 
             mockService.Setup(x => x.DeleteCategoryAsync(userId, categoryId))
                 .ThrowsAsync(new Exception("Database error"));

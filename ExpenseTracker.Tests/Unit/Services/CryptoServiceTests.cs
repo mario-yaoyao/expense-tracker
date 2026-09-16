@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Options;
+﻿using ExpenseTracker.BLL.Services;
+using Microsoft.Extensions.Options;
+using Org.BouncyCastle.Crypto;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -13,15 +15,11 @@ namespace ExpenseTracker.Tests.Unit.Services
             var plainText = "Hello World";
 
             var rsa = RSA.Create(2048);
-            var tempFile = Path.GetTempFileName();
-
-            File.WriteAllText(
-                tempFile,
-                rsa.ExportRSAPrivateKeyPem());
+            var privateKeyPem = rsa.ExportRSAPrivateKeyPem();
 
             var options = Options.Create(new CryptoOptions
             {
-                PrivateKeyPath = tempFile
+                PrivateKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(privateKeyPem))
             });
 
             var service = new CryptoService(options);
@@ -45,17 +43,18 @@ namespace ExpenseTracker.Tests.Unit.Services
             // Arrange
             var invalidEncryptedData = "not-a-base64-string";
 
-            var tempFile = Path.GetTempFileName();
+            var rsa = RSA.Create(2048);
+            var privateKeyPem = rsa.ExportRSAPrivateKeyPem();
 
             var options = Options.Create(new CryptoOptions
             {
-                PrivateKeyPath = tempFile
+                PrivateKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(privateKeyPem))
             });
 
             var service = new CryptoService(options);
 
             // Act & Assert
-            Assert.Throws<FormatException>(
+            Assert.Throws<ApplicationException>(
                 () => service.Decrypt(invalidEncryptedData));
         }
 
@@ -64,15 +63,11 @@ namespace ExpenseTracker.Tests.Unit.Services
         {
             // Arrange
             var rsa = RSA.Create(2048);
-            var tempFile = Path.GetTempFileName();
-
-            File.WriteAllText(
-                tempFile,
-                rsa.ExportRSAPrivateKeyPem());
+            var privateKeyPem = rsa.ExportRSAPrivateKeyPem();
 
             var options = Options.Create(new CryptoOptions
             {
-                PrivateKeyPath = tempFile
+                PrivateKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(privateKeyPem))
             });
 
             var service = new CryptoService(options);
@@ -81,7 +76,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             var invalidCipherText = Convert.ToBase64String(Encoding.UTF8.GetBytes("Hello"));
 
             // Act & Assert
-            Assert.Throws<CryptographicException>(
+            Assert.Throws<ApplicationException>(
                 () => service.Decrypt(invalidCipherText));
         }
 
@@ -91,7 +86,7 @@ namespace ExpenseTracker.Tests.Unit.Services
             // Arrange
             var options = Options.Create(new CryptoOptions
             {
-                PrivateKeyPath = null!
+                PrivateKey = null!
             });
 
             // Act & Assert

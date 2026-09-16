@@ -87,18 +87,17 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ApiResDto<ExpenseResDto>>> CreateExpense([FromBody] CreateExpenseReqDto request)
+        public async Task<ActionResult<ApiResDto<object>>> CreateExpense([FromBody] CreateExpenseReqDto request)
         {
             try
             {
                 var userId = GetUserId();
                 var role = GetRole();
-                var data = await expenseService.CreateExpenseAsync(userId, request);
+                await expenseService.CreateExpenseAsync(userId, request);
 
-                return Ok(new ApiResDto<ExpenseResDto>
+                return Ok(new ApiResDto<object>
                 {
-                    Success = true,
-                    Data = data,
+                    Success = true
                 });
             }
             catch (Exception)
@@ -112,23 +111,22 @@ namespace ExpenseTracker.Controllers
         }
 
         [HttpPatch("{expenseId}")]
-        public async Task<ActionResult<ApiResDto<ExpenseResDto>>> UpdateExpense(int expenseId, [FromBody] UpdateExpenseReqDto request)
+        public async Task<ActionResult<ApiResDto<object>>> UpdateExpense(int expenseId, [FromBody] UpdateExpenseReqDto request)
         {
             try
             {
                 var userId = GetUserId();
-                var data = await expenseService.UpdateExpenseAsync(userId, expenseId, request);
+                var succcess = await expenseService.UpdateExpenseAsync(userId, expenseId, request);
 
-                return data == null
+                return !succcess
                     ? NotFound(new ApiResDto<object>
                     {
                         Success = false,
                         ErrorMessage = "Expense not found."
                     })
-                    : Ok(new ApiResDto<ExpenseResDto>
+                    : Ok(new ApiResDto<object>
                     {
-                        Success = true,
-                        Data = data
+                        Success = true
                     });
             }
             catch (Exception)
@@ -147,9 +145,9 @@ namespace ExpenseTracker.Controllers
             try
             {
                 var userId = GetUserId();
-                var data = await expenseService.DeleteExpenseAsync(userId, expenseId);
+                var succcess = await expenseService.DeleteExpenseAsync(userId, expenseId);
 
-                return !data
+                return !succcess
                     ? NotFound(new ApiResDto<object>
                     {
                         Success = false,
@@ -157,7 +155,7 @@ namespace ExpenseTracker.Controllers
                     })
                     : Ok(new ApiResDto<object>
                     {
-                        Success = true,
+                        Success = true
                     });
             }
             catch (Exception )
