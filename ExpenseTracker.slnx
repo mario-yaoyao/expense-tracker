@@ -1,8 +1,0 @@
-<Solution>
-  <Project Path="BudgetWise.Api/BudgetWise.Api.csproj" />
-  <Project Path="BudgetWise.BLL/BudgetWise.BLL.csproj" />
-  <Project Path="BudgetWise.CryptoTools/BudgetWise.CryptoTools.csproj" />
-  <Project Path="BudgetWise.DAL/BudgetWise.DAL.csproj" />
-  <Project Path="BudgetWise.Models/BudgetWise.Models.csproj" />
-  <Project Path="BudgetWise.Tests/BudgetWise.Tests.csproj" />
-</Solution>

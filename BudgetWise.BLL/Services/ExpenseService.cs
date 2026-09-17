@@ -65,7 +65,6 @@ namespace BudgetWise.BLL.Services
             };
 
             await expenseRepository.AddExpenseAsync(newExpense);
-            var createdExpense = await expenseRepository.GetExpenseByIdAsync(newExpense.Id);
             var user = await userRepository.GetUserByIdAsync(userId);
 
             Log.ForContext("UserId", userId)
@@ -100,7 +99,7 @@ namespace BudgetWise.BLL.Services
                .ForContext("Action", "Update")
                .ForContext("EntityName", "Expense")
                .ForContext("Activity", $"Updated expense '{existingExpense.Description}'.")
-               .Information($"'{user.Username}' created expense '{existingExpense.Description}'.");
+               .Information($"'{user.Username}' updated expense '{existingExpense.Description}'.");
 
             return true;
         }

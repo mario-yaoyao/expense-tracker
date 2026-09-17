@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace BudgetWise.Models.Models
+﻿namespace BudgetWise.Models.Models
 {
     public enum CategoryType
     {

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BudgetWise.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260908115242_Initial")]
+    [Migration("20260917022426_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -25,7 +25,7 @@ namespace BudgetWise.DAL.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("ExpenseTracker.Models.Models.Category", b =>
+            modelBuilder.Entity("BudgetWise.Models.Models.Category", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -59,7 +59,7 @@ namespace BudgetWise.DAL.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Models.Models.Expense", b =>
+            modelBuilder.Entity("BudgetWise.Models.Models.Expense", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -99,7 +99,7 @@ namespace BudgetWise.DAL.Migrations
                     b.ToTable("Expenses");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Models.Models.Income", b =>
+            modelBuilder.Entity("BudgetWise.Models.Models.Income", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -139,7 +139,7 @@ namespace BudgetWise.DAL.Migrations
                     b.ToTable("Incomes");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Models.Models.TransactionLog", b =>
+            modelBuilder.Entity("BudgetWise.Models.Models.TransactionLog", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -181,7 +181,7 @@ namespace BudgetWise.DAL.Migrations
                     b.ToTable("TransactionLogs", (string)null);
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Models.Models.User", b =>
+            modelBuilder.Entity("BudgetWise.Models.Models.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -252,9 +252,9 @@ namespace BudgetWise.DAL.Migrations
                         });
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Models.Models.Category", b =>
+            modelBuilder.Entity("BudgetWise.Models.Models.Category", b =>
                 {
-                    b.HasOne("ExpenseTracker.Models.Models.User", "User")
+                    b.HasOne("BudgetWise.Models.Models.User", "User")
                         .WithMany("Categories")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -263,15 +263,15 @@ namespace BudgetWise.DAL.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Models.Models.Expense", b =>
+            modelBuilder.Entity("BudgetWise.Models.Models.Expense", b =>
                 {
-                    b.HasOne("ExpenseTracker.Models.Models.Category", "Category")
+                    b.HasOne("BudgetWise.Models.Models.Category", "Category")
                         .WithMany("Expenses")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ExpenseTracker.Models.Models.User", "User")
+                    b.HasOne("BudgetWise.Models.Models.User", "User")
                         .WithMany("Expenses")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -282,15 +282,15 @@ namespace BudgetWise.DAL.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Models.Models.Income", b =>
+            modelBuilder.Entity("BudgetWise.Models.Models.Income", b =>
                 {
-                    b.HasOne("ExpenseTracker.Models.Models.Category", "Category")
+                    b.HasOne("BudgetWise.Models.Models.Category", "Category")
                         .WithMany("Incomes")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ExpenseTracker.Models.Models.User", "User")
+                    b.HasOne("BudgetWise.Models.Models.User", "User")
                         .WithMany("Incomes")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -301,14 +301,14 @@ namespace BudgetWise.DAL.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Models.Models.Category", b =>
+            modelBuilder.Entity("BudgetWise.Models.Models.Category", b =>
                 {
                     b.Navigation("Expenses");
 
                     b.Navigation("Incomes");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Models.Models.User", b =>
+            modelBuilder.Entity("BudgetWise.Models.Models.User", b =>
                 {
                     b.Navigation("Categories");
 

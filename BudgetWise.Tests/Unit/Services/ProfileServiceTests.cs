@@ -179,7 +179,7 @@ namespace BudgetWise.Tests.Unit.Services
         }
 
         // Helper Functions
-        private ProfileService CreateProfileService(
+        private static ProfileService CreateProfileService(
             Mock<IProfileRepository>? mockProfileRepo = null,
             Mock<IUserRepository>? mockUserRepo = null,
             Mock<IMapper>? mockMapper = null)

@@ -51,11 +51,11 @@ namespace BudgetWise.Tests.Unit.Services
                 .Returns(mappedCategories);
 
             // Act
-            var result = await categoryService.GetCategoriesAsync(userId, "User", queryReq);
+            var (data, _) = await categoryService.GetCategoriesAsync(userId, "User", queryReq);
 
             // Assert
-            Assert.Equal(mappedCategories[0].Name, result.data[0].Name);
-            Assert.Equal(CategoryType.Expense, result.data[1].Type);
+            Assert.Equal(mappedCategories[0].Name, data[0].Name);
+            Assert.Equal(CategoryType.Expense, data[1].Type);
 
             mockCategoryRepo.Verify(
                 x => x.GetCategoriesByUserAsync(userId, categoryType, 1, 20, null),
@@ -107,11 +107,11 @@ namespace BudgetWise.Tests.Unit.Services
                 .Returns(mappedCategories);
 
             // Act
-            var result = await categoryService.GetCategoriesAsync(firstUserId, "SuperAdmin", queryReq);
+            var (data, _) = await categoryService.GetCategoriesAsync(firstUserId, "SuperAdmin", queryReq);
 
             // Assert
-            Assert.Equal(mappedCategories[0].Name, result.data[0].Name);
-            Assert.Equal(mappedCategories[1].Type, result.data[1].Type);
+            Assert.Equal(mappedCategories[0].Name, data[0].Name);
+            Assert.Equal(mappedCategories[1].Type, data[1].Type);
 
             mockCategoryRepo.Verify(
                 x => x.GetAllCategoriesAsync(1, 20, null),
@@ -343,7 +343,7 @@ namespace BudgetWise.Tests.Unit.Services
         }
 
         // Helper Functions
-        private CategoryService CreateCategoryService(
+        private static CategoryService CreateCategoryService(
             Mock<ICategoryRepository>? mockCategoryRepo = null,
             Mock<IUserRepository>? mockUserRepo = null,
             Mock<IMapper>? mockMapper = null)

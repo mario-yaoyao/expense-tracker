@@ -60,12 +60,12 @@ namespace BudgetWise.Tests.Unit.Services
                 .Returns(mappedExpenses);
 
             // Act
-            var result = await expenseService.GetExpensesAsync(userId, "User", paginationReq);
+            var (data, _, _, totalCount, _) = await expenseService.GetExpensesAsync(userId, "User", paginationReq);
 
             // Assert
-            Assert.Equal(2, result.totalCount);
-            Assert.Equal("Expense 1", result.data[0].Description);
-            Assert.Equal("Expense 2", result.data[1].Description);
+            Assert.Equal(2, totalCount);
+            Assert.Equal("Expense 1", data[0].Description);
+            Assert.Equal("Expense 2", data[1].Description);
 
             mockExpenseRepo.Verify(
                 x => x.GetExpensesByUserAsync(userId, 1, 20, null),
@@ -118,13 +118,13 @@ namespace BudgetWise.Tests.Unit.Services
                 .Returns(mappedExpenses);
 
             // Act
-            var result = await expenseService.GetExpensesAsync(firstUserId, "SuperAdmin", paginationReq);
+            var (data, _, _, totalCount, _) = await expenseService.GetExpensesAsync(firstUserId, "SuperAdmin", paginationReq);
 
             // Assert
-            Assert.Equal(expectedResponse.TotalCount, result.totalCount);
-            Assert.Equal(mappedExpenses[0].Description, result.data[0].Description);
-            Assert.Equal(mappedExpenses[1].Description, result.data[1].Description);
-            Assert.Equal(mappedExpenses[2].Description, result.data[2].Description);
+            Assert.Equal(expectedResponse.TotalCount, totalCount);
+            Assert.Equal(mappedExpenses[0].Description, data[0].Description);
+            Assert.Equal(mappedExpenses[1].Description, data[1].Description);
+            Assert.Equal(mappedExpenses[2].Description, data[2].Description);
 
             mockExpenseRepo.Verify(
                 x => x.GetAllExpensesAsync(1, 20, null),
@@ -369,7 +369,7 @@ namespace BudgetWise.Tests.Unit.Services
         }
 
         // Helper Functions
-        private ExpenseService CreateCategoryService(
+        private static ExpenseService CreateCategoryService(
             Mock<IExpenseRepository>? mockExpenseRepo = null,
             Mock<IUserRepository>? mockUserRepo = null,
             Mock<IMapper>? mockMapper = null)

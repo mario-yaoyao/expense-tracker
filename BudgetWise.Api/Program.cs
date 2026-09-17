@@ -16,7 +16,7 @@ using System.Data;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-var dbConnectionString = builder.Configuration.GetConnectionString("ExpenseTrackerDatabase");
+var dbConnectionString = builder.Configuration.GetConnectionString("BudgetWiseDatabase");
 
 // comment on Update-Database execution
 SerilogConfiguration.Configure(dbConnectionString!);

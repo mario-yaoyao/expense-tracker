@@ -65,7 +65,7 @@ namespace BudgetWise.BLL.Services
             };
 
             await incomeRepository.AddIncomeAsync(newIncome);
-            var createdIncome = await incomeRepository.GetIncomeByIdAsync(newIncome.Id);
+
             var user = await userRepository.GetUserByIdAsync(userId);
 
             Log.ForContext("UserId", userId)
@@ -73,7 +73,7 @@ namespace BudgetWise.BLL.Services
                .ForContext("Action", "Create")
                .ForContext("EntityName", "Income")
                .ForContext("Activity", $"Created income '{newIncome.Description}'.")
-               .Information($"'{user.Username}' deleted expense '{newIncome.Description}'.");
+               .Information($"'{user.Username}' created expense '{newIncome.Description}'.");
 
             return true;
         }

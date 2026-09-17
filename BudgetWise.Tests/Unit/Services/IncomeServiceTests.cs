@@ -70,12 +70,12 @@ namespace BudgetWise.Tests.Unit.Services
                 .Returns(mappedIncomes);
 
             // Act
-            var result = await incomeService.GetIncomesAsync(userId, "User", paginationReq);
+            var (data, _, _, totalCount, _) = await incomeService.GetIncomesAsync(userId, "User", paginationReq);
 
             // Assert
-            Assert.Equal(2, result.totalCount);
-            Assert.Equal("Income 1", result.data[0].Description);
-            Assert.Equal("Income 2", result.data[1].Description);
+            Assert.Equal(2, totalCount);
+            Assert.Equal("Income 1", data[0].Description);
+            Assert.Equal("Income 2", data[1].Description);
 
             mockIncomeRepo.Verify(
                 x => x.GetIncomesByUserAsync(userId, 1, 20, null),
@@ -144,13 +144,13 @@ namespace BudgetWise.Tests.Unit.Services
                 .Returns(mappedIncomes);
 
             // Act
-            var result = await incomeService.GetIncomesAsync(firstUserId, "SuperAdmin", paginationReq);
+            var (data, _, _, totalCount, _) = await incomeService.GetIncomesAsync(firstUserId, "SuperAdmin", paginationReq);
 
             // Assert
-            Assert.Equal(expectedResponse.TotalCount, result.totalCount);
-            Assert.Equal(mappedIncomes[0].Description, result.data[0].Description);
-            Assert.Equal(mappedIncomes[1].Description, result.data[1].Description);
-            Assert.Equal(mappedIncomes[2].Description, result.data[2].Description);
+            Assert.Equal(expectedResponse.TotalCount, totalCount);
+            Assert.Equal(mappedIncomes[0].Description, data[0].Description);
+            Assert.Equal(mappedIncomes[1].Description, data[1].Description);
+            Assert.Equal(mappedIncomes[2].Description, data[2].Description);
 
             mockIncomeRepo.Verify(
                 x => x.GetAllIncomesAsync(1, 20, null),
@@ -409,7 +409,7 @@ namespace BudgetWise.Tests.Unit.Services
         }
 
         // Helper Functions
-        private IncomeService CreateIncomeService(
+        private static IncomeService CreateIncomeService(
             Mock<IIncomeRepository>? mockIncomeRepo = null,
             Mock<IUserRepository>? mockUserRepo = null,
             Mock<IMapper>? mockMapper = null)
@@ -433,7 +433,6 @@ namespace BudgetWise.Tests.Unit.Services
 
         private static Income CreateIncome(
             Category category,
-            int categoryId = 1,
             int id = 1,
             int userId = 1,
             bool isDeleted = false)
