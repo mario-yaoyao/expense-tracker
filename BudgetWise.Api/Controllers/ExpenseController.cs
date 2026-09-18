@@ -86,13 +86,13 @@ namespace BudgetWise.Controllers
             }
         }
 
+        [Authorize(Roles = "User")]
         [HttpPost]
         public async Task<ActionResult<ApiResDto<object>>> CreateExpense([FromBody] CreateExpenseReqDto request)
         {
             try
             {
                 var userId = GetUserId();
-                var role = GetRole();
                 await expenseService.CreateExpenseAsync(userId, request);
 
                 return Ok(new ApiResDto<object>
@@ -110,6 +110,7 @@ namespace BudgetWise.Controllers
             }
         }
 
+        [Authorize(Roles = "User")]
         [HttpPatch("{expenseId}")]
         public async Task<ActionResult<ApiResDto<object>>> UpdateExpense(int expenseId, [FromBody] UpdateExpenseReqDto request)
         {
@@ -139,6 +140,7 @@ namespace BudgetWise.Controllers
             }
         }
 
+        [Authorize(Roles = "User")]
         [HttpDelete("{expenseId}")]
         public async Task<ActionResult<ApiResDto<object>>> DeleteExpense(int expenseId)
         {

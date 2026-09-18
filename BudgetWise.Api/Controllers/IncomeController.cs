@@ -86,6 +86,7 @@ namespace BudgetWise.Controllers
             }
         }
 
+        [Authorize(Roles = "User")]
         [HttpPost]
         public async Task<ActionResult<ApiResDto<object>>> CreateIncome([FromBody] CreateIncomeReqDto request)
         {
@@ -110,6 +111,7 @@ namespace BudgetWise.Controllers
             }
         }
 
+        [Authorize(Roles = "User")]
         [HttpPatch("{incomeId}")]
         public async Task<ActionResult<ApiResDto<object>>> UpdateIncome(int incomeId, [FromBody] UpdateIncomeReqDto request)
         {
@@ -139,6 +141,7 @@ namespace BudgetWise.Controllers
             }
         }
 
+        [Authorize(Roles = "User")]
         [HttpDelete("{incomeId}")]
         public async Task<ActionResult<ApiResDto<object>>> DeleteIncome(int incomeId)
         {

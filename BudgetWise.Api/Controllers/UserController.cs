@@ -75,6 +75,7 @@ namespace BudgetWise.Controllers
             }
         }
 
+        [Authorize(Roles = "User")]
         [HttpPatch("{userId}")]
         public async Task<ActionResult<ApiResDto<object>>> ToggleUserStatus(int userId)
         {

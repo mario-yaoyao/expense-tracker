@@ -80,6 +80,7 @@ namespace BudgetWise.Controllers
             }
         }
 
+        [Authorize(Roles = "User")]
         [HttpPost]
         public async Task<ActionResult<ApiResDto<object>>> CreateCategory([FromBody] CreateCategoryReqDto request)
         {
@@ -112,6 +113,7 @@ namespace BudgetWise.Controllers
             }
         }
 
+        [Authorize(Roles = "User")]
         [HttpPatch("{categoryId}")]
         public async Task<ActionResult<ApiResDto<object>>> UpdateCategory(int categoryId, [FromBody] UpdateCategoryReqDto request)
         {
@@ -141,6 +143,7 @@ namespace BudgetWise.Controllers
             }
         }
 
+        [Authorize(Roles = "User")]
         [HttpDelete("{categoryId}")]
         public async Task<ActionResult<ApiResDto<object>>> DeleteCategory(int categoryId)
         {
