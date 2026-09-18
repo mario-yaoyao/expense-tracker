@@ -3,6 +3,7 @@ using BudgetWise.BLL.Interfaces;
 using BudgetWise.DAL.Interfaces;
 using BudgetWise.Models.Dtos.Requests;
 using BudgetWise.Models.Dtos.Responses;
+using BudgetWise.Models.Models;
 using Serilog;
 
 namespace BudgetWise.BLL.Services
@@ -38,9 +39,9 @@ namespace BudgetWise.BLL.Services
 
             await userRepository.SaveChangesAsync();
 
-            var action = existingUser.IsActive
-                ? "Create"
-                : "Delete";
+            var type = existingUser.IsActive
+                ? TransactionType.Create
+                : TransactionType.Delete;
 
             var activity = existingUser.IsActive
                 ? "Account activated."
@@ -50,9 +51,10 @@ namespace BudgetWise.BLL.Services
                 ? $"'{username}' activated user '{existingUser.Username}'."
                 : $"'{username}' deactivated user '{existingUser.Username}'.";
 
-            Log.ForContext("UserId", userId)
+            Log.ForContext("IsAuditLog", true)
+               .ForContext("UserId", userId)
                .ForContext("Username", existingUser!.Username)
-               .ForContext("Action", action)
+               .ForContext("Type", type)
                .ForContext("EntityName", "User")
                .ForContext("Activity", activity)
                .Information(message);

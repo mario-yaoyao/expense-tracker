@@ -57,9 +57,10 @@ namespace BudgetWise.BLL.Services
 
             await profileRepository.UpdatePasswordAsync(user);
 
-            Log.ForContext("UserId", userId)
+            Log.ForContext("IsAuditLog", true)
+               .ForContext("UserId", userId)
                .ForContext("Username", user.Username)
-               .ForContext("Action", "Update")
+               .ForContext("Type", TransactionType.Update)
                .ForContext("EntityName", "Profile")
                .ForContext("Activity", $"Password changed.'.")
                .Information($"'{user.Username}' password changed.");

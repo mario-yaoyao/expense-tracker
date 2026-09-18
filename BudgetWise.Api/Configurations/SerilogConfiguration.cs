@@ -30,9 +30,8 @@ public static class SerilogConfiguration
             },
             new SqlColumn
             {
-                ColumnName = "Action",
-                DataType = SqlDbType.NVarChar,
-                DataLength = 100
+                ColumnName = "Type",
+                DataType = SqlDbType.Int
             },
             new SqlColumn
             {
@@ -53,12 +52,12 @@ public static class SerilogConfiguration
             .WriteTo.Console()
             .WriteTo.Logger(lc => lc
                 .Filter.ByIncludingOnly(logEvent =>
-                    logEvent.Properties.ContainsKey("Action"))
+                    logEvent.Properties.ContainsKey("IsAuditLog"))
                 .WriteTo.MSSqlServer(
                     dbConnectionString,
                     sinkOptions: new MSSqlServerSinkOptions
                     {
-                        TableName = "TransactionLogs",
+                        TableName = "Transactions",
                         AutoCreateSqlTable = false
                     },
                     columnOptions: columnOptions,

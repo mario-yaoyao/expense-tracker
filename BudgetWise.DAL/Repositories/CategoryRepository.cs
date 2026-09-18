@@ -36,6 +36,7 @@ namespace BudgetWise.DAL.Repositories
                 var totalCount = await query.CountAsync();
 
                 var data = await query
+                    .Include(c => c.User)
                     .OrderByDescending(c => c.UpdatedAt ?? c.CreatedAt)
                     .Skip((page - 1) * limit)
                     .Take(limit)
@@ -110,6 +111,7 @@ namespace BudgetWise.DAL.Repositories
             try
             {
                 return await context.Categories
+                    .Include(c => c.User)
                     .Where(c => !c.IsDeleted)
                     .FirstOrDefaultAsync(c => c.UserId == userId && c.Id == categoryId);
             }
@@ -125,6 +127,7 @@ namespace BudgetWise.DAL.Repositories
             try
             {
                 return await context.Categories
+                    .Include(c => c.User)
                     .FirstOrDefaultAsync(c => c.Id == categoryId);
             }
             catch (Exception ex)

@@ -1,6 +1,14 @@
 ﻿namespace BudgetWise.Models.Models
 {
-    public class TransactionLog
+    public enum TransactionType
+    {
+        Create,
+        Update,
+        Delete,
+        Info
+    }
+
+    public class Transaction
     {
         public int Id { get; set; }
         public string Message { get; set; } = string.Empty;
@@ -9,7 +17,7 @@
         public string? Exception { get; set; }
         public int? UserId { get; set; }
         public string? Username { get; set; }
-        public string? Action { get; set; }
+        public TransactionType? Type { get; set; }
         public string? EntityName { get; set; }
         public string? Activity { get; set; }
     }

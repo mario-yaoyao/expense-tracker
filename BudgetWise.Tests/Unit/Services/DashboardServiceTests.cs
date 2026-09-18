@@ -83,7 +83,7 @@ namespace BudgetWise.Tests.Unit.Services
                     Id = 1,
                     UserId = 1,
                     Username = users[0].Username,
-                    Action = "Create",
+                    Type = TransactionType.Create,
                     Activity = $"Created expense '{description}'",
                     Message = $"'{users[0].Username}' created expense '{description}'.",
                     CreatedAt = new DateTime(2026, 7, 15)
@@ -193,7 +193,7 @@ namespace BudgetWise.Tests.Unit.Services
                     Id = 1,
                     UserId = 1,
                     Username = user.Username,
-                    Action = "Create",
+                    Type = TransactionType.Create,
                     Activity = $"Created expense '{description}'",
                     Message = $"'{user.Username}' created expense '{description}'.",
                     CreatedAt = new DateTime(2026, 7, 15)
@@ -203,7 +203,7 @@ namespace BudgetWise.Tests.Unit.Services
                     Id = 2,
                     UserId = 1,
                     Username = user.Username,
-                    Action = "Update",
+                    Type = TransactionType.Update,
                     Activity = $"Updated income '{description}'",
                     Message = $"'{user.Username}' updated income '{description}'.",
                     CreatedAt = new DateTime(2026, 7, 15)

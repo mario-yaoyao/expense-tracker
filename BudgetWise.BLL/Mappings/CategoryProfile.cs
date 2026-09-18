@@ -9,7 +9,11 @@ namespace BudgetWise.BLL.Mappings
     {
         public CategoryProfile()
         {
-            CreateMap<Category, CategoryResDto>();
+            CreateMap<Category, CategoryResDto>()
+                .ForMember(
+                    dest => dest.Username,
+                    opt => opt.MapFrom(src => src.User.Username)
+                );
         }
     }
 }

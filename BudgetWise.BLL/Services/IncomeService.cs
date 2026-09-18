@@ -68,9 +68,10 @@ namespace BudgetWise.BLL.Services
 
             var user = await userRepository.GetUserByIdAsync(userId);
 
-            Log.ForContext("UserId", userId)
+            Log.ForContext("IsAuditLog", true)
+               .ForContext("UserId", userId)
                .ForContext("Username", user!.Username)
-               .ForContext("Action", "Create")
+               .ForContext("Type", TransactionType.Create)
                .ForContext("EntityName", "Income")
                .ForContext("Activity", $"Created income '{newIncome.Description}'.")
                .Information($"'{user.Username}' created expense '{newIncome.Description}'.");
@@ -95,9 +96,10 @@ namespace BudgetWise.BLL.Services
             await incomeRepository.SaveChangesAsync();
             var user = await userRepository.GetUserByIdAsync(userId);
 
-            Log.ForContext("UserId", userId)
+            Log.ForContext("IsAuditLog", true)
+               .ForContext("UserId", userId)
                .ForContext("Username", user!.Username)
-               .ForContext("Action", "Update")
+               .ForContext("Type", TransactionType.Update)
                .ForContext("EntityName", "Income")
                .ForContext("Activity", $"Updated income '{existingIncome.Description}'.")
                .Information($"'{user.Username}' updated income '{existingIncome.Description}'.");
@@ -116,9 +118,10 @@ namespace BudgetWise.BLL.Services
             await incomeRepository.SaveChangesAsync();
             var user = await userRepository.GetUserByIdAsync(userId);
 
-            Log.ForContext("UserId", userId)
+            Log.ForContext("IsAuditLog", true)
+               .ForContext("UserId", userId)
                .ForContext("Username", user!.Username)
-               .ForContext("Action", "Delete")
+               .ForContext("Type", TransactionType.Delete)
                .ForContext("EntityName", "Income")
                .ForContext("Activity", $"Deleted income '{existingIncome.Description}'.")
                .Information($"'{user.Username}' deleted income '{existingIncome.Description}'.");

@@ -77,12 +77,14 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ICryptoService, CryptoService>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
 
 builder.Services.AddAutoMapper(cfg => { }, typeof(ExpenseProfile).Assembly);
 builder.Services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly);
 builder.Services.AddAutoMapper(cfg => { }, typeof(CategoryProfile).Assembly);
 builder.Services.AddAutoMapper(cfg => { }, typeof(IncomeProfile).Assembly);
 builder.Services.AddAutoMapper(cfg => { }, typeof(RecentUsersProfile).Assembly);
+builder.Services.AddAutoMapper(cfg => { }, typeof(TransactionProfile).Assembly);
 
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IExpenseRepository, ExpenseRepository>();
@@ -91,6 +93,7 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IIncomeRepository, IncomeRepository>();
 builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 
 builder.Services.AddCors(options =>
 {

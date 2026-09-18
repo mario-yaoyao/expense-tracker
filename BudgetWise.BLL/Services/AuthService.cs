@@ -52,9 +52,10 @@ namespace BudgetWise.BLL.Services
                 };
             }
 
-            Log.ForContext("UserId", user.Id)
+            Log.ForContext("IsAuditLog", true)
+               .ForContext("UserId", user.Id)
                .ForContext("Username", user.Username)
-               .ForContext("Action", "Info")
+               .ForContext("Type", (int)TransactionType.Info)
                .ForContext("EntityName", "Auth")
                .ForContext("Activity", "Account logged in.")
                .Information($"'{user.Username}' account logged in.");
@@ -104,9 +105,10 @@ namespace BudgetWise.BLL.Services
 
             await authRepository.AddUserAsync(user);
 
-            Log.ForContext("UserId", user.Id)
+            Log.ForContext("IsAuditLog", true)
+               .ForContext("UserId", user.Id)
                .ForContext("Username", user.Username)
-               .ForContext("Action", "Create")
+               .ForContext("Type", (int)TransactionType.Create)
                .ForContext("EntityName", "Auth")
                .ForContext("Activity", "Account registered.")
                .Information($"'{user.Username}' account registered.");
@@ -182,9 +184,10 @@ namespace BudgetWise.BLL.Services
 
             await authRepository.UpdatePasswordAsync(user);
 
-            Log.ForContext("UserId", user.Id)
+            Log.ForContext("IsAuditLog", true)
+               .ForContext("UserId", user.Id)
                .ForContext("Username", user.Username)
-               .ForContext("Action", "Update")
+               .ForContext("Type", (int)TransactionType.Update)
                .ForContext("EntityName", "Auth")
                .ForContext("Activity", "Password reset'.")
                .Information($"'{user.Username}' reset their password.");

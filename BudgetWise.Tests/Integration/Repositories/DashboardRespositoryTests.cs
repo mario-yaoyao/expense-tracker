@@ -101,18 +101,18 @@ public class DashboardRepositoryTests
         context.Users.Add(user);
 
         var transactionLogs = Enumerable.Range(1, 11)
-            .Select(i => new TransactionLog
+            .Select(i => new Transaction
             {
                 Id = i,
                 UserId = user.Id,
                 Username = user.Username,
-                Action = i % 2 == 0 ? "Update" : "Create",
+                Type = i % 2 == 0 ? TransactionType.Update : TransactionType.Create,
                 Message = $"{user.Username} performed transaction {i}",
                 TimeStamp = new DateTime(2026, 9, 1).AddDays(i)
             })
             .ToList();
 
-        context.TransactionLogs.AddRange(transactionLogs);
+        context.Transactions.AddRange(transactionLogs);
         await context.SaveChangesAsync();
 
         // Act
@@ -293,12 +293,12 @@ public class DashboardRepositoryTests
         var user = CreateUser();
 
         var transactionLogs = Enumerable.Range(1, 11)
-            .Select(i => new TransactionLog
+            .Select(i => new Transaction
             {
                 Id = i,
                 UserId = user.Id,
                 Username = user.Username,
-                Action = i % 2 == 0 ? "Update" : "Create",
+                Type = i % 2 == 0 ? TransactionType.Update : TransactionType.Create,
                 Activity = i % 2 == 0
                     ? $"Updated transaction {i}"
                     : $"Created transaction {i}",
@@ -307,7 +307,7 @@ public class DashboardRepositoryTests
             .ToList();
 
         context.Users.Add(user);
-        context.TransactionLogs.AddRange(transactionLogs);
+        context.Transactions.AddRange(transactionLogs);
         await context.SaveChangesAsync();
 
         // Act

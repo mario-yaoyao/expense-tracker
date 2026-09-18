@@ -38,8 +38,8 @@ namespace BudgetWise.DAL.Repositories
                     .Take(10)
                     .ToListAsync();
 
-                var recentTransactions = await context.TransactionLogs
-                    .Where(t => !string.IsNullOrEmpty(t.Action))
+                var recentTransactions = await context.Transactions
+                    .Where(t => t.Type.HasValue)
                     .OrderByDescending(t => t.TimeStamp)
                     .Take(10)
                     .Select(t => new RecentTransactionsResDto
@@ -47,7 +47,7 @@ namespace BudgetWise.DAL.Repositories
                         Id = t.Id,
                         UserId = t.UserId,
                         Username = t.Username,
-                        Action = t.Action,
+                        Type = t.Type,
                         Message = t.Message,
                         CreatedAt = t.TimeStamp
                     })
@@ -98,10 +98,10 @@ namespace BudgetWise.DAL.Repositories
 
                 var savingsTrend = BuildSavingsTrend(monthlyIncome, monthlyExpense);
                 var incomeExpenseTrend = BuildIncomeExpenseTrend(previousMonth.Month, monthlyIncome, monthlyExpense);
-                var recentTransactions = await context.TransactionLogs
+                var recentTransactions = await context.Transactions
                     .Where(t =>
                         t.UserId == userId &&
-                        !string.IsNullOrEmpty(t.Action))
+                         t.Type.HasValue)
                     .OrderByDescending(t => t.TimeStamp)
                     .Take(10)
                     .Select(t => new RecentTransactionsResDto
@@ -109,7 +109,7 @@ namespace BudgetWise.DAL.Repositories
                         Id = t.Id,
                         UserId = t.UserId,
                         Username = t.Username,
-                        Action = t.Action,
+                        Type = t.Type,
                         Activity = t.Activity,
                         CreatedAt = t.TimeStamp
                     })

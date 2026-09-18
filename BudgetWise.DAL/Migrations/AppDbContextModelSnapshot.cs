@@ -136,16 +136,13 @@ namespace BudgetWise.DAL.Migrations
                     b.ToTable("Incomes");
                 });
 
-            modelBuilder.Entity("BudgetWise.Models.Models.TransactionLog", b =>
+            modelBuilder.Entity("BudgetWise.Models.Models.Transaction", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Action")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Activity")
                         .HasColumnType("nvarchar(max)");
@@ -167,6 +164,9 @@ namespace BudgetWise.DAL.Migrations
                     b.Property<DateTime>("TimeStamp")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("Type")
+                        .HasColumnType("int");
+
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
 
@@ -175,7 +175,7 @@ namespace BudgetWise.DAL.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TransactionLogs", (string)null);
+                    b.ToTable("Transactions", (string)null);
                 });
 
             modelBuilder.Entity("BudgetWise.Models.Models.User", b =>

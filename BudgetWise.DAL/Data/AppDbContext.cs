@@ -9,7 +9,7 @@ namespace BudgetWise.DAL.Data
         public DbSet<Expense> Expenses { get; set; }
         public DbSet<Income> Incomes { get; set; }
         public DbSet<Category> Categories { get; set; }
-        public DbSet<TransactionLog> TransactionLogs { get; set; }
+        public DbSet<Transaction> Transactions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -41,9 +41,9 @@ namespace BudgetWise.DAL.Data
                 .HasForeignKey(i => i.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<TransactionLog>(entity =>
+            modelBuilder.Entity<Transaction>(entity =>
             {
-                entity.ToTable("TransactionLogs");
+                entity.ToTable("Transactions");
                 entity.HasKey(e => e.Id);
             });
 

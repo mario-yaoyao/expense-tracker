@@ -37,6 +37,8 @@ namespace BudgetWise.BLL.Services
             if (role == "User")
             {
                 category = await categoryRepository.GetCategoryByUserAsync(userId, categoryId);
+
+                Console.WriteLine(category?.User?.Username);
             }
             else
             {
@@ -67,9 +69,10 @@ namespace BudgetWise.BLL.Services
             await categoryRepository.AddCategoryAsync(newCategory);
             var user = await userRepository.GetUserByIdAsync(userId);
 
-            Log.ForContext("UserId", userId)
+            Log.ForContext("IsAuditLog", true)
+               .ForContext("UserId", userId)
                .ForContext("Username", user!.Username)
-               .ForContext("Action", "Create")
+               .ForContext("Type", (int)TransactionType.Create)
                .ForContext("EntityName", "Category")
                .ForContext("Activity", $"Created category '{newCategory.Name}'.")
                .Information($"'{user.Username}' created category '{newCategory.Name}',");
@@ -93,9 +96,10 @@ namespace BudgetWise.BLL.Services
             await categoryRepository.SaveChangesAsync();
             var user = await userRepository.GetUserByIdAsync(userId);
 
-            Log.ForContext("UserId", userId)
+            Log.ForContext("IsAuditLog", true)
+               .ForContext("UserId", userId)
                .ForContext("Username", user!.Username)
-               .ForContext("Action", "Update")
+               .ForContext("Type", (int)TransactionType.Update)
                .ForContext("EntityName", "Category")
                .ForContext("Activity", $"Updated category '{existingCategory.Name}'.")
                .Information($"'{user.Username}' updated category '{existingCategory.Name}',");
@@ -114,9 +118,10 @@ namespace BudgetWise.BLL.Services
             await categoryRepository.SaveChangesAsync();
             var user = await userRepository.GetUserByIdAsync(userId);
 
-            Log.ForContext("UserId", userId)
+            Log.ForContext("IsAuditLog", true)
+               .ForContext("UserId", userId)
                .ForContext("Username", user!.Username)
-               .ForContext("Action", "Delete")
+               .ForContext("Type", (int)TransactionType.Delete)
                .ForContext("EntityName", "Category")
                .ForContext("Activity", $"Deleted category '{existingCategory.Name}'.")
                .Information($"'{user.Username}' deleted category '{existingCategory.Name}'.");

@@ -67,9 +67,10 @@ namespace BudgetWise.BLL.Services
             await expenseRepository.AddExpenseAsync(newExpense);
             var user = await userRepository.GetUserByIdAsync(userId);
 
-            Log.ForContext("UserId", userId)
+            Log.ForContext("IsAuditLog", true)
+               .ForContext("UserId", userId)
                .ForContext("Username", user!.Username)
-               .ForContext("Action", "Create")
+               .ForContext("Type", TransactionType.Create)
                .ForContext("EntityName", "Expense")
                .ForContext("Activity", $"Created expense '{newExpense.Description}'.")
                .Information($"'{user.Username}' created expense '{newExpense.Description}'.");
@@ -94,9 +95,10 @@ namespace BudgetWise.BLL.Services
             await expenseRepository.SaveChangesAsync();
             var user = await userRepository.GetUserByIdAsync(userId);
 
-            Log.ForContext("UserId", userId)
+            Log.ForContext("IsAuditLog", true)
+               .ForContext("UserId", userId)
                .ForContext("Username", user!.Username)
-               .ForContext("Action", "Update")
+               .ForContext("Type", TransactionType.Update)
                .ForContext("EntityName", "Expense")
                .ForContext("Activity", $"Updated expense '{existingExpense.Description}'.")
                .Information($"'{user.Username}' updated expense '{existingExpense.Description}'.");
@@ -115,9 +117,10 @@ namespace BudgetWise.BLL.Services
             await expenseRepository.SaveChangesAsync();
             var user = await userRepository.GetUserByIdAsync(userId);
 
-            Log.ForContext("UserId", userId)
+            Log.ForContext("IsAuditLog", true)
+               .ForContext("UserId", userId)
                .ForContext("Username", user!.Username)
-               .ForContext("Action", "Delete")
+               .ForContext("Type", TransactionType.Delete)
                .ForContext("EntityName", "Expense")
                .ForContext("Activity", $"Deleted expense '{existingExpense.Description}'.")
                .Information($"'{user.Username}' deleted expense '{existingExpense.Description}'.");
