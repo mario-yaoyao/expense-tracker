@@ -109,7 +109,7 @@ namespace BudgetWise.Tests.Unit.Controllers
         }
 
         [Fact]
-        public async Task GetCategoryById_ReturnsNotFound_WhenNoCategoryxist()
+        public async Task GetCategoryById_ReturnsNotFound_WhenNoCategoryExist()
         {
             // Arrange
             var userId = 1;
@@ -143,7 +143,7 @@ namespace BudgetWise.Tests.Unit.Controllers
             var controller = CreateController(mockService);
             SetUserClaims(controller);
 
-            var request = CreateCategory();
+            var request = CreateCategoryRequest();
 
             mockService.Setup(x => x.CreateCategoryAsync(userId, request))
                 .ReturnsAsync(true);
@@ -168,7 +168,7 @@ namespace BudgetWise.Tests.Unit.Controllers
             var controller = CreateController(mockService);
             SetUserClaims(controller);
 
-            var request = CreateCategory();
+            var request = CreateCategoryRequest();
 
             mockService
                 .Setup(x => x.CreateCategoryAsync(userId, request))
@@ -197,7 +197,7 @@ namespace BudgetWise.Tests.Unit.Controllers
             var controller = CreateController(mockService);
             SetUserClaims(controller);
 
-            var request = UpdateCategory();
+            var request = UpdateCategoryRequest();
 
             mockService.Setup(x => x.UpdateCategoryAsync(userId, categoryId, request))
                 .ReturnsAsync(true);
@@ -223,7 +223,7 @@ namespace BudgetWise.Tests.Unit.Controllers
             var controller = CreateController(mockService);
             SetUserClaims(controller);
 
-            var request = UpdateCategory();
+            var request = UpdateCategoryRequest();
 
             mockService.Setup(x => x.UpdateCategoryAsync(userId, categoryId, request))
                 .ReturnsAsync(false);
@@ -250,7 +250,7 @@ namespace BudgetWise.Tests.Unit.Controllers
             var controller = CreateController(mockService);
             SetUserClaims(controller);
 
-            var request = UpdateCategory();
+            var request = UpdateCategoryRequest();
 
             mockService.Setup(x => x.UpdateCategoryAsync(userId, categoryId, request))
                 .ThrowsAsync(new Exception("Database error"));
@@ -366,7 +366,7 @@ namespace BudgetWise.Tests.Unit.Controllers
             return new CategoryController(mockService.Object);
         }
 
-        private static CreateCategoryReqDto CreateCategory(
+        private static CreateCategoryReqDto CreateCategoryRequest(
             string name = "Rent",
             CategoryType type = CategoryType.Expense)
         {
@@ -377,7 +377,7 @@ namespace BudgetWise.Tests.Unit.Controllers
             };
         }
 
-        private static UpdateCategoryReqDto UpdateCategory(
+        private static UpdateCategoryReqDto UpdateCategoryRequest(
             string name = "Rent",
             CategoryType type = CategoryType.Expense)
         {

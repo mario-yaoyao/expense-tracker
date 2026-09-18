@@ -25,7 +25,7 @@ namespace BudgetWise.Tests.Unit.Services
             var paginationReq = CreatePaginationRequest();
             var category = CreateCategory();
 
-            var request = new List<Income>
+            var income = new List<Income>
             {
                 CreateIncome(category),
                 CreateIncome(category, id: secondIncomeId),
@@ -34,23 +34,23 @@ namespace BudgetWise.Tests.Unit.Services
             var mappedIncomes = new List<IncomeResDto>
             {
                 CreateIncomeResponse(
-                    id: request[0].Id,
-                    userId: request[0].UserId,
-                    description: request[0].Description,
-                    amount: request[0].Amount,
-                    categoryName: request[0].Category.Name,
-                    categoryType: request[0].Category.Type),
+                    id: income[0].Id,
+                    userId: income[0].UserId,
+                    description: income[0].Description,
+                    amount: income[0].Amount,
+                    categoryName: income[0].Category.Name,
+                    categoryType: income[0].Category.Type),
                 CreateIncomeResponse(
-                    id: request[1].Id,
-                    userId: request[1].UserId,
-                    description: request[1].Description,
-                    amount: request[1].Amount,
-                    categoryName: request[1].Category.Name,
-                    categoryType: request[1].Category.Type)
+                    id: income[1].Id,
+                    userId: income[1].UserId,
+                    description: income[1].Description,
+                    amount: income[1].Amount,
+                    categoryName: income[1].Category.Name,
+                    categoryType: income[1].Category.Type)
             };
 
             var expectedResponse = (
-                Data: request,
+                Data: income,
                 TotalExpense: 49.49m,
                 HighestExpense: new HighestAmountResDto
                 {
@@ -99,7 +99,7 @@ namespace BudgetWise.Tests.Unit.Services
             var paginationReq = CreatePaginationRequest();
             var category = CreateCategory();
 
-            var request = new List<Income>
+            var income = new List<Income>
             {
                 CreateIncome(category),
                 CreateIncome(category, secondIncomeId),
@@ -109,28 +109,30 @@ namespace BudgetWise.Tests.Unit.Services
             var mappedIncomes = new List<IncomeResDto>
             {
                 CreateIncomeResponse(
-                    id: request[0].Id,
-                    userId: request[0].UserId,
-                    description: request[0].Description,
-                    amount: request[0].Amount,
-                    categoryName: request[0].Category.Name,
-                    categoryType: request[0].Category.Type),
+                    id: income[0].Id,
+                    userId: income[0].UserId,
+                    description: income[0].Description,
+                    amount: income[0].Amount,
+                    categoryName: income[0].Category.Name,
+                    categoryType: income[0].Category.Type),
                 CreateIncomeResponse(
-                    id: request[1].Id,
-                    userId: request[1].UserId,
-                    description: request[1].Description,
-                    amount: request[1].Amount,
-                    categoryName: request[1].Category.Name,
-                    categoryType: request[1].Category.Type),
+                    id: income[1].Id,
+                    userId: income[1].UserId,
+                    description: income[1].Description,
+                    amount: income[1].Amount,
+                    categoryName: income[1].Category.Name,
+                    categoryType: income[1].Category.Type),
                 CreateIncomeResponse(
-                    id: request[2].Id,
-                    userId: request[2].UserId,
-                    description: request[2].Description,
-                    amount: request[2].Amount)
+                    id: income[2].Id,
+                    userId: income[2].UserId,
+                    description: income[2].Description,
+                    amount: income[2].Amount,
+                    categoryName: income[2].Category.Name,
+                    categoryType: income[2].Category.Type)
             };
 
             var expectedResponse = (
-                Data: request,
+                Data: income,
                 TotalCount: 3,
                 HasNextPage: false
             );
@@ -170,10 +172,10 @@ namespace BudgetWise.Tests.Unit.Services
             var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockMapper);
 
             var category = CreateCategory();
-            var request = CreateIncome(category, id: incomeId, userId: userId);
+            var income = CreateIncome(category, id: incomeId, userId: userId);
             var mappedIncome = CreateIncomeResponse(
-                description: request.Description!,
-                amount: request.Amount,
+                description: income.Description!,
+                amount: income.Amount,
                 categoryName: category.Name,
                 categoryType: category.Type,
                 createdAt: DateTime.UtcNow,
@@ -184,7 +186,7 @@ namespace BudgetWise.Tests.Unit.Services
                 .Returns(mappedIncome);
 
             mockIncomeRepo.Setup(x => x.GetIncomeByUserAsync(userId, incomeId))
-                .ReturnsAsync(request);
+                .ReturnsAsync(income);
 
             // Act
             var result = await incomeService.GetIncomeByIdAsync(userId, "User", incomeId);
@@ -192,8 +194,8 @@ namespace BudgetWise.Tests.Unit.Services
             // Assert
             Assert.NotNull(result);
             Assert.Equal(incomeId, result.Id);
-            Assert.Equal(request.Description, result.Description);
-            Assert.Equal(request.Amount, result.Amount);
+            Assert.Equal(income.Description, result.Description);
+            Assert.Equal(income.Amount, result.Amount);
 
             mockIncomeRepo.Verify(
                 x => x.GetIncomeByUserAsync(userId, incomeId),
@@ -287,7 +289,7 @@ namespace BudgetWise.Tests.Unit.Services
                 CreateCategory(id: 2, name: "Bonus")
             };
 
-            var request = UpdateIncome();
+            var request = UpdateIncomeRequest();
             var existingIncome = CreateIncome(categories[0]);
             var mappedIncome = CreateIncomeResponse(
                 description: request.Description!,
@@ -341,7 +343,7 @@ namespace BudgetWise.Tests.Unit.Services
             var mockMapper = new Mock<IMapper>();
             var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockMapper);
 
-            var request = UpdateIncome();
+            var request = UpdateIncomeRequest();
 
             mockIncomeRepo.Setup(x => x.GetIncomeByUserAsync(userId, incomeId))
                 .ReturnsAsync((Income?)null);
@@ -451,7 +453,7 @@ namespace BudgetWise.Tests.Unit.Services
             };
         }
 
-        private static UpdateIncomeReqDto UpdateIncome(
+        private static UpdateIncomeReqDto UpdateIncomeRequest(
             string description = "Updated Income",
             decimal amount = 450m,
             int categoryId = 1)

@@ -1,5 +1,4 @@
 ﻿using BudgetWise.BLL.Interfaces;
-using BudgetWise.BLL.Services;
 using BudgetWise.Models.Dtos.Requests;
 using BudgetWise.Models.Dtos.Responses;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +8,7 @@ namespace BudgetWise.Controllers
 {
     [Route("api/transactions")]
     [ApiController]
-    public class TransactionsController(ITransactionService transactionsService) : ControllerBase
+    public class TransactionController(ITransactionService transactionsService) : ControllerBase
     {
         private int GetUserId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         private string GetRole() => User.FindFirstValue(ClaimTypes.Role)!;

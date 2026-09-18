@@ -31,9 +31,9 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mappedUsers = new List<UserResDto>
             {
-                CreateMappedUser(),
-                CreateMappedUser(users[1].Id, users[1].Username, users[1].Role, users[1].IsActive, users[1].CreatedAt),
-                CreateMappedUser(users[2].Id, users[2].Username, users[2].Role, users[2].IsActive, users[2].CreatedAt)
+                CreateUserResponse(),
+                CreateUserResponse(users[1].Id, users[1].Username, users[1].Role, users[1].IsActive, users[1].CreatedAt),
+                CreateUserResponse(users[2].Id, users[2].Username, users[2].Role, users[2].IsActive, users[2].CreatedAt)
             };
 
             var expectedResponse = (
@@ -75,7 +75,7 @@ namespace BudgetWise.Tests.Unit.Services
             var userService = CreateUserService(mockUserRepo, mockMapper);
 
             var user = CreateUser();
-            var mappedUser = CreateMappedUser();
+            var mappedUser = CreateUserResponse();
 
             mockMapper
                 .Setup(x => x.Map<UserResDto>(It.IsAny<User>()))
@@ -134,7 +134,7 @@ namespace BudgetWise.Tests.Unit.Services
             var userService = CreateUserService(mockUserRepo, mockMapper);
 
             var user = CreateUser();
-            var mappedUser = CreateMappedUser();
+            var mappedUser = CreateUserResponse();
 
             mockMapper
             .Setup(x => x.Map<UserResDto>(It.IsAny<User>()))
@@ -207,7 +207,7 @@ namespace BudgetWise.Tests.Unit.Services
             };
         }
 
-        private static UserResDto CreateMappedUser(
+        private static UserResDto CreateUserResponse(
             int id = 1,
             string username = "testuser",
             UserRole role = UserRole.User,
@@ -226,37 +226,6 @@ namespace BudgetWise.Tests.Unit.Services
                 IsActive = isActive,
                 CreatedAt = createdAt ?? DateTime.UtcNow,
                 UpdatedAt = updatedAt ?? DateTime.UtcNow
-            };
-        }
-
-        private static Category CreateCategory(
-            int id = 1,
-            string name = "Transportation")
-        {
-            return new Category
-            {
-                Id = id,
-                Name = name
-            };
-        }
-
-        private static Expense CreateExpense(
-            int id,
-            int userId,
-            Category category,
-            bool isDeleted = false)
-        {
-            return new Expense
-            {
-                Id = id,
-                UserId = userId,
-                Description = $"Expense {id}",
-                Amount = 50m,
-                CategoryId = category.Id,
-                Category = category,
-                IsDeleted = isDeleted,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = null
             };
         }
 

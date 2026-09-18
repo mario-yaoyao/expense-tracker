@@ -164,14 +164,14 @@ namespace BudgetWise.Tests.Unit.Controllers
 
             var incomes = new List<IncomeResDto>
             {
-                CreateIncome(amount: 1000),
-                CreateIncome(id: 2, amount: 1500)
+                CreateIncomeResponse(amount: 1000),
+                CreateIncomeResponse(id: 2, amount: 1500)
             };
 
             var expenses = new List<CreateExpenseReqDto>
             {
-                CreateExpense(amount: 400),
-                CreateExpense(description: "Lunch", amount: 600)
+                CreateExpenseRequest(amount: 400),
+                CreateExpenseRequest(description: "Lunch", amount: 600)
             };
 
             var totalIncome = incomes.Sum(i => i.Amount);
@@ -343,7 +343,7 @@ namespace BudgetWise.Tests.Unit.Controllers
             };
         }
 
-        private static CreateExpenseReqDto CreateExpense(
+        private static CreateExpenseReqDto CreateExpenseRequest(
            string description = "Breakfast",
            decimal amount = 50.00m,
            int categoryId = 1)
@@ -356,7 +356,7 @@ namespace BudgetWise.Tests.Unit.Controllers
             };
         }
 
-        private static IncomeResDto CreateIncome(
+        private static IncomeResDto CreateIncomeResponse(
             int id = 1,
             int userId = 1,
             string description = "Monthly salary for month of august",

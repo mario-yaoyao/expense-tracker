@@ -35,8 +35,8 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mappedExpenses = new List<ExpenseResDto>
             {
-                CreateMappedExpense(expenses[0].Id, expenses[0].UserId, expenses[0].Description, expenses[0].Amount, expenses[0].Category.Name, expenses[0].Category.Type),
-                CreateMappedExpense(expenses[1].Id, expenses[1].UserId, expenses[1].Description, expenses[1].Amount, expenses[1].Category.Name, expenses[1].Category.Type),
+                CreateExpenseResponse(expenses[0].Id, expenses[0].UserId, expenses[0].Description, expenses[0].Amount, expenses[0].Category.Name, expenses[0].Category.Type),
+                CreateExpenseResponse(expenses[1].Id, expenses[1].UserId, expenses[1].Description, expenses[1].Amount, expenses[1].Category.Name, expenses[1].Category.Type),
             };
 
             var expectedResponse = (
@@ -98,9 +98,9 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mappedExpenses = new List<ExpenseResDto>
             {
-                CreateMappedExpense(expenses[0].Id, expenses[0].UserId, expenses[0].Description, expenses[0].Amount, expenses[0].Category.Name, expenses[0].Category.Type),
-                CreateMappedExpense(expenses[1].Id, expenses[1].UserId, expenses[1].Description, expenses[1].Amount, expenses[1].Category.Name, expenses[1].Category.Type),
-                CreateMappedExpense(expenses[2].Id, expenses[2].UserId, expenses[2].Description, expenses[2].Amount, expenses[2].Category.Name, expenses[2].Category.Type),
+                CreateExpenseResponse(expenses[0].Id, expenses[0].UserId, expenses[0].Description, expenses[0].Amount, expenses[0].Category.Name, expenses[0].Category.Type),
+                CreateExpenseResponse(expenses[1].Id, expenses[1].UserId, expenses[1].Description, expenses[1].Amount, expenses[1].Category.Name, expenses[1].Category.Type),
+                CreateExpenseResponse(expenses[2].Id, expenses[2].UserId, expenses[2].Description, expenses[2].Amount, expenses[2].Category.Name, expenses[2].Category.Type),
             };
 
             var expectedResponse = (
@@ -145,7 +145,7 @@ namespace BudgetWise.Tests.Unit.Services
 
             var category = CreateCategory();
             var expense = CreateExpense(category);
-            var mappedExpense = CreateMappedExpense(expense.Id, expense.UserId, expense.Description, expense.Amount, expense.Category.Name, expense.Category.Type);
+            var mappedExpense = CreateExpenseResponse(expense.Id, expense.UserId, expense.Description, expense.Amount, expense.Category.Name, expense.Category.Type);
 
             mockMapper
                 .Setup(x => x.Map<ExpenseResDto>(It.IsAny<Expense>()))
@@ -206,8 +206,8 @@ namespace BudgetWise.Tests.Unit.Services
             var expenseService = CreateCategoryService(mockExpenseRepo, mockUserRepo, mockMapper);
 
             var category = CreateCategory();
-            var expense = CreateExpenseRequest();
-            var mappedExpense = CreateMappedExpense(description: expense.Description, amount: expense.Amount);
+            var request = CreateExpenseRequest();
+            var mappedExpense = CreateExpenseResponse(description: request.Description, amount: request.Amount);
 
             mockMapper
                 .Setup(x => x.Map<ExpenseResDto>(It.IsAny<Expense>()))
@@ -222,7 +222,7 @@ namespace BudgetWise.Tests.Unit.Services
                 });
 
             // Act
-            var result = await expenseService.CreateExpenseAsync(userId, expense);
+            var result = await expenseService.CreateExpenseAsync(userId, request);
 
             // Assert
             Assert.True(result);
@@ -250,9 +250,9 @@ namespace BudgetWise.Tests.Unit.Services
                 CreateCategory(id: secondExpenseId, name: "Grocery")
             };
 
-            var request = UpdateExpense();
+            var request = UpdateExpenseRequest();
             var existingExpense = CreateExpense(categories[0]);
-            var mappedExpense = CreateMappedExpense(
+            var mappedExpense = CreateExpenseResponse(
                 description: request.Description,
                 amount: request.Amount!.Value,
                 categoryName: categories[1].Name,
@@ -301,7 +301,7 @@ namespace BudgetWise.Tests.Unit.Services
             var mockMapper = new Mock<IMapper>();
             var expenseService = CreateCategoryService(mockExpenseRepo, mockUserRepo, mockMapper);
 
-            var request = UpdateExpense();
+            var request = UpdateExpenseRequest();
 
             mockExpenseRepo.Setup(x => x.GetExpenseByUserAsync(userId, expenseId))
                 .ReturnsAsync((Expense?)null);
@@ -411,7 +411,7 @@ namespace BudgetWise.Tests.Unit.Services
             };
         }
 
-        private static UpdateExpenseReqDto UpdateExpense(
+        private static UpdateExpenseReqDto UpdateExpenseRequest(
             string description = "Updated Expense",
             decimal amount = 450m,
             int categoryId = 1)
@@ -437,7 +437,7 @@ namespace BudgetWise.Tests.Unit.Services
             };
         }
 
-        private static ExpenseResDto CreateMappedExpense(
+        private static ExpenseResDto CreateExpenseResponse(
             int id = 1,
             int userId = 1,
             string description = "Test Expense",

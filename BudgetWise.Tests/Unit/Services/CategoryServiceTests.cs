@@ -33,8 +33,8 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mappedCategories = new List<CategoryResDto>
             {
-                CreateMappedCategoryResponse(categories[0].Id, categories[0].UserId, categories[0].Name, categories[0].Type, categories[0].IsDeleted),
-                CreateMappedCategoryResponse(categories[1].Id, categories[1].UserId, categories[1].Name, categories[1].Type, categories[1].IsDeleted)
+                CreateCategoryResponse(categories[0].Id, categories[0].UserId, categories[0].Name, categories[0].Type, categories[0].IsDeleted),
+                CreateCategoryResponse(categories[1].Id, categories[1].UserId, categories[1].Name, categories[1].Type, categories[1].IsDeleted)
             };
 
             var expectedResponse = (
@@ -63,7 +63,7 @@ namespace BudgetWise.Tests.Unit.Services
         }
 
         [Fact]
-        public async Task GetCategoriesAsync_ReturnsAllCategories_WhenRoleIsNotUser()
+        public async Task GetCategoriesAsync_ReturnsAllCategories_WhenRoleIsSuperAdmin()
         {
             // Arrange
             var secondCategoryId = 2;
@@ -88,9 +88,9 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mappedCategories = new List<CategoryResDto>
             {
-                CreateMappedCategoryResponse(categories[0].Id, categories[0].UserId, categories[0].Name, categories[0].Type, categories[0].IsDeleted),
-                CreateMappedCategoryResponse(categories[1].Id, categories[1].UserId, categories[1].Name, categories[1].Type, categories[1].IsDeleted),
-                CreateMappedCategoryResponse(categories[2].Id, categories[2].UserId, categories[2].Name, categories[2].Type, categories[2].IsDeleted)
+                CreateCategoryResponse(categories[0].Id, categories[0].UserId, categories[0].Name, categories[0].Type, categories[0].IsDeleted),
+                CreateCategoryResponse(categories[1].Id, categories[1].UserId, categories[1].Name, categories[1].Type, categories[1].IsDeleted),
+                CreateCategoryResponse(categories[2].Id, categories[2].UserId, categories[2].Name, categories[2].Type, categories[2].IsDeleted)
             };
 
             var expectedResponse = (
@@ -131,7 +131,7 @@ namespace BudgetWise.Tests.Unit.Services
             var categoryService = CreateCategoryService(mockCategoryRepo, mockUserRepo, mockMapper);
 
             var category = CreateCategory();
-            var mappedCategory = CreateMappedCategoryResponse();
+            var mappedCategory = CreateCategoryResponse();
 
             mockMapper
                 .Setup(x => x.Map<CategoryResDto>(It.IsAny<Category>()))
@@ -192,7 +192,7 @@ namespace BudgetWise.Tests.Unit.Services
             var categoryService = CreateCategoryService(mockCategoryRepo, mockUserRepo, mockMapper);
 
             var request = CreateCategoryRequest();
-            var mappedCategory = CreateMappedCategoryResponse();
+            var mappedCategory = CreateCategoryResponse();
 
             mockMapper
                 .Setup(x => x.Map<CategoryResDto>(It.IsAny<Category>()))
@@ -228,9 +228,9 @@ namespace BudgetWise.Tests.Unit.Services
             var mockMapper = new Mock<IMapper>();
             var categoryService = CreateCategoryService(mockCategoryRepo, mockUserRepo, mockMapper);
 
-            var request = UpdateCategory();
+            var request = UpdateCategoryRequest();
             var existingCategory = CreateCategory(name: request.Name, type: request.Type!.Value);
-            var mappedCategory = CreateMappedCategoryResponse();
+            var mappedCategory = CreateCategoryResponse();
 
             mockMapper
                 .Setup(x => x.Map<CategoryResDto>(It.IsAny<Category>()))
@@ -276,7 +276,7 @@ namespace BudgetWise.Tests.Unit.Services
             var mockMapper = new Mock<IMapper>();
             var categoryService = CreateCategoryService(mockCategoryRepo, mockUserRepo, mockMapper);
 
-            var request = UpdateCategory();
+            var request = UpdateCategoryRequest();
 
             mockCategoryRepo.Setup(x => x.GetCategoryByUserAsync(userId, categoryId))
                 .ReturnsAsync((Category?)null);
@@ -373,7 +373,7 @@ namespace BudgetWise.Tests.Unit.Services
             };
         }
 
-        private static CategoryResDto CreateMappedCategoryResponse(
+        private static CategoryResDto CreateCategoryResponse(
             int id = 1,
             int userId = 1,
             string name = "Rent",
@@ -392,7 +392,7 @@ namespace BudgetWise.Tests.Unit.Services
             };
         }
 
-        private static UpdateCategoryReqDto UpdateCategory(
+        private static UpdateCategoryReqDto UpdateCategoryRequest(
             string name = "Rent",
             CategoryType type = CategoryType.Expense)
         {

@@ -10,24 +10,22 @@ namespace BudgetWise.Tests.Integration.Repositories
     public class CategoryRepositoryTests
     {
         [Fact]
-        public async Task GetAllCategoriesAsync_ReturnsAllNonDeletedCategories()
+        public async Task GetAllCategoriesAsync_ReturnsAllCategories()
         {
             // Arrange
-            var firstCategoryId = 1;
             var secondCategoryId = 2;
 
             using var context = CreateContext();
             var repository = CreateRepository(context);
             var user = CreateUser();
 
-            context.Users.Add(user);
-
             var categories = new List<Category>
             {
-                CreateCategory(id: firstCategoryId, isDeleted: true),
+                CreateCategory(isDeleted: true),
                 CreateCategory(id: secondCategoryId),
             };
 
+            context.Users.Add(user);
             context.Categories.AddRange(categories);
             await context.SaveChangesAsync();
 
@@ -73,12 +71,12 @@ namespace BudgetWise.Tests.Integration.Repositories
             await context.SaveChangesAsync();
 
             // Act
-            var result = await repository.GetCategoriesByUserAsync(firstUserId);
+            var (data, _) = await repository.GetCategoriesByUserAsync(firstUserId);
 
             // Assert
-            Assert.Single(result.data);
+            Assert.Single(data);
 
-            var expense = result.data.Single();
+            var expense = data.Single();
 
             Assert.Equal(2, expense.Id);
             Assert.Equal(firstUserId, expense.UserId);
@@ -87,11 +85,9 @@ namespace BudgetWise.Tests.Integration.Repositories
         }
 
         [Fact]
-        public async Task GetCategoryByUserAsync_ReturnsCategory_WhenExpenseExistsForUser()
+        public async Task GetCategoryByUserAsync_ReturnsCategory_WhenCategoryExistsForUser()
         {
             // Arrange
-            var userId = 1;
-
             using var context = CreateContext();
             var repository = CreateRepository(context);
 
@@ -103,12 +99,12 @@ namespace BudgetWise.Tests.Integration.Repositories
             await context.SaveChangesAsync();
 
             // Act
-            var result = await repository.GetCategoryByUserAsync(userId, category.Id);
+            var result = await repository.GetCategoryByUserAsync(user.Id, category.Id);
 
             // Assert
             Assert.NotNull(result);
             Assert.Equal(category.Id, result.Id);
-            Assert.Equal(userId, result.UserId);
+            Assert.Equal(user.Id, result.UserId);
             Assert.Equal(category.Name, result.Name);
         }
 
@@ -153,7 +149,7 @@ namespace BudgetWise.Tests.Integration.Repositories
         }
 
         [Fact]
-        public async Task GetExpenseByIdAsync_ReturnsNull_WhenExpenseDoesNotExist()
+        public async Task GetCategoryByIdAsync_ReturnsNull_WhenExpenseDoesNotExist()
         {
             // Arrange
             var categoryId = 1;

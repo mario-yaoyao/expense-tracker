@@ -69,7 +69,7 @@ namespace BudgetWise.Tests.Unit.Services
             var mockMapper = new Mock<IMapper>();
             var profileService = CreateProfileService(mockProfileRepo, mockUserRepo, mockMapper);
 
-            var request = ChangePassword();
+            var request = ChangePasswordRequest();
 
             mockUserRepo
                 .Setup(x => x.GetUserByIdAsync(userId))
@@ -104,7 +104,7 @@ namespace BudgetWise.Tests.Unit.Services
             var mockMapper = new Mock<IMapper>();
             var profileService = CreateProfileService(mockProfileRepo, mockUserRepo, mockMapper);
 
-            var request = ChangePassword(currentPassword: "wrongpassword123");
+            var request = ChangePasswordRequest(currentPassword: "wrongpassword123");
 
             var user = new User
             {
@@ -147,7 +147,7 @@ namespace BudgetWise.Tests.Unit.Services
             var mockMapper = new Mock<IMapper>();
             var profileService = CreateProfileService(mockProfileRepo, mockUserRepo, mockMapper);
 
-            var request = ChangePassword(newPassword: "oldpassword123");
+            var request = ChangePasswordRequest(newPassword: "oldpassword123");
 
             var user = new User
             {
@@ -190,7 +190,7 @@ namespace BudgetWise.Tests.Unit.Services
                 mockMapper!.Object);
         }
 
-        private static ChangePasswordReqDto ChangePassword(
+        private static ChangePasswordReqDto ChangePasswordRequest(
             string currentPassword = "oldpassword123",
             string newPassword = "newpassword123")
         {

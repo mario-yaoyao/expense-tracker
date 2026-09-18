@@ -105,7 +105,7 @@ namespace BudgetWise.Tests.Unit.Services
             var authService = CreateAuthService(mockRepo, mockCryptoService: mockCryptoService);
 
             var encryptedReq = CreatedEncryptedRequest();
-            var loginRequest = CreateLoginRequest();
+            var loginReq = CreateLoginRequest();
             var user = CreateUser();
 
             user.HashedPassword = new PasswordHasher<User>().HashPassword(user, "Password123!");
@@ -115,7 +115,7 @@ namespace BudgetWise.Tests.Unit.Services
 
             mockCryptoService
                 .Setup(x => x.Decrypt(It.IsAny<string>()))
-                .Returns(JsonSerializer.Serialize(loginRequest));
+                .Returns(JsonSerializer.Serialize(loginReq));
 
             // Act
             var result = await authService.LoginAsync(encryptedReq);
