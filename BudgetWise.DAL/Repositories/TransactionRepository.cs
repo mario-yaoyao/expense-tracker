@@ -21,7 +21,7 @@ namespace BudgetWise.DAL.Repositories
 
                 if (!string.IsNullOrWhiteSpace(search))
                 {
-                    query = query.Where(t => t.Activity!.Contains(search) || t.Message.Contains(search));
+                    query = query.Where(t => t.Message.Contains(search));
                 }
 
                 if (startDate.HasValue)
@@ -74,7 +74,7 @@ namespace BudgetWise.DAL.Repositories
 
                 if (!string.IsNullOrWhiteSpace(search))
                 {
-                    query = query.Where(t => t.Activity!.Contains(search) || t.Message.Contains(search));
+                    query = query.Where(t => t.Activity!.Contains(search));
                 }
 
                 if (startDate.HasValue)
