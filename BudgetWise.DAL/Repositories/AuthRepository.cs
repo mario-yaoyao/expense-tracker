@@ -1,5 +1,6 @@
-﻿using BudgetWise.DAL.Interfaces;
+﻿using Azure.Core;
 using BudgetWise.DAL.Data;
+using BudgetWise.DAL.Interfaces;
 using BudgetWise.Models.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -74,6 +75,34 @@ namespace BudgetWise.DAL.Repositories
             catch (Exception ex)
             {
                 logger.LogError("Database error while checking if username is taken: {Message}", ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<bool> IsEmailTakenAsync(string email)
+        {
+            try
+            {
+                return await context.Users
+                    .AnyAsync(u => u.Email == email);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Database error while checking if email address is taken: {Message}", ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<bool> IsContactNumberTakenAsync(string contactNumber)
+        {
+            try
+            {
+                return await context.Users
+                    .AnyAsync(u => u.ContactNumber == contactNumber);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Database error while checking if contact number is taken: {Message}", ex.Message);
                 throw;
             }
         }

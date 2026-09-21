@@ -90,6 +90,26 @@ namespace BudgetWise.BLL.Services
                 };
             }
 
+            const string registrationError = "Registration could not be completed. Please verify your information and try again.";
+
+            if (await IsEmailTakenAsync(registerRequest.Email))
+            {
+                return new ServiceResult<object>
+                {
+                    Success = false,
+                    ErrorMessage = registrationError
+                };
+            }
+
+            if (await IsContactNumberTakenAsync(registerRequest.ContactNumber))
+            {
+                return new ServiceResult<object>
+                {
+                    Success = false,
+                    ErrorMessage = registrationError
+                };
+            }
+
             var user = new User
             {
                 FullName = registerRequest.FullName,
@@ -189,7 +209,7 @@ namespace BudgetWise.BLL.Services
                .ForContext("Username", user.Username)
                .ForContext("Type", (int)TransactionType.Update)
                .ForContext("EntityName", "Auth")
-               .ForContext("Activity", "Password reset'.")
+               .ForContext("Activity", "Password reset.")
                .Information($"'{user.Username}' reset their password.");
 
             return new ServiceResult<object>
@@ -215,6 +235,12 @@ namespace BudgetWise.BLL.Services
 
         private async Task<bool> IsUsernameTaken(string username) =>
             await authRepository.IsUsernameTakenAsync(username);
+
+        private async Task<bool> IsEmailTakenAsync(string email) =>
+            await authRepository.IsEmailTakenAsync(email);
+
+        private async Task<bool> IsContactNumberTakenAsync(string contactNumber) =>
+            await authRepository.IsContactNumberTakenAsync(contactNumber);
 
         private async Task<TokenResDto> CreateTokenResponse(User user)
         {

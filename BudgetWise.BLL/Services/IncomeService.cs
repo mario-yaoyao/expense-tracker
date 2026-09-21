@@ -71,7 +71,7 @@ namespace BudgetWise.BLL.Services
             Log.ForContext("IsAuditLog", true)
                .ForContext("UserId", userId)
                .ForContext("Username", user!.Username)
-               .ForContext("Type", TransactionType.Create)
+               .ForContext("Type", (int)TransactionType.Create)
                .ForContext("EntityName", "Income")
                .ForContext("Activity", $"Created income '{newIncome.Description}'.")
                .Information($"'{user.Username}' created expense '{newIncome.Description}'.");
@@ -99,7 +99,7 @@ namespace BudgetWise.BLL.Services
             Log.ForContext("IsAuditLog", true)
                .ForContext("UserId", userId)
                .ForContext("Username", user!.Username)
-               .ForContext("Type", TransactionType.Update)
+               .ForContext("Type", (int)TransactionType.Update)
                .ForContext("EntityName", "Income")
                .ForContext("Activity", $"Updated income '{existingIncome.Description}'.")
                .Information($"'{user.Username}' updated income '{existingIncome.Description}'.");
@@ -121,7 +121,7 @@ namespace BudgetWise.BLL.Services
             Log.ForContext("IsAuditLog", true)
                .ForContext("UserId", userId)
                .ForContext("Username", user!.Username)
-               .ForContext("Type", TransactionType.Delete)
+               .ForContext("Type", (int)TransactionType.Delete)
                .ForContext("EntityName", "Income")
                .ForContext("Activity", $"Deleted income '{existingIncome.Description}'.")
                .Information($"'{user.Username}' deleted income '{existingIncome.Description}'.");

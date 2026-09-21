@@ -60,9 +60,9 @@ namespace BudgetWise.BLL.Services
             Log.ForContext("IsAuditLog", true)
                .ForContext("UserId", userId)
                .ForContext("Username", user.Username)
-               .ForContext("Type", TransactionType.Update)
+               .ForContext("Type", (int)TransactionType.Update)
                .ForContext("EntityName", "Profile")
-               .ForContext("Activity", $"Password changed.'.")
+               .ForContext("Activity", "Password changed.")
                .Information($"'{user.Username}' password changed.");
 
             return new ServiceResult<object>

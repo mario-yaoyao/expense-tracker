@@ -40,8 +40,8 @@ namespace BudgetWise.BLL.Services
             await userRepository.SaveChangesAsync();
 
             var type = existingUser.IsActive
-                ? TransactionType.Create
-                : TransactionType.Delete;
+                ? (int)TransactionType.Create
+                : (int)TransactionType.Delete;
 
             var activity = existingUser.IsActive
                 ? "Account activated."
