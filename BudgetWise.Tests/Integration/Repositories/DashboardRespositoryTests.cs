@@ -278,8 +278,8 @@ public class DashboardRepositoryTests
 
         // Assert
         Assert.NotNull(incomeExpenseTrend);
-        Assert.Equal(1500, incomeExpenseTrend[0].Income);
-        Assert.Equal(400, incomeExpenseTrend[1].Expense);
+        Assert.Equal(incomes[1].Amount, incomeExpenseTrend[0].Income);
+        Assert.Equal(expenses[0].Amount, incomeExpenseTrend[1].Expense);
         Assert.Equal(2, incomeExpenseTrend.Count);
     }
 

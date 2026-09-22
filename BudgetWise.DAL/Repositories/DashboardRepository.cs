@@ -70,7 +70,7 @@ namespace BudgetWise.DAL.Repositories
                 var currentYear = currentDate.Year;
                 var previousMonth = currentDate.AddMonths(-1);
 
-                var metrics = await GetUserDashboardMetricsAsync(context, userId);
+                var metrics = await GetUserDashboardMetricsAsync(context, userId, currentDate.Month, currentYear);
 
                 var monthlyIncome = await context.Incomes
                     .Where(i => i.UserId == userId &&
@@ -97,7 +97,7 @@ namespace BudgetWise.DAL.Repositories
                     .ToListAsync();
 
                 var savingsTrend = BuildSavingsTrend(monthlyIncome, monthlyExpense);
-                var incomeExpenseTrend = BuildIncomeExpenseTrend(previousMonth.Month, monthlyIncome, monthlyExpense);
+                var incomeExpenseTrend = BuildIncomeExpenseTrend(currentDate.Month, monthlyIncome, monthlyExpense);
                 var recentTransactions = await context.Transactions
                     .Where(t =>
                         t.UserId == userId &&
@@ -134,21 +134,48 @@ namespace BudgetWise.DAL.Repositories
 
         private static async Task<UserDashboardMetricsResDto> GetUserDashboardMetricsAsync(
             AppDbContext context,
-            int userId)
+            int userId,
+            int currentMonth,
+            int currentYear)
         {
             var totalIncome = await context.Incomes
-                .Where(i => i.UserId == userId && !i.IsDeleted)
+                .Where(i =>
+                    i.UserId == userId &&
+                    !i.IsDeleted &&
+                    i.CreatedAt.Month == currentMonth &&
+                    i.CreatedAt.Year == currentYear)
                 .SumAsync(i => i.Amount);
 
             var totalExpense = await context.Expenses
-                .Where(e => e.UserId == userId && !e.IsDeleted)
+                .Where(e =>
+                    e.UserId == userId &&
+                    !e.IsDeleted &&
+                    e.CreatedAt.Month == currentMonth &&
+                    e.CreatedAt.Year == currentYear)
                 .SumAsync(e => e.Amount);
+
+            var yearlyIncome = await context.Incomes
+                .Where(i =>
+                    i.UserId == userId &&
+                    !i.IsDeleted &&
+                    i.CreatedAt.Year == currentYear)
+                .SumAsync(i => i.Amount);
+
+            var yearlyExpense = await context.Expenses
+                .Where(e =>
+                    e.UserId == userId &&
+                    !e.IsDeleted &&
+                    e.CreatedAt.Year == currentYear)
+                .SumAsync(e => e.Amount);
+
+            var totalSavings = yearlyIncome - yearlyExpense;
 
             return new UserDashboardMetricsResDto
             {
                 TotalIncome = totalIncome,
                 TotalExpense = totalExpense,
-                Balance = totalIncome - totalExpense
+                Balance = totalIncome - totalExpense,
+                TotalSavings = totalSavings
             };
         }
 
@@ -176,11 +203,8 @@ namespace BudgetWise.DAL.Repositories
             IEnumerable<dynamic> monthlyIncome,
             IEnumerable<dynamic> monthlyExpense)
         {
-            var income = monthlyIncome
-                .FirstOrDefault(x => x.Month == month)?.TotalIncome ?? 0;
-
-            var expense = monthlyExpense
-                .FirstOrDefault(x => x.Month == month)?.TotalExpense ?? 0;
+            var income = monthlyIncome.FirstOrDefault(x => x.Month == month)?.TotalIncome ?? 0;
+            var expense = monthlyExpense.FirstOrDefault(x => x.Month == month)?.TotalExpense ?? 0;
 
             return (income, expense);
         }
@@ -206,12 +230,13 @@ namespace BudgetWise.DAL.Repositories
             return Enumerable.Range(1, 12)
                 .Select(month =>
                 {
-                    var (income, expense) =
-                        GetMonthlySummary(month, monthlyIncome, monthlyExpense);
+                    var (income, expense) = GetMonthlySummary(month, monthlyIncome, monthlyExpense);
 
                     return new SavingsTrendResDto
                     {
                         Month = GetMonthName(month),
+                        Income = income,
+                        Expense = expense,
                         Savings = income - expense
                     };
                 })
@@ -219,24 +244,28 @@ namespace BudgetWise.DAL.Repositories
         }
 
         private static List<IncomeExpenseTrendResDto> BuildIncomeExpenseTrend(
-            int previousMonth,
+            int currentMonth,
             IEnumerable<dynamic> monthlyIncome,
             IEnumerable<dynamic> monthlyExpense)
         {
-            return Enumerable.Range(previousMonth, 2)
-                .Select(month =>
-                {
-                    var (income, expense) =
-                        GetMonthlySummary(month, monthlyIncome, monthlyExpense);
+            var months = new[]
+            {
+                currentMonth == 1 ? 12 : currentMonth - 1,
+                currentMonth
+            };
 
-                    return new IncomeExpenseTrendResDto
-                    {
-                        Month = GetMonthName(month),
-                        Income = income,
-                        Expense = expense
-                    };
-                })
-                .ToList();
+            return months.Select(month =>
+            {
+                var (income, expense) = GetMonthlySummary(month, monthlyIncome, monthlyExpense);
+
+                return new IncomeExpenseTrendResDto
+                {
+                    Month = GetMonthName(month),
+                    Income = income,
+                    Expense = expense
+                };
+            })
+            .ToList();
         }
     }
 }
