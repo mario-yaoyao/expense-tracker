@@ -22,5 +22,6 @@
         public ICollection<Expense> Expenses { get; set; } = [];
         public ICollection<Category> Categories { get; set; } = [];
         public ICollection<Income> Incomes { get; set; } = [];
+        public ICollection<Transaction> Transactions { get; set; } = [];
     }
 }

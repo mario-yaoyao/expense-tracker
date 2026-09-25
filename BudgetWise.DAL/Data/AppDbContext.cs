@@ -53,11 +53,11 @@ namespace BudgetWise.DAL.Data
                 .HasForeignKey(i => i.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Transaction>(entity =>
-            {
-                entity.ToTable("Transactions");
-                entity.HasKey(e => e.Id);
-            });
+            modelBuilder.Entity<Transaction>()
+                .HasOne(t => t.User)
+                .WithMany(u => u.Transactions)
+                .HasForeignKey(t => t.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<User>().HasData(new User
             {

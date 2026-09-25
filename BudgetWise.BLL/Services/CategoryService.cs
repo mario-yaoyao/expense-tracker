@@ -90,7 +90,6 @@ namespace BudgetWise.BLL.Services
                 ? existingCategory.Name
                 : category.Name;
 
-            existingCategory.Type = category.Type ?? existingCategory.Type;
             existingCategory.UpdatedAt = DateTime.UtcNow;
 
             await categoryRepository.SaveChangesAsync();

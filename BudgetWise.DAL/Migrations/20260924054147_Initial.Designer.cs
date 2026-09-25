@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BudgetWise.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260921022923_Initial")]
+    [Migration("20260924054147_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -178,7 +178,9 @@ namespace BudgetWise.DAL.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Transactions", (string)null);
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Transactions");
                 });
 
             modelBuilder.Entity("BudgetWise.Models.Models.User", b =>
@@ -310,6 +312,16 @@ namespace BudgetWise.DAL.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BudgetWise.Models.Models.Transaction", b =>
+                {
+                    b.HasOne("BudgetWise.Models.Models.User", "User")
+                        .WithMany("Transactions")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("BudgetWise.Models.Models.Category", b =>
                 {
                     b.Navigation("Expenses");
@@ -324,6 +336,8 @@ namespace BudgetWise.DAL.Migrations
                     b.Navigation("Expenses");
 
                     b.Navigation("Incomes");
+
+                    b.Navigation("Transactions");
                 });
 #pragma warning restore 612, 618
         }

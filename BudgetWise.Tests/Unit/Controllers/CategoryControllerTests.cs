@@ -383,8 +383,7 @@ namespace BudgetWise.Tests.Unit.Controllers
         {
             return new UpdateCategoryReqDto
             {
-                Name = name,
-                Type = type
+                Name = name
             };
         }
 

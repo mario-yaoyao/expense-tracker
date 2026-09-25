@@ -12,27 +12,6 @@ namespace BudgetWise.DAL.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Transactions",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Level = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TimeStamp = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Exception = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserId = table.Column<int>(type: "int", nullable: true),
-                    Username = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Type = table.Column<int>(type: "int", nullable: true),
-                    EntityName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Activity = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Transactions", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -75,6 +54,33 @@ namespace BudgetWise.DAL.Migrations
                     table.PrimaryKey("PK_Categories", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Categories_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Transactions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Level = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TimeStamp = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Exception = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserId = table.Column<int>(type: "int", nullable: true),
+                    Username = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Type = table.Column<int>(type: "int", nullable: true),
+                    EntityName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Activity = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Transactions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Transactions_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -171,6 +177,11 @@ namespace BudgetWise.DAL.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Incomes_UserId",
                 table: "Incomes",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_UserId",
+                table: "Transactions",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(

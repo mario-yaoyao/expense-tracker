@@ -229,7 +229,7 @@ namespace BudgetWise.Tests.Unit.Services
             var categoryService = CreateCategoryService(mockCategoryRepo, mockUserRepo, mockMapper);
 
             var request = UpdateCategoryRequest();
-            var existingCategory = CreateCategory(name: request.Name, type: request.Type!.Value);
+            var existingCategory = CreateCategory(name: request.Name);
             var mappedCategory = CreateCategoryResponse();
 
             mockMapper
@@ -393,13 +393,11 @@ namespace BudgetWise.Tests.Unit.Services
         }
 
         private static UpdateCategoryReqDto UpdateCategoryRequest(
-            string name = "Rent",
-            CategoryType type = CategoryType.Expense)
+            string name = "Rent")
         {
             return new UpdateCategoryReqDto
             {
-                Name = name,
-                Type = type
+                Name = name
             };
         }
 

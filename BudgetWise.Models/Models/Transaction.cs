@@ -20,5 +20,7 @@
         public TransactionType? Type { get; set; }
         public string? EntityName { get; set; }
         public string? Activity { get; set; }
+
+        public User? User { get; set; }
     }
 }
