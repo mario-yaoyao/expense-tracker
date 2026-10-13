@@ -1,0 +1,264 @@
+﻿using BudgetWise.DAL.Data;
+using BudgetWise.DAL.Repositories;
+using BudgetWise.Models.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Moq;
+
+namespace BudgetWise.Tests.Integration.Repositories
+{
+    public class ExpenseRepositoryTests
+    {
+        [Fact]
+        public async Task GetAllExpensesAsync_ReturnsAllNonDeletedExpenses()
+        {
+            // Arrange
+            var secondExpenseId = 2;
+            var userId = 1;
+
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
+
+            var user = CreateUser();
+            var category = CreateCategory();
+
+            var expenses = new List<Expense>
+            {
+                CreateExpense(isDeleted: true),
+                CreateExpense(secondExpenseId, userId, category.Id),
+            };
+
+            context.Users.Add(user);
+            context.Categories.Add(category);
+            context.Expenses.AddRange(expenses);
+            await context.SaveChangesAsync();
+
+            //Act
+            var result = await repository.GetAllExpensesAsync();
+
+            // Assert
+            Assert.Equal(2, result.totalCount);
+
+            Assert.Contains(
+                result.data,
+                e => e.Description == expenses[1].Description
+            );
+        }
+
+        [Fact]
+        public async Task GetExpensesByUserAsync_ReturnsOnlyExpensesForSpecifiedUser()
+        {
+            // Arrange
+            var firstExpenseId = 1;
+            var secondExpenseId = 2;
+            var thirdExpenseId = 3;
+            var firstUserId = 1;
+            var secondUserId = 2;
+
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
+
+            var users = new List<User>
+            {
+                CreateUser(username: "user1"),
+                CreateUser(2, "user2")
+            };
+
+            var category = CreateCategory();
+
+            var expenses = new List<Expense>
+            {
+                CreateExpense(firstExpenseId, firstUserId, category.Id, true),
+                CreateExpense(secondExpenseId, firstUserId, category.Id),
+                CreateExpense(thirdExpenseId, secondUserId, category.Id),
+            };
+
+            context.Users.AddRange(users);
+            context.Categories.Add(category);
+            context.Expenses.AddRange(expenses);
+            await context.SaveChangesAsync();
+
+            // Act
+            var result = await repository.GetExpensesByUserAsync(firstUserId);
+
+            // Assert
+            Assert.Single(result.data);
+
+            var expense = result.data.Single();
+
+            Assert.Equal(2, expense.Id);
+            Assert.Equal(firstUserId, expense.UserId);
+            Assert.False(expense.IsDeleted);
+            Assert.Equal("Expense 2", expense.Description);
+        }
+
+        [Fact]
+        public async Task GetExpenseByUserAsync_ReturnsExpense_WhenExpenseExistsForUser()
+        {
+            // Arrange
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
+
+            var user = CreateUser();
+            var category = CreateCategory();
+            var expense = CreateExpense();
+
+            context.Users.Add(user);
+            context.Categories.Add(category);
+            context.Expenses.Add(expense);
+            await context.SaveChangesAsync();
+
+            // Act
+            var result = await repository.GetExpenseByUserAsync(user.Id, expense.Id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(expense.Id, result.Id);
+            Assert.Equal(user.Id, result.UserId);
+            Assert.Equal(expense.Amount, result.Amount);
+        }
+
+        [Fact]
+        public async Task GetExpenseByUserAsync_ReturnsNull_WhenExpenseDoesNotExist()
+        {
+            // Arrange
+            var userId = 1;
+            var expenseId = 1;
+
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
+
+            // Act
+            var result = await repository.GetExpenseByUserAsync(userId, expenseId);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task GetExpenseByIdAsync_ReturnsExpense_WhenExpenseExists()
+        {
+            // Arrange
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
+
+            var user = CreateUser();
+            var category = CreateCategory();
+            var expense = CreateExpense();
+
+            context.Users.Add(user);
+            context.Categories.Add(category);
+            context.Expenses.Add(expense);
+            await context.SaveChangesAsync();
+
+            // Act
+            var result = await repository.GetExpenseByIdAsync(expense.Id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(expense.Id, result.Id);
+            Assert.Equal(expense.UserId, result.UserId);
+        }
+
+        [Fact]
+        public async Task GetExpenseByIdAsync_ReturnsNull_WhenExpenseDoesNotExist()
+        {
+            // Arrange
+            var expenseId = 1;
+
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
+
+            // Act
+            var result = await repository.GetExpenseByIdAsync(expenseId);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task AddExpenseAsync_SavesExpenseToDatabase()
+        {
+            // Arrange
+            using var context = CreateContext();
+            var repository = CreateRepository(context);
+
+            var user = CreateUser();
+            var category = CreateCategory();
+            var expense = CreateExpense();
+
+            // Act
+            await repository.AddExpenseAsync(expense);
+
+            // Assert
+            var savedExpense = await context.Expenses.FindAsync(expense.Id);
+
+            Assert.Equal(expense.UserId, savedExpense!.UserId);
+            Assert.Equal(expense.Amount, savedExpense.Amount);
+            Assert.Equal(expense.Description, savedExpense.Description);
+        }
+
+        // Helper Functions
+        private static AppDbContext CreateContext()
+        {
+            var options = new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+
+            return new AppDbContext(options);
+        }
+
+        private static ExpenseRepository CreateRepository(AppDbContext context)
+        {
+            var mockLogger = new Mock<ILogger<ExpenseRepository>>();
+
+            return new ExpenseRepository(context, mockLogger.Object);
+        }
+
+        private static User CreateUser(
+            int id = 1,
+            string username = "testuser")
+        {
+            return new User
+            {
+                Id = id,
+                Username = username,
+                FullName = "Test User",
+                ContactNumber = "09123456789",
+                HashedPassword = "password",
+                Role = UserRole.User,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+        }
+
+        private static Category CreateCategory(
+            int id = 1,
+            string name = "Transportation")
+        {
+            return new Category
+            {
+                Id = id,
+                Name = name
+            };
+        }
+
+        private static Expense CreateExpense(
+            int id = 1,
+            int userId = 1,
+            int categoryId = 1,
+            bool isDeleted = false)
+        {
+            return new Expense
+            {
+                Id = id,
+                UserId = userId,
+                CategoryId = categoryId,
+                Amount = 50m,
+                Description = $"Expense {id}",
+                IsDeleted = isDeleted,
+                CreatedAt = DateTime.UtcNow
+            };
+        }
+    }
+}
