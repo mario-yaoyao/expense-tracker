@@ -3,6 +3,8 @@
   <Project Path="BudgetWise.BLL/BudgetWise.BLL.csproj" />
   <Project Path="BudgetWise.CryptoTools/BudgetWise.CryptoTools.csproj" />
   <Project Path="BudgetWise.DAL/BudgetWise.DAL.csproj" />
+  <Project Path="BudgetWise.EmailConsumer/BudgetWise.EmailConsumer.csproj" Id="8b6c5500-b8e1-4b28-908e-322a912619a0" />
   <Project Path="BudgetWise.Models/BudgetWise.Models.csproj" />
+  <Project Path="BudgetWise.Shared.Contracts/BudgetWise.Shared.Contracts.csproj" Id="09d15319-fb0d-468c-8b46-52d1bf09947d" />
   <Project Path="BudgetWise.Tests/BudgetWise.Tests.csproj" />
 </Solution>

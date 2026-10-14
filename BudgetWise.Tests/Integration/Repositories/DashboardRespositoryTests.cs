@@ -221,13 +221,13 @@ public class DashboardRepositoryTests
 
         var incomes = new List<Income>
         {
-            CreateIncome(amount: 1000),
+            CreateIncome(amount: 1000, createdAt: new DateTime(2026, 9, 15)),
             CreateIncome(id: 2, amount: 1500, createdAt: new DateTime(2026, 8, 15))
         };
 
         var expenses = new List<Expense>
         {
-            CreateExpense(amount: 400),
+            CreateExpense(amount: 400, createdAt: new DateTime(2026, 9, 15)),
             CreateExpense(id: 2, description: "Lunch", amount: 600, createdAt: new DateTime(2026, 8, 15))
         };
 
@@ -257,16 +257,19 @@ public class DashboardRepositoryTests
         using var context = CreateContext();
         var repository = CreateRepository(context);
 
+        var currentMonthDate = DateTime.UtcNow;
+        var previousMonthDate = DateTime.UtcNow.AddMonths(-1);
+
         var incomes = new List<Income>
         {
-            CreateIncome(amount: 1000),
-            CreateIncome(id: 2, amount: 1500, createdAt: new DateTime(2026, 8, 15))
+            CreateIncome(amount: 1000, createdAt: currentMonthDate),
+            CreateIncome(id: 2, amount: 1500, createdAt: previousMonthDate)
         };
 
         var expenses = new List<Expense>
         {
-            CreateExpense(amount: 400),
-            CreateExpense(id: 2, description: "Lunch", amount: 600, createdAt: new DateTime(2026, 8, 15))
+            CreateExpense(amount: 400, createdAt: currentMonthDate),
+            CreateExpense(id: 2, description: "Lunch", amount: 600, createdAt: previousMonthDate)
         };
 
         context.Incomes.AddRange(incomes);
