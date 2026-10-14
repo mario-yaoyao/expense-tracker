@@ -6,6 +6,7 @@ using BudgetWise.DAL.Data;
 using BudgetWise.DAL.Interfaces;
 using BudgetWise.DAL.Repositories;
 using BudgetWise.Models.Dtos.Responses;
+using Confluent.Kafka;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,19 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 var dbConnectionString = builder.Configuration.GetConnectionString("BudgetWiseDatabase");
+var kafkaConnectionString = builder.Configuration.GetConnectionString("KafkaServer");
+
+var producerConfig = new ProducerConfig
+{
+    BootstrapServers = kafkaConnectionString,
+    AllowAutoCreateTopics = true,
+    Acks = Acks.All
+};
+
+builder.Services.AddSingleton<IProducer<string, string>>(
+    _ => new ProducerBuilder<string, string>(producerConfig).Build());
+
+builder.Services.AddSingleton<IProducerService, ProducerService>();
 
 // comment on Update-Database execution
 SerilogConfiguration.Configure(dbConnectionString!);

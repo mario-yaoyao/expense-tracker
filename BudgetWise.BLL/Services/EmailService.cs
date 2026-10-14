@@ -1,5 +1,4 @@
 ﻿using BudgetWise.BLL.Interfaces;
-using BudgetWise.DAL.Repositories;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Configuration;
@@ -8,7 +7,7 @@ using MimeKit;
 
 namespace BudgetWise.BLL.Services
 {
-    public class EmailService(IConfiguration configuration, ILogger<ProfileRepository> logger) : IEmailService
+    public class EmailService(IConfiguration configuration, ILogger<EmailService> logger) : IEmailService
     {
         private readonly string _smtpHost = configuration.GetValue<string>("SmtpSettings:SmtpHost", "");
         private readonly int _smtpPort = configuration.GetValue<int>("SmtpSettings:SmtpPort", 0);

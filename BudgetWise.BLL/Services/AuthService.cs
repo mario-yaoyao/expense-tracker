@@ -4,6 +4,7 @@ using BudgetWise.Models.Common;
 using BudgetWise.Models.Dtos.Requests;
 using BudgetWise.Models.Dtos.Responses;
 using BudgetWise.Models.Models;
+using BudgetWise.Shared.Contracts.Events;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -16,7 +17,7 @@ using System.Text.Json;
 
 namespace BudgetWise.BLL.Services
 {
-    public class AuthService(IConfiguration configuration, IAuthRepository authRepository, IEmailService emailService, ICryptoService cryptoService) : IAuthService
+    public class AuthService(IConfiguration configuration, IAuthRepository authRepository, IProducerService producerService, ICryptoService cryptoService) : IAuthService
     {
         public async Task<ServiceResult<TokenResDto>> LoginAsync(EncryptedReqDto request)
         {
@@ -150,17 +151,23 @@ namespace BudgetWise.BLL.Services
 
             var resetToken = await GenerateAndSaveResetTokenAsync(user);
 
-            var emailSent = await emailService.SendEmailAsync(
-                user.FullName,
-                user.Username,
-                user.Email,
-                "Reset your BudgetWise password",
-                $"""
-                We received a request to reset your BudgetWise password. Use the button below to create your new password.
-                """,
-                resetToken);
+            var emailEvent = new EmailRequestedEvent
+            {
+                Email = user.Email,
+                FullName = user.FullName,
+                Username = user.Username,
+                ResetToken = resetToken,
+                Subject = "Reset your BudgetWise password",
+                Message = "We received a request to reset your BudgetWise password."
+            };
 
-            return emailSent;
+            await producerService.PublishAsync(
+                "budgetwise-email-notifications",
+                emailEvent,
+                $"USR-{user.Id}"
+            );
+
+            return true;
         }
 
         public async Task<ServiceResult<object>> ResetPasswordAsync(EncryptedReqDto request)

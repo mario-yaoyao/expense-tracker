@@ -465,17 +465,17 @@ namespace BudgetWise.Tests.Unit.Services
 
         private static AuthService CreateAuthService(
             Mock<IAuthRepository>? mockRepo = null,
-            Mock<IEmailService>? mockEmailService = null,
+            Mock<IProducerService>? mockProducerService = null,
             Mock<ICryptoService>? mockCryptoService = null)
         {
             mockRepo ??= new Mock<IAuthRepository>();
-            mockEmailService ??= new Mock<IEmailService>();
+            mockProducerService ??= new Mock<IProducerService>();
             mockCryptoService ??= new Mock<ICryptoService>();
 
             return new AuthService(
                 CreateConfiguration(),
                 mockRepo.Object,
-                mockEmailService.Object,
+                mockProducerService.Object,
                 mockCryptoService.Object);
         }
 
