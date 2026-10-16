@@ -16,6 +16,15 @@ namespace BudgetWise.Models.Dtos.Responses
 
         public CategoryType Type { get; set; }
 
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public decimal? BudgetAmount { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public decimal TotalSpent { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public decimal? Remaining { get; set; }
+        
         public bool IsDeleted { get; set; }
 
         public DateTime CreatedAt { get; set; }

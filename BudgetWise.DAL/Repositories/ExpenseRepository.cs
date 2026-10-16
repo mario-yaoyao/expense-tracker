@@ -16,6 +16,7 @@ namespace BudgetWise.DAL.Repositories
                 var query = context.Expenses
                     .Include(e => e.Category)
                     .Include(e => e.User)
+                    .Include(e => e.RecurringTransaction)
                     .AsQueryable();
 
                 if (!string.IsNullOrWhiteSpace(search))
@@ -66,6 +67,7 @@ namespace BudgetWise.DAL.Repositories
                 var query = context.Expenses
                     .Include(e => e.Category)
                     .Include(e => e.User)
+                    .Include(e => e.RecurringTransaction)
                     .Where(e =>
                         e.UserId == userId &&
                         !e.IsDeleted)
@@ -127,6 +129,7 @@ namespace BudgetWise.DAL.Repositories
                 return await context.Expenses
                     .Include(e => e.Category)
                     .Include(e => e.User)
+                    .Include(e => e.RecurringTransaction)
                     .Where(e => !e.IsDeleted)
                     .FirstOrDefaultAsync(e => e.UserId == userId && e.Id == expenseId);
             }
@@ -144,6 +147,7 @@ namespace BudgetWise.DAL.Repositories
                 return await context.Expenses
                     .Include(e => e.Category)
                     .Include(e => e.User)
+                    .Include(e => e.RecurringTransaction)
                     .FirstOrDefaultAsync(e => e.Id == expenseId);
             }
             catch (Exception ex)

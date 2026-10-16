@@ -12,5 +12,8 @@ namespace BudgetWise.Models.Dtos.Requests
 
         [Required]
         public int CategoryId { get; set; }
+
+        [Required]
+        public bool IsRecurring { get; set; }
     }
 }

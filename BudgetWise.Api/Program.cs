@@ -1,4 +1,5 @@
 using BudgetWise.BLL.Interfaces;
+using BudgetWise.BLL.Jobs;
 using BudgetWise.BLL.Mappings;
 using BudgetWise.BLL.Services;
 using BudgetWise.Configurations;
@@ -7,6 +8,8 @@ using BudgetWise.DAL.Interfaces;
 using BudgetWise.DAL.Repositories;
 using BudgetWise.Models.Dtos.Responses;
 using Confluent.Kafka;
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +21,7 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 var dbConnectionString = builder.Configuration.GetConnectionString("BudgetWiseDatabase");
+var hangfireConnectionString = builder.Configuration.GetConnectionString("HangfireDatabase");
 var kafkaConnectionString = builder.Configuration.GetConnectionString("KafkaServer");
 
 var producerConfig = new ProducerConfig
@@ -66,6 +70,21 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(dbConnectionString));
 
+builder.Services.AddHangfire(configuration => configuration.
+    SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(hangfireConnectionString, new SqlServerStorageOptions
+    {
+        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+        QueuePollInterval = TimeSpan.Zero,
+        UseRecommendedIsolationLevel = true,
+        DisableGlobalLocks = true
+    }));
+
+builder.Services.AddHangfireServer();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => {
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -92,6 +111,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ICryptoService, CryptoService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddScoped<IRecurringTransactionJob, RecurringTransactionJob>();
 
 builder.Services.AddAutoMapper(cfg => { }, typeof(ExpenseProfile).Assembly);
 builder.Services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly);
@@ -108,6 +128,7 @@ builder.Services.AddScoped<IIncomeRepository, IncomeRepository>();
 builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<IRecurringTransactionRepository, RecurringTransactionRepository>();
 
 builder.Services.AddCors(options =>
 {
@@ -134,6 +155,14 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseHangfireDashboard();
+
+RecurringJob.AddOrUpdate<IRecurringTransactionJob>(
+    "monthly-recurring-transactions",
+    x => x.ProcessRecurringTransactionsAsync(),
+    Cron.Monthly(1)
+);
 
 app.MapControllers();
 

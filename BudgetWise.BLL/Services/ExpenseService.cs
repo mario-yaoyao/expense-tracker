@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BudgetWise.BLL.Interfaces;
 using BudgetWise.DAL.Interfaces;
+using BudgetWise.DAL.Repositories;
 using BudgetWise.Models.Dtos.Requests;
 using BudgetWise.Models.Dtos.Responses;
 using BudgetWise.Models.Models;
@@ -8,7 +9,7 @@ using Serilog;
 
 namespace BudgetWise.BLL.Services
 {
-    public class ExpenseService(IExpenseRepository expenseRepository, IUserRepository userRepository, IMapper mapper) : IExpenseService
+    public class ExpenseService(IExpenseRepository expenseRepository, IUserRepository userRepository, IRecurringTransactionRepository recurringTransactionRepository, IMapper mapper) : IExpenseService
     {
         public async Task<(List<ExpenseResDto> data, decimal totalExpense, HighestAmountResDto? highestExpense, int totalCount, bool hasNextPage)> GetExpensesAsync(int userId, string role, ExpenseQueryReqDto request)
         {
@@ -56,12 +57,30 @@ namespace BudgetWise.BLL.Services
 
         public async Task<bool> CreateExpenseAsync(int userId, CreateExpenseReqDto expense)
         {
+            RecurringTransaction? recurringTransaction = null;
+
+            if (expense.IsRecurring)
+            {
+                recurringTransaction = new RecurringTransaction
+                {
+                    UserId = userId,
+                    Description = expense.Description,
+                    Amount = expense.Amount,
+                    CategoryId = expense.CategoryId,
+                    Type = CategoryType.Expense,
+                    IsActive = true
+                };
+
+                await recurringTransactionRepository.AddRecurringTransactionAsync(recurringTransaction);
+            }
+
             var newExpense = new Expense
             {
                 UserId = userId,
                 Description = expense.Description,
                 Amount = expense.Amount,
                 CategoryId = expense.CategoryId,
+                RecurringTransactionId = recurringTransaction?.Id
             };
 
             await expenseRepository.AddExpenseAsync(newExpense);
@@ -76,6 +95,25 @@ namespace BudgetWise.BLL.Services
                .Information($"'{user.Username}' created expense '{newExpense.Description}'.");
 
             return true;
+        }
+
+        public async Task CreateRecurringExpenseAsync(
+            int userId,
+            string description,
+            decimal amount,
+            int categoryId,
+            int recurringTransactionId)
+        {
+            var expense = new Expense
+            {
+                UserId = userId,
+                Description = description,
+                Amount = amount,
+                CategoryId = categoryId,
+                RecurringTransactionId = recurringTransactionId
+            };
+
+            await expenseRepository.AddExpenseAsync(expense);
         }
 
         public async Task<bool> UpdateExpenseAsync(int userId, int expenseId, UpdateExpenseReqDto expense)

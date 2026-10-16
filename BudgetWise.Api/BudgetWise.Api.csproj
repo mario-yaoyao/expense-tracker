@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>BudgetWise</RootNamespace>
-	<NoWarn>NU1903</NoWarn>
+	<NoWarn>NU1902;NU1903</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

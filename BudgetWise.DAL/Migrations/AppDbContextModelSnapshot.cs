@@ -30,6 +30,10 @@ namespace BudgetWise.DAL.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal?>("BudgetAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -81,6 +85,9 @@ namespace BudgetWise.DAL.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("RecurringTransactionId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -90,6 +97,8 @@ namespace BudgetWise.DAL.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("RecurringTransactionId");
 
                     b.HasIndex("UserId");
 
@@ -121,6 +130,53 @@ namespace BudgetWise.DAL.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("RecurringTransactionId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("RecurringTransactionId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Incomes");
+                });
+
+            modelBuilder.Entity("BudgetWise.Models.Models.RecurringTransaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -133,7 +189,7 @@ namespace BudgetWise.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Incomes");
+                    b.ToTable("RecurringTransactions");
                 });
 
             modelBuilder.Entity("BudgetWise.Models.Models.Transaction", b =>
@@ -279,6 +335,11 @@ namespace BudgetWise.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("BudgetWise.Models.Models.RecurringTransaction", "RecurringTransaction")
+                        .WithMany("Expenses")
+                        .HasForeignKey("RecurringTransactionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("BudgetWise.Models.Models.User", "User")
                         .WithMany("Expenses")
                         .HasForeignKey("UserId")
@@ -286,6 +347,8 @@ namespace BudgetWise.DAL.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
+
+                    b.Navigation("RecurringTransaction");
 
                     b.Navigation("User");
                 });
@@ -298,8 +361,34 @@ namespace BudgetWise.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("BudgetWise.Models.Models.RecurringTransaction", "RecurringTransaction")
+                        .WithMany("Incomes")
+                        .HasForeignKey("RecurringTransactionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("BudgetWise.Models.Models.User", "User")
                         .WithMany("Incomes")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("RecurringTransaction");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BudgetWise.Models.Models.RecurringTransaction", b =>
+                {
+                    b.HasOne("BudgetWise.Models.Models.Category", "Category")
+                        .WithMany("RecurringTransactions")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BudgetWise.Models.Models.User", "User")
+                        .WithMany("RecurringTransactions")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -324,6 +413,15 @@ namespace BudgetWise.DAL.Migrations
                     b.Navigation("Expenses");
 
                     b.Navigation("Incomes");
+
+                    b.Navigation("RecurringTransactions");
+                });
+
+            modelBuilder.Entity("BudgetWise.Models.Models.RecurringTransaction", b =>
+                {
+                    b.Navigation("Expenses");
+
+                    b.Navigation("Incomes");
                 });
 
             modelBuilder.Entity("BudgetWise.Models.Models.User", b =>
@@ -333,6 +431,8 @@ namespace BudgetWise.DAL.Migrations
                     b.Navigation("Expenses");
 
                     b.Navigation("Incomes");
+
+                    b.Navigation("RecurringTransactions");
 
                     b.Navigation("Transactions");
                 });

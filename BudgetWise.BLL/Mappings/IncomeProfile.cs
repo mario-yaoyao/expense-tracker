@@ -10,6 +10,10 @@ namespace BudgetWise.BLL.Mappings
         {
             CreateMap<Income, IncomeResDto>()
                 .ForMember(
+                    dest => dest.IsRecurring,
+                    opt => opt.MapFrom(src => src.RecurringTransactionId.HasValue)
+                )
+                .ForMember(
                     dest => dest.Username,
                     opt => opt.MapFrom(src => src.User.Username))
                 .ForMember(
@@ -17,12 +21,10 @@ namespace BudgetWise.BLL.Mappings
                     opt => opt.MapFrom(src => src.User.FullName))
                 .ForMember(
                     dest => dest.CategoryName,
-                    opt => opt.MapFrom(src => src.Category.Name)
-                )
+                    opt => opt.MapFrom(src => src.Category.Name))
                 .ForMember(
                     dest => dest.CategoryType,
-                    opt => opt.MapFrom(src => src.Category.Type)
-                );
+                    opt => opt.MapFrom(src => src.Category.Type));
         }
     }
 }

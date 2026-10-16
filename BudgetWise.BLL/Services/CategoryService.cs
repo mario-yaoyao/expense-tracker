@@ -37,8 +37,6 @@ namespace BudgetWise.BLL.Services
             if (role == "User")
             {
                 category = await categoryRepository.GetCategoryByUserAsync(userId, categoryId);
-
-                Console.WriteLine(category?.User?.Username);
             }
             else
             {
@@ -47,7 +45,14 @@ namespace BudgetWise.BLL.Services
 
             if (category == null) return null;
 
-            return mapper.Map<CategoryResDto>(category);
+            var dto = mapper.Map<CategoryResDto>(category);
+
+            dto.TotalSpent = category!.Expenses.Sum(e => e.Amount);
+            dto.Remaining = category.BudgetAmount == null
+                ? null
+                : category.BudgetAmount.Value - dto.TotalSpent;
+
+            return dto;
         }
 
         public async Task<bool> CreateCategoryAsync(int userId, CreateCategoryReqDto category)
@@ -63,7 +68,8 @@ namespace BudgetWise.BLL.Services
             {
                 UserId = userId,
                 Name = category.Name,
-                Type = category.Type
+                Type = category.Type,
+                BudgetAmount = category.BudgetAmount
             };
 
             await categoryRepository.AddCategoryAsync(newCategory);
@@ -90,6 +96,7 @@ namespace BudgetWise.BLL.Services
                 ? existingCategory.Name
                 : category.Name;
 
+            existingCategory.BudgetAmount = category.BudgetAmount;
             existingCategory.UpdatedAt = DateTime.UtcNow;
 
             await categoryRepository.SaveChangesAsync();

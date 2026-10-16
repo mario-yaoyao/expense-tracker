@@ -19,8 +19,9 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mockIncomeRepo = new Mock<IIncomeRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
+            var mockRecurringTransactionRepo = new Mock<IRecurringTransactionRepository>();
             var mockMapper = new Mock<IMapper>();
-            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockMapper);
+            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockRecurringTransactionRepo, mockMapper);
 
             var paginationReq = CreatePaginationRequest();
             var category = CreateCategory();
@@ -93,8 +94,9 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mockIncomeRepo = new Mock<IIncomeRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
+            var mockRecurringTransactionRepo = new Mock<IRecurringTransactionRepository>();
             var mockMapper = new Mock<IMapper>();
-            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockMapper);
+            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockRecurringTransactionRepo, mockMapper);
 
             var paginationReq = CreatePaginationRequest();
             var category = CreateCategory();
@@ -168,8 +170,9 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mockIncomeRepo = new Mock<IIncomeRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
+            var mockRecurringTransactionRepo = new Mock<IRecurringTransactionRepository>();
             var mockMapper = new Mock<IMapper>();
-            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockMapper);
+            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockRecurringTransactionRepo, mockMapper);
 
             var category = CreateCategory();
             var income = CreateIncome(category, id: incomeId, userId: userId);
@@ -211,8 +214,9 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mockIncomeRepo = new Mock<IIncomeRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
+            var mockRecurringTransactionRepo = new Mock<IRecurringTransactionRepository>();
             var mockMapper = new Mock<IMapper>();
-            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockMapper);
+            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockRecurringTransactionRepo, mockMapper);
 
             mockIncomeRepo.Setup(x => x.GetIncomeByUserAsync(userId, incomeId))
                 .ReturnsAsync((Income?)null);
@@ -236,8 +240,9 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mockIncomeRepo = new Mock<IIncomeRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
+            var mockRecurringTransactionRepo = new Mock<IRecurringTransactionRepository>();
             var mockMapper = new Mock<IMapper>();
-            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockMapper);
+            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockRecurringTransactionRepo, mockMapper);
 
             var category = CreateCategory();
             var request = CreateIncomeRequest();
@@ -280,8 +285,9 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mockIncomeRepo = new Mock<IIncomeRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
+            var mockRecurringTransactionRepo = new Mock<IRecurringTransactionRepository>();
             var mockMapper = new Mock<IMapper>();
-            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockMapper);
+            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockRecurringTransactionRepo, mockMapper);
 
             var categories = new List<Category>
             {
@@ -314,7 +320,7 @@ namespace BudgetWise.Tests.Unit.Services
                     Username = "testuser"
                 });
 
-            var service = new IncomeService(mockIncomeRepo.Object, mockUserRepo.Object, mockMapper.Object);
+            var service = new IncomeService(mockIncomeRepo.Object, mockUserRepo.Object, mockRecurringTransactionRepo.Object, mockMapper.Object);
 
             // Act
             var result = await service.UpdateIncomeAsync(userId, existingIncome.Id, request);
@@ -340,8 +346,9 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mockIncomeRepo = new Mock<IIncomeRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
+            var mockRecurringTransactionRepo = new Mock<IRecurringTransactionRepository>();
             var mockMapper = new Mock<IMapper>();
-            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockMapper);
+            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockRecurringTransactionRepo, mockMapper);
 
             var request = UpdateIncomeRequest();
 
@@ -364,8 +371,9 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mockIncomeRepo = new Mock<IIncomeRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
+            var mockRecurringTransactionRepo = new Mock<IRecurringTransactionRepository>();
             var mockMapper = new Mock<IMapper>();
-            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockMapper);
+            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockRecurringTransactionRepo, mockMapper);
 
             var category = CreateCategory();
             var existingIncome = CreateIncome(category);
@@ -397,8 +405,9 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mockIncomeRepo = new Mock<IIncomeRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
+            var mockRecurringTransactionRepo = new Mock<IRecurringTransactionRepository>();
             var mockMapper = new Mock<IMapper>();
-            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockMapper);
+            var incomeService = CreateIncomeService(mockIncomeRepo, mockUserRepo, mockRecurringTransactionRepo, mockMapper);
 
             mockIncomeRepo.Setup(x => x.GetIncomeByUserAsync(userId, incomeId))
                 .ReturnsAsync((Income?)null);
@@ -414,11 +423,13 @@ namespace BudgetWise.Tests.Unit.Services
         private static IncomeService CreateIncomeService(
             Mock<IIncomeRepository>? mockIncomeRepo = null,
             Mock<IUserRepository>? mockUserRepo = null,
+            Mock<IRecurringTransactionRepository>? mockRecurringTransactionRepo = null,
             Mock<IMapper>? mockMapper = null)
         {
             return new IncomeService(
                 mockIncomeRepo!.Object,
                 mockUserRepo!.Object,
+                mockRecurringTransactionRepo!.Object,
                 mockMapper!.Object);
         }
 

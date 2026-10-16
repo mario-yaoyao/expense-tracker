@@ -10,5 +10,8 @@ namespace BudgetWise.Models.Dtos.Requests
 
         [Required]
         public CategoryType Type { get; set; }
+
+        [Required]
+        public decimal BudgetAmount { get; set; }
     }
 }

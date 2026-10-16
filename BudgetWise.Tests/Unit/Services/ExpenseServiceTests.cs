@@ -21,8 +21,9 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mockExpenseRepo = new Mock<IExpenseRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
+            var mockRecurringTransactionRepoRepo = new Mock<IRecurringTransactionRepository>();
             var mockMapper = new Mock<IMapper>();
-            var expenseService = CreateCategoryService(mockExpenseRepo, mockUserRepo, mockMapper);
+            var expenseService = CreateCategoryService(mockExpenseRepo, mockUserRepo, mockRecurringTransactionRepoRepo, mockMapper);
 
             var category = CreateCategory();
             var paginationReq = CreatePaginationRequest();
@@ -83,8 +84,9 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mockExpenseRepo = new Mock<IExpenseRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
+            var mockRecurringTransactionRepoRepo = new Mock<IRecurringTransactionRepository>();
             var mockMapper = new Mock<IMapper>();
-            var expenseService = CreateCategoryService(mockExpenseRepo, mockUserRepo, mockMapper);
+            var expenseService = CreateCategoryService(mockExpenseRepo, mockUserRepo, mockRecurringTransactionRepoRepo, mockMapper);
 
             var paginationReq = CreatePaginationRequest();
             var category = CreateCategory();
@@ -140,8 +142,9 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mockExpenseRepo = new Mock<IExpenseRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
+            var mockRecurringTransactionRepoRepo = new Mock<IRecurringTransactionRepository>();
             var mockMapper = new Mock<IMapper>();
-            var expenseService = CreateCategoryService(mockExpenseRepo, mockUserRepo, mockMapper);
+            var expenseService = CreateCategoryService(mockExpenseRepo, mockUserRepo, mockRecurringTransactionRepoRepo, mockMapper);
 
             var category = CreateCategory();
             var expense = CreateExpense(category);
@@ -177,8 +180,9 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mockExpenseRepo = new Mock<IExpenseRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
+            var mockRecurringTransactionRepoRepo = new Mock<IRecurringTransactionRepository>();
             var mockMapper = new Mock<IMapper>();
-            var expenseService = CreateCategoryService(mockExpenseRepo, mockUserRepo, mockMapper);
+            var expenseService = CreateCategoryService(mockExpenseRepo, mockUserRepo, mockRecurringTransactionRepoRepo, mockMapper);
 
             mockExpenseRepo.Setup(x => x.GetExpenseByUserAsync(userId, expenseId))
                 .ReturnsAsync((Expense?)null);
@@ -202,8 +206,9 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mockExpenseRepo = new Mock<IExpenseRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
+            var mockRecurringTransactionRepoRepo = new Mock<IRecurringTransactionRepository>();
             var mockMapper = new Mock<IMapper>();
-            var expenseService = CreateCategoryService(mockExpenseRepo, mockUserRepo, mockMapper);
+            var expenseService = CreateCategoryService(mockExpenseRepo, mockUserRepo, mockRecurringTransactionRepoRepo, mockMapper);
 
             var category = CreateCategory();
             var request = CreateExpenseRequest();
@@ -241,8 +246,9 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mockExpenseRepo = new Mock<IExpenseRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
+            var mockRecurringTransactionRepoRepo = new Mock<IRecurringTransactionRepository>();
             var mockMapper = new Mock<IMapper>();
-            var expenseService = CreateCategoryService(mockExpenseRepo, mockUserRepo, mockMapper);
+            var expenseService = CreateCategoryService(mockExpenseRepo, mockUserRepo, mockRecurringTransactionRepoRepo, mockMapper);
 
             var categories = new List<Category>
             {
@@ -298,8 +304,9 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mockExpenseRepo = new Mock<IExpenseRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
+            var mockRecurringTransactionRepoRepo = new Mock<IRecurringTransactionRepository>();
             var mockMapper = new Mock<IMapper>();
-            var expenseService = CreateCategoryService(mockExpenseRepo, mockUserRepo, mockMapper);
+            var expenseService = CreateCategoryService(mockExpenseRepo, mockUserRepo, mockRecurringTransactionRepoRepo, mockMapper);
 
             var request = UpdateExpenseRequest();
 
@@ -322,8 +329,9 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mockExpenseRepo = new Mock<IExpenseRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
+            var mockRecurringTransactionRepoRepo = new Mock<IRecurringTransactionRepository>();
             var mockMapper = new Mock<IMapper>();
-            var expenseService = CreateCategoryService(mockExpenseRepo, mockUserRepo, mockMapper);
+            var expenseService = CreateCategoryService(mockExpenseRepo, mockUserRepo, mockRecurringTransactionRepoRepo, mockMapper);
 
             var category = CreateCategory();
             var existingExpense = CreateExpense(category);
@@ -355,8 +363,9 @@ namespace BudgetWise.Tests.Unit.Services
 
             var mockExpenseRepo = new Mock<IExpenseRepository>();
             var mockUserRepo = new Mock<IUserRepository>();
+            var mockRecurringTransactionRepoRepo = new Mock<IRecurringTransactionRepository>();
             var mockMapper = new Mock<IMapper>();
-            var expenseService = CreateCategoryService(mockExpenseRepo, mockUserRepo, mockMapper);
+            var expenseService = CreateCategoryService(mockExpenseRepo, mockUserRepo, mockRecurringTransactionRepoRepo, mockMapper);
 
             mockExpenseRepo.Setup(x => x.GetExpenseByUserAsync(userId, expenseId))
                 .ReturnsAsync((Expense?)null);
@@ -372,11 +381,13 @@ namespace BudgetWise.Tests.Unit.Services
         private static ExpenseService CreateCategoryService(
             Mock<IExpenseRepository>? mockExpenseRepo = null,
             Mock<IUserRepository>? mockUserRepo = null,
+            Mock<IRecurringTransactionRepository>? mockRecurringTransactionRepo = null,
             Mock<IMapper>? mockMapper = null)
         {
             return new ExpenseService(
                 mockExpenseRepo!.Object,
                 mockUserRepo!.Object,
+                mockRecurringTransactionRepo!.Object,
                 mockMapper!.Object);
         }
 

@@ -13,6 +13,7 @@ namespace BudgetWise.Models.Dtos.Responses
         public int CategoryId { get; set; }
         public string CategoryName { get; set; } = string.Empty;
         public CategoryType CategoryType { get; set; }
+        public bool IsRecurring { get; set; }
         public bool IsDeleted { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

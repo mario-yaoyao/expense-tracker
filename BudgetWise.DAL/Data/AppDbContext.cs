@@ -10,6 +10,7 @@ namespace BudgetWise.DAL.Data
         public DbSet<Income> Incomes { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<RecurringTransaction> RecurringTransactions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -36,6 +37,10 @@ namespace BudgetWise.DAL.Data
                 .HasPrecision(18, 2);
 
             modelBuilder.Entity<Category>()
+                .Property(e => e.BudgetAmount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Category>()
                 .HasOne(c => c.User)
                 .WithMany(u => u.Categories)
                 .HasForeignKey(c => c.UserId)
@@ -58,6 +63,30 @@ namespace BudgetWise.DAL.Data
                 .WithMany(u => u.Transactions)
                 .HasForeignKey(t => t.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<RecurringTransaction>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.RecurringTransactions)
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<RecurringTransaction>()
+                .HasOne(r => r.Category)
+                .WithMany(c => c.RecurringTransactions)
+                .HasForeignKey(r => r.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Income>()
+                .HasOne(i => i.RecurringTransaction)
+                .WithMany(r => r.Incomes)
+                .HasForeignKey(i => i.RecurringTransactionId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Expense>()
+                .HasOne(i => i.RecurringTransaction)
+                .WithMany(r => r.Expenses)
+                .HasForeignKey(i => i.RecurringTransactionId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<User>().HasData(new User
             {
